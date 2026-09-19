@@ -221,7 +221,7 @@ export interface GenerateQuizInput {
 
 export async function generateQuizQuestions(input: GenerateQuizInput): Promise<GeneratedQuestion[]> {
   await new Promise((r) => setTimeout(r, 500));
-  const pool = BANK[input.subject] ?? BANK.Mathematics!;
+  const pool = BANK[input.subject] ?? BANK['Mathematics']!;
   const picked: GeneratedQuestion[] = [];
   for (let i = 0; i < input.count; i += 1) {
     const base = pool[i % pool.length]!;
