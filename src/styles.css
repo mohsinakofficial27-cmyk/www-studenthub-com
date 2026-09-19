@@ -158,5 +158,3 @@
 @utility rise {
   animation: sh-rise 0.45s cubic-bezier(0.32, 0.72, 0, 1) both;
 }
-
-}
