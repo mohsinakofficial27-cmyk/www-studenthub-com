@@ -182,8 +182,6 @@ export interface Database {
   session_user_id: string | null;
 }
 
-const KEY = "studenthub.db.v1";
-
 const empty = (): Database => ({
   users: [],
   profiles: [],
@@ -210,27 +208,14 @@ function isBrowser() {
 }
 
 export function read(): Database {
-  if (!isBrowser()) return empty();
-  if (cache) return cache;
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    cache = raw ? { ...empty(), ...(JSON.parse(raw) as Database) } : empty();
-  } catch {
-    cache = empty();
-  }
+  if (!cache) cache = empty();
   return cache;
 }
 
 export function write(next: Database) {
   cache = next;
-  if (isBrowser()) {
-    try {
-      window.localStorage.setItem(KEY, JSON.stringify(next));
-    } catch {
-      /* quota / private mode — state stays in memory for this session */
-    }
-  }
   listeners.forEach((l) => l());
+  void scheduleSync();
 }
 
 export function mutate(fn: (db: Database) => void) {
@@ -248,34 +233,109 @@ export function uid() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-/**
- * Cryptographically-random token for anything that grants access
- * (password reset, invites). Never use `uid()` for those — it is
- * Math.random()-based and therefore guessable.
- */
-export function secureToken(bytes = 32) {
-  if (isBrowser() && window.crypto?.getRandomValues) {
-    const buf = new Uint8Array(bytes);
-    window.crypto.getRandomValues(buf);
-    return Array.from(buf)
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
-  }
-  throw new Error("A secure random source is not available in this environment.");
-}
-
 export function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
-export async function hashPassword(password: string) {
-  if (isBrowser() && window.crypto?.subtle) {
-    const data = new TextEncoder().encode(`studenthub::${password}`);
-    const digest = await window.crypto.subtle.digest("SHA-256", data);
-    return Array.from(new Uint8Array(digest))
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
-  }
-  // Non-crypto fallback; never reached in supported browsers.
-  return `fallback::${password.length}`;
+/* ------------------------------------------------------------------ *
+ * Cloud sync
+ *
+ * Screens keep talking to this module synchronously. Every mutation is
+ * diffed against the last synced snapshot and written through to the
+ * cloud database, where row-level security scopes each row to its owner.
+ * ------------------------------------------------------------------ */
+
+type SyncSpec = { field: keyof Database; key: "id" | "user_id" };
+
+const SYNC_SPECS: SyncSpec[] = [
+  { field: "profiles", key: "user_id" },
+  { field: "subscriptions", key: "user_id" },
+  { field: "user_settings", key: "user_id" },
+  { field: "notes", key: "id" },
+  { field: "quizzes", key: "id" },
+  { field: "quiz_attempts", key: "id" },
+  { field: "flashcard_decks", key: "id" },
+  { field: "flashcards", key: "id" },
+  { field: "study_tasks", key: "id" },
+  { field: "study_sessions", key: "id" },
+  { field: "ai_conversations", key: "id" },
+  { field: "ai_messages", key: "id" },
+  { field: "notifications", key: "id" },
+];
+
+let syncedSnapshot: Database | null = null;
+let syncTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** Install rows loaded from the cloud without echoing them back up. */
+export function hydrate(next: Database) {
+  cache = next;
+  syncedSnapshot = structuredClone(next);
+  listeners.forEach((l) => l());
 }
+
+/** Stop syncing (sign-out) and clear the in-memory cache. */
+export function resetStore() {
+  if (syncTimer) clearTimeout(syncTimer);
+  syncTimer = null;
+  syncedSnapshot = null;
+  cache = empty();
+  listeners.forEach((l) => l());
+}
+
+async function scheduleSync() {
+  if (!isBrowser() || !syncedSnapshot) return;
+  if (syncTimer) clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => void flushSync(), 250);
+}
+
+async function flushSync() {
+  const prev = syncedSnapshot;
+  const next = read();
+  if (!prev || !next.session_user_id) return;
+  const { supabase } = await import("@/integrations/supabase/client");
+
+  for (const spec of SYNC_SPECS) {
+    const rows = next[spec.field] as unknown as Record<string, unknown>[];
+    const before = prev[spec.field] as unknown as Record<string, unknown>[];
+    const beforeByKey = new Map(before.map((r) => [String(r[spec.key]), r]));
+    const changed = rows.filter((r) => {
+      const old = beforeByKey.get(String(r[spec.key]));
+      return !old || JSON.stringify(old) !== JSON.stringify(r);
+    });
+    const removed = before
+      .map((r) => String(r[spec.key]))
+      .filter((k) => !rows.some((r) => String(r[spec.key]) === k));
+
+    if (changed.length) {
+      const { error } = await supabase.from(spec.field).upsert(changed, { onConflict: spec.key });
+      if (error) console.error(`sync ${spec.field}`, error.message);
+    }
+    if (removed.length) {
+      const { error } = await supabase.from(spec.field).delete().in(spec.key, removed);
+      if (error) console.error(`sync delete ${spec.field}`, error.message);
+    }
+  }
+
+  syncedSnapshot = structuredClone(read());
+}
+
+/** Load every row the signed-in student owns into the in-memory cache. */
+export async function loadUserData(userId: string, user: UserRow) {
+  const { supabase } = await import("@/integrations/supabase/client");
+  const next = empty();
+  next.session_user_id = userId;
+  next.users = [user];
+
+  await Promise.all(
+    SYNC_SPECS.map(async (spec) => {
+      const { data, error } = await supabase.from(spec.field).select("*");
+      if (error) throw new Error(error.message);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (next as any)[spec.field] = data ?? [];
+    }),
+  );
+
+  hydrate(next);
+  return next;
+}
+
