@@ -57,7 +57,10 @@ function FlashcardsPage() {
             className="mt-3 space-y-3"
             onSubmit={(e) => {
               e.preventDefault();
-              if (!deckName.trim()) return toast.error("Name the deck first.");
+              if (!deckName.trim()) {
+                toast.error("Name the deck first.");
+                return;
+              }
               const id = createDeck(user.id, deckName, deckSubject);
               setActiveDeck(id);
               setDeckName("");
