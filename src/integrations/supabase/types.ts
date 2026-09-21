@@ -14,7 +14,393 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      ai_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          title?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          mode: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content?: string
+          conversation_id: string
+          created_at?: string
+          id: string
+          mode?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          mode?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      flashcard_decks: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          subject: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          name?: string
+          subject?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          subject?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      flashcards: {
+        Row: {
+          back: string
+          confidence: string
+          deck_id: string
+          front: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          back?: string
+          confidence?: string
+          deck_id: string
+          front?: string
+          id: string
+          user_id: string
+        }
+        Update: {
+          back?: string
+          confidence?: string
+          deck_id?: string
+          front?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notes: {
+        Row: {
+          content: string
+          created_at: string
+          favorite: boolean
+          id: string
+          key_points: Json | null
+          subject: string
+          summary: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          favorite?: boolean
+          id: string
+          key_points?: Json | null
+          subject?: string
+          summary?: string | null
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          favorite?: boolean
+          id?: string
+          key_points?: Json | null
+          subject?: string
+          summary?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          kind: string
+          read: boolean
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          id: string
+          kind?: string
+          read?: boolean
+          title?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          read?: boolean
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_color: string
+          daily_hours: number
+          exams: string
+          goals: string
+          grade: string
+          name: string
+          onboarded: boolean
+          subjects: Json
+          user_id: string
+        }
+        Insert: {
+          avatar_color?: string
+          daily_hours?: number
+          exams?: string
+          goals?: string
+          grade?: string
+          name?: string
+          onboarded?: boolean
+          subjects?: Json
+          user_id: string
+        }
+        Update: {
+          avatar_color?: string
+          daily_hours?: number
+          exams?: string
+          goals?: string
+          grade?: string
+          name?: string
+          onboarded?: boolean
+          subjects?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
+      quiz_attempts: {
+        Row: {
+          answers: Json
+          id: string
+          quiz_id: string
+          score: number
+          taken_at: string
+          total: number
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          id: string
+          quiz_id: string
+          score?: number
+          taken_at?: string
+          total?: number
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          id?: string
+          quiz_id?: string
+          score?: number
+          taken_at?: string
+          total?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      quizzes: {
+        Row: {
+          created_at: string
+          difficulty: string
+          id: string
+          questions: Json
+          subject: string
+          topic: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          difficulty?: string
+          id: string
+          questions?: Json
+          subject?: string
+          topic?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          difficulty?: string
+          id?: string
+          questions?: Json
+          subject?: string
+          topic?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      study_sessions: {
+        Row: {
+          ended_at: string
+          id: string
+          kind: string
+          minutes: number
+          user_id: string
+        }
+        Insert: {
+          ended_at?: string
+          id: string
+          kind?: string
+          minutes?: number
+          user_id: string
+        }
+        Update: {
+          ended_at?: string
+          id?: string
+          kind?: string
+          minutes?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      study_tasks: {
+        Row: {
+          date: string
+          done: boolean
+          id: string
+          is_exam: boolean
+          minutes: number
+          priority: string
+          subject: string
+          time: string
+          title: string
+          topic: string
+          user_id: string
+        }
+        Insert: {
+          date?: string
+          done?: boolean
+          id: string
+          is_exam?: boolean
+          minutes?: number
+          priority?: string
+          subject?: string
+          time?: string
+          title?: string
+          topic?: string
+          user_id: string
+        }
+        Update: {
+          date?: string
+          done?: boolean
+          id?: string
+          is_exam?: boolean
+          minutes?: number
+          priority?: string
+          subject?: string
+          time?: string
+          title?: string
+          topic?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          history: Json
+          mode: string
+          plan: string
+          renews_at: string
+          started_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          history?: Json
+          mode?: string
+          plan?: string
+          renews_at?: string
+          started_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          history?: Json
+          mode?: string
+          plan?: string
+          renews_at?: string
+          started_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          notify_billing: boolean
+          notify_exams: boolean
+          notify_streak: boolean
+          notify_tasks: boolean
+          user_id: string
+        }
+        Insert: {
+          notify_billing?: boolean
+          notify_exams?: boolean
+          notify_streak?: boolean
+          notify_tasks?: boolean
+          user_id: string
+        }
+        Update: {
+          notify_billing?: boolean
+          notify_exams?: boolean
+          notify_streak?: boolean
+          notify_tasks?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
