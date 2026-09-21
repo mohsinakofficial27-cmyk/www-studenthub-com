@@ -174,7 +174,10 @@ function FlashcardsPage() {
                 className="mt-5 grid gap-3 sm:grid-cols-[1fr_1fr_auto]"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  if (!front.trim() || !back.trim()) return toast.error("Fill in both sides of the card.");
+                  if (!front.trim() || !back.trim()) {
+                    toast.error("Fill in both sides of the card.");
+                    return;
+                  }
                   createCard(user.id, deck.id, front.trim(), back.trim());
                   setFront("");
                   setBack("");
