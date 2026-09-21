@@ -65,6 +65,7 @@ function FeaturesPage() {
     <SitePage>
       <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
         <SectionHeading
+          as="h1"
           eyebrow="Features"
           title="Built around how students actually study"
           subtitle="Each tool saves its results to your account, so your dashboard and progress reflect real work."
