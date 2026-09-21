@@ -5,6 +5,7 @@ import {
   hashPassword,
   mutate,
   read,
+  secureToken,
   subscribe,
   todayISO,
   uid,
@@ -124,7 +125,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!found) throw new Error("No account found with that email.");
     // Without an email provider connected we surface the token in the UI
     // instead of sending a message. Swap this for a server-side email send.
-    const token = `${found.id}.${uid().slice(0, 6)}`;
+    // The token must be unguessable: it is the only thing standing between an
+    // attacker and this account, so it comes from a cryptographic random
+    // source (never uid()/Math.random()).
+    const token = secureToken();
     if (typeof window !== "undefined") window.sessionStorage.setItem(`reset.${token}`, found.id);
     return token;
   }, []);

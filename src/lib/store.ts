@@ -248,6 +248,22 @@ export function uid() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
+/**
+ * Cryptographically-random token for anything that grants access
+ * (password reset, invites). Never use `uid()` for those — it is
+ * Math.random()-based and therefore guessable.
+ */
+export function secureToken(bytes = 32) {
+  if (isBrowser() && window.crypto?.getRandomValues) {
+    const buf = new Uint8Array(bytes);
+    window.crypto.getRandomValues(buf);
+    return Array.from(buf)
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+  }
+  throw new Error("A secure random source is not available in this environment.");
+}
+
 export function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
