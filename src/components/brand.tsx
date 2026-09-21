@@ -18,11 +18,13 @@ export function SectionHeading({
   title,
   subtitle,
   className,
+  as: Heading = "h2",
 }: {
   eyebrow?: string;
   title: string;
   subtitle?: string;
   className?: string;
+  as?: "h1" | "h2";
 }) {
   return (
     <div className={cn("max-w-2xl", className)}>
@@ -32,7 +34,7 @@ export function SectionHeading({
           {eyebrow}
         </span>
       ) : null}
-      <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">{title}</h2>
+      <Heading className="mt-4 text-3xl font-semibold sm:text-4xl">{title}</Heading>
       {subtitle ? <p className="mt-3 text-muted-foreground">{subtitle}</p> : null}
     </div>
   );

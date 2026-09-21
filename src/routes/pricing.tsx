@@ -43,6 +43,7 @@ function PricingPage() {
     <SitePage>
       <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
         <SectionHeading
+          as="h1"
           eyebrow="Pricing"
           title="Plans that fit a student budget"
           subtitle="Start free. Upgrade when you need higher AI limits and the advanced study tools."

@@ -35,6 +35,7 @@ function StudyToolsPage() {
     <SitePage>
       <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
         <SectionHeading
+          as="h1"
           eyebrow="Study tools"
           title="Open a tool and get to work"
           subtitle="Sign in to use these — everything you create is saved to your own account."

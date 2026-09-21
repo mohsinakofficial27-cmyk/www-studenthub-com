@@ -20,7 +20,7 @@ function AboutPage() {
   return (
     <SitePage>
       <section className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
-        <SectionHeading eyebrow="About" title="One workspace instead of six tabs" />
+        <SectionHeading as="h1" eyebrow="About" title="One workspace instead of six tabs" />
         <div className="mt-8 space-y-5 text-muted-foreground">
           <p>
             Most students juggle a notes app, a calendar, a timer, a flashcard app and a chat assistant that knows
