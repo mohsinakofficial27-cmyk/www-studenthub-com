@@ -19,9 +19,13 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as StudyToolsRouteImport } from './routes/study-tools'
+import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedPlannerRouteImport } from './routes/_authenticated/planner'
 import { Route as AuthenticatedPomodoroRouteImport } from './routes/_authenticated/pomodoro'
+import { Route as AuthenticatedQuizzesRouteImport } from './routes/_authenticated/quizzes'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -72,9 +76,19 @@ const StudyToolsRoute = StudyToolsRouteImport.update({
   path: '/study-tools',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAssistantRoute = AuthenticatedAssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedNotesRoute = AuthenticatedNotesRouteImport.update({
+  id: '/notes',
+  path: '/notes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
@@ -82,9 +96,19 @@ const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPlannerRoute = AuthenticatedPlannerRouteImport.update({
+  id: '/planner',
+  path: '/planner',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPomodoroRoute = AuthenticatedPomodoroRouteImport.update({
   id: '/pomodoro',
   path: '/pomodoro',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedQuizzesRoute = AuthenticatedQuizzesRouteImport.update({
+  id: '/quizzes',
+  path: '/quizzes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
@@ -98,9 +122,13 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/study-tools': typeof StudyToolsRoute
+  '/assistant': typeof AuthenticatedAssistantRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/notes': typeof AuthenticatedNotesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/planner': typeof AuthenticatedPlannerRoute
   '/pomodoro': typeof AuthenticatedPomodoroRoute
+  '/quizzes': typeof AuthenticatedQuizzesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -112,9 +140,13 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/study-tools': typeof StudyToolsRoute
+  '/assistant': typeof AuthenticatedAssistantRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/notes': typeof AuthenticatedNotesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/planner': typeof AuthenticatedPlannerRoute
   '/pomodoro': typeof AuthenticatedPomodoroRoute
+  '/quizzes': typeof AuthenticatedQuizzesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -128,9 +160,13 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/study-tools': typeof StudyToolsRoute
+  '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/_authenticated/planner': typeof AuthenticatedPlannerRoute
   '/_authenticated/pomodoro': typeof AuthenticatedPomodoroRoute
+  '/_authenticated/quizzes': typeof AuthenticatedQuizzesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -144,9 +180,13 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/study-tools'
+    | '/assistant'
     | '/dashboard'
+    | '/notes'
     | '/onboarding'
+    | '/planner'
     | '/pomodoro'
+    | '/quizzes'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -158,9 +198,13 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/study-tools'
+    | '/assistant'
     | '/dashboard'
+    | '/notes'
     | '/onboarding'
+    | '/planner'
     | '/pomodoro'
+    | '/quizzes'
   id:
     | '__root__'
     | '/'
@@ -173,9 +217,13 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/study-tools'
+    | '/_authenticated/assistant'
     | '/_authenticated/dashboard'
+    | '/_authenticated/notes'
     | '/_authenticated/onboarding'
+    | '/_authenticated/planner'
     | '/_authenticated/pomodoro'
+    | '/_authenticated/quizzes'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -263,11 +311,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudyToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/assistant': {
+      id: '/_authenticated/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AuthenticatedAssistantRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notes': {
+      id: '/_authenticated/notes'
+      path: '/notes'
+      fullPath: '/notes'
+      preLoaderRoute: typeof AuthenticatedNotesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/onboarding': {
@@ -277,6 +339,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/planner': {
+      id: '/_authenticated/planner'
+      path: '/planner'
+      fullPath: '/planner'
+      preLoaderRoute: typeof AuthenticatedPlannerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/pomodoro': {
       id: '/_authenticated/pomodoro'
       path: '/pomodoro'
@@ -284,19 +353,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPomodoroRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/quizzes': {
+      id: '/_authenticated/quizzes'
+      path: '/quizzes'
+      fullPath: '/quizzes'
+      preLoaderRoute: typeof AuthenticatedQuizzesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
+  AuthenticatedPlannerRoute: typeof AuthenticatedPlannerRoute
   AuthenticatedPomodoroRoute: typeof AuthenticatedPomodoroRoute
+  AuthenticatedQuizzesRoute: typeof AuthenticatedQuizzesRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedNotesRoute: AuthenticatedNotesRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
+  AuthenticatedPlannerRoute: AuthenticatedPlannerRoute,
   AuthenticatedPomodoroRoute: AuthenticatedPomodoroRoute,
+  AuthenticatedQuizzesRoute: AuthenticatedQuizzesRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
