@@ -60,7 +60,7 @@ export const changeSubscriptionPlan = createServerFn({ method: "POST" })
       mode: paymentsConfigured() ? "live" : "test",
       started_at: todayISO(),
       renews_at: data.plan === "free" ? "" : renew.toISOString().slice(0, 10),
-      history: (existing?.history as unknown[] | null) ?? [],
+      history: existing?.history ?? [],
     };
 
     const { data: saved, error } = await admin
