@@ -319,6 +319,8 @@ async function flushSync() {
   const next = read();
   if (!prev || !next.session_user_id) return;
   const { supabase } = await import("@/integrations/supabase/client");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any;
 
   for (const spec of SYNC_SPECS) {
     const rows = next[spec.field] as unknown as Record<string, unknown>[];
@@ -333,11 +335,11 @@ async function flushSync() {
       .filter((k) => !rows.some((r) => String(r[spec.key]) === k));
 
     if (changed.length) {
-      const { error } = await supabase.from(spec.field).upsert(changed, { onConflict: spec.key });
+      const { error } = await db.from(spec.field).upsert(changed, { onConflict: spec.key });
       if (error) console.error(`sync ${spec.field}`, error.message);
     }
     if (removed.length) {
-      const { error } = await supabase.from(spec.field).delete().in(spec.key, removed);
+      const { error } = await db.from(spec.field).delete().in(spec.key, removed);
       if (error) console.error(`sync delete ${spec.field}`, error.message);
     }
   }
@@ -348,13 +350,15 @@ async function flushSync() {
 /** Load every row the signed-in student owns into the in-memory cache. */
 export async function loadUserData(userId: string, user: UserRow) {
   const { supabase } = await import("@/integrations/supabase/client");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any;
   const next = empty();
   next.session_user_id = userId;
   next.users = [user];
 
   await Promise.all(
-    SYNC_SPECS.map(async (spec) => {
-      const { data, error } = await supabase.from(spec.field).select("*");
+    READ_SPECS.map(async (spec) => {
+      const { data, error } = await db.from(spec.field).select("*");
       if (error) throw new Error(error.message);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (next as any)[spec.field] = data ?? [];
@@ -364,4 +368,5 @@ export async function loadUserData(userId: string, user: UserRow) {
   hydrate(next);
   return next;
 }
+
 
