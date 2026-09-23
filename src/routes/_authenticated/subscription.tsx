@@ -105,24 +105,14 @@ function SubscriptionPage() {
                 key={p.id}
                 variant={p.id === "free" ? "outline" : "default"}
                 className={p.id === "free" ? "" : "bg-brand text-brand-foreground hover:bg-brand/90"}
-                onClick={() => {
-                  changePlan(user.id, p.id);
-                  toast.success(
-                    p.id === "free" ? "Moved to the Free plan." : `Switched to ${p.name} in test mode.`,
-                  );
-                }}
+                onClick={() => switchPlan(p.id, p.name)}
               >
                 {p.id === "free" ? "Switch to Free" : `Upgrade to ${p.name}`}
               </Button>
             ))}
             {sub && sub.plan !== "free" && sub.status === "active" ? (
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  cancelPlan(user.id);
-                  toast.success("Subscription canceled.");
-                }}
-              >
+              <Button variant="ghost" onClick={cancel}>
+
                 Cancel subscription
               </Button>
             ) : null}
