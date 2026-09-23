@@ -30,18 +30,30 @@ export const Route = createFileRoute("/pricing")({
 function PricingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const requestPlan = useServerFn(changeSubscriptionPlan);
 
   const choose = (planId: "free" | "student" | "pro") => {
     if (!user) {
       void navigate({ to: "/signup" });
       return;
     }
-    changePlan(user.id, planId);
-    toast.success(
-      planId === "free" ? "You're on the Free plan." : "Plan updated in test mode — no real payment was taken.",
-    );
-    void navigate({ to: "/subscription" });
+    void (async () => {
+      try {
+        const saved = (await requestPlan({ data: { plan: planId } })) as unknown as SubscriptionRow;
+        applySubscription(user.id, saved);
+        recordBillingNotice(
+          user.id,
+          planId === "free" ? "Moved to the Free plan" : "Plan updated",
+          planId === "free" ? "You are on the Free plan." : "Your plan was updated.",
+        );
+        toast.success(planId === "free" ? "You're on the Free plan." : "Plan updated.");
+        void navigate({ to: "/subscription" });
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Could not change your plan.");
+      }
+    })();
   };
+
 
   return (
     <SitePage>
