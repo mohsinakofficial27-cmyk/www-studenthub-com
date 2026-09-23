@@ -237,6 +237,25 @@ export function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
+/** SHA-256 hash — passwords are never stored or compared in plaintext. */
+export async function hashPassword(password: string) {
+  const bytes = new TextEncoder().encode(password);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+/** Unguessable token from a cryptographic random source. */
+export function secureToken() {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+
 /* ------------------------------------------------------------------ *
  * Cloud sync
  *
@@ -247,9 +266,12 @@ export function todayISO() {
 
 type SyncSpec = { field: keyof Database; key: "id" | "user_id" };
 
+// Tables the browser is allowed to write. `subscriptions` is deliberately
+// absent: plan entitlement is decided server-side only (see
+// src/lib/subscription.functions.ts) and the database revokes write access to
+// it from signed-in users.
 const SYNC_SPECS: SyncSpec[] = [
   { field: "profiles", key: "user_id" },
-  { field: "subscriptions", key: "user_id" },
   { field: "user_settings", key: "user_id" },
   { field: "notes", key: "id" },
   { field: "quizzes", key: "id" },
@@ -262,6 +284,10 @@ const SYNC_SPECS: SyncSpec[] = [
   { field: "ai_messages", key: "id" },
   { field: "notifications", key: "id" },
 ];
+
+/** Tables read on load — includes the read-only subscription row. */
+const READ_SPECS: SyncSpec[] = [...SYNC_SPECS, { field: "subscriptions", key: "user_id" }];
+
 
 let syncedSnapshot: Database | null = null;
 let syncTimer: ReturnType<typeof setTimeout> | null = null;
@@ -293,6 +319,8 @@ async function flushSync() {
   const next = read();
   if (!prev || !next.session_user_id) return;
   const { supabase } = await import("@/integrations/supabase/client");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any;
 
   for (const spec of SYNC_SPECS) {
     const rows = next[spec.field] as unknown as Record<string, unknown>[];
@@ -307,11 +335,11 @@ async function flushSync() {
       .filter((k) => !rows.some((r) => String(r[spec.key]) === k));
 
     if (changed.length) {
-      const { error } = await supabase.from(spec.field).upsert(changed, { onConflict: spec.key });
+      const { error } = await db.from(spec.field).upsert(changed, { onConflict: spec.key });
       if (error) console.error(`sync ${spec.field}`, error.message);
     }
     if (removed.length) {
-      const { error } = await supabase.from(spec.field).delete().in(spec.key, removed);
+      const { error } = await db.from(spec.field).delete().in(spec.key, removed);
       if (error) console.error(`sync delete ${spec.field}`, error.message);
     }
   }
@@ -322,13 +350,15 @@ async function flushSync() {
 /** Load every row the signed-in student owns into the in-memory cache. */
 export async function loadUserData(userId: string, user: UserRow) {
   const { supabase } = await import("@/integrations/supabase/client");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any;
   const next = empty();
   next.session_user_id = userId;
   next.users = [user];
 
   await Promise.all(
-    SYNC_SPECS.map(async (spec) => {
-      const { data, error } = await supabase.from(spec.field).select("*");
+    READ_SPECS.map(async (spec) => {
+      const { data, error } = await db.from(spec.field).select("*");
       if (error) throw new Error(error.message);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (next as any)[spec.field] = data ?? [];
@@ -338,4 +368,5 @@ export async function loadUserData(userId: string, user: UserRow) {
   hydrate(next);
   return next;
 }
+
 

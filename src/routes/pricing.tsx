@@ -1,4 +1,5 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
 
@@ -7,9 +8,12 @@ import { InfoNote } from "@/components/empty-state";
 import { SitePage } from "@/components/site-layout";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
-import { changePlan } from "@/lib/data";
+import { applySubscription, recordBillingNotice } from "@/lib/data";
 import { PLANS } from "@/lib/plans";
+import type { SubscriptionRow } from "@/lib/store";
+import { changeSubscriptionPlan } from "@/lib/subscription.functions";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -26,18 +30,30 @@ export const Route = createFileRoute("/pricing")({
 function PricingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const requestPlan = useServerFn(changeSubscriptionPlan);
 
   const choose = (planId: "free" | "student" | "pro") => {
     if (!user) {
       void navigate({ to: "/signup" });
       return;
     }
-    changePlan(user.id, planId);
-    toast.success(
-      planId === "free" ? "You're on the Free plan." : "Plan updated in test mode — no real payment was taken.",
-    );
-    void navigate({ to: "/subscription" });
+    void (async () => {
+      try {
+        const saved = (await requestPlan({ data: { plan: planId } })) as unknown as SubscriptionRow;
+        applySubscription(user.id, saved);
+        recordBillingNotice(
+          user.id,
+          planId === "free" ? "Moved to the Free plan" : "Plan updated",
+          planId === "free" ? "You are on the Free plan." : "Your plan was updated.",
+        );
+        toast.success(planId === "free" ? "You're on the Free plan." : "Plan updated.");
+        void navigate({ to: "/subscription" });
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Could not change your plan.");
+      }
+    })();
   };
+
 
   return (
     <SitePage>
