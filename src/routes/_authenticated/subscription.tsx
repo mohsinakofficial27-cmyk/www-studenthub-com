@@ -1,12 +1,16 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
 import { InfoNote } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { useAuth, useDb } from "@/lib/auth";
-import { cancelPlan, changePlan } from "@/lib/data";
+import { applySubscription, recordBillingNotice } from "@/lib/data";
 import { PLANS } from "@/lib/plans";
+import type { SubscriptionRow } from "@/lib/store";
+import { cancelSubscription, changeSubscriptionPlan } from "@/lib/subscription.functions";
+
 
 export const Route = createFileRoute("/_authenticated/subscription")({
   head: () => ({
