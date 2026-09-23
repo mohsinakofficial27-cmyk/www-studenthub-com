@@ -27,16 +27,53 @@ export const Route = createFileRoute("/_authenticated/subscription")({
 function SubscriptionPage() {
   const { user } = useAuth();
   const db = useDb();
+  const requestPlan = useServerFn(changeSubscriptionPlan);
+  const requestCancel = useServerFn(cancelSubscription);
   if (!user) return null;
   const sub = db.subscriptions.find((s) => s.user_id === user.id);
   const plan = PLANS.find((p) => p.id === (sub?.plan ?? "free"));
 
+  const switchPlan = (planId: "free" | "student" | "pro", label: string) => {
+    void (async () => {
+      try {
+        const saved = (await requestPlan({ data: { plan: planId } })) as unknown as SubscriptionRow;
+        applySubscription(user.id, saved);
+        recordBillingNotice(
+          user.id,
+          planId === "free" ? "Moved to the Free plan" : `Switched to ${label}`,
+          planId === "free" ? "You are back on the Free plan." : "Your plan was updated.",
+        );
+        toast.success(planId === "free" ? "Moved to the Free plan." : `Switched to ${label}.`);
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Could not change your plan.");
+      }
+    })();
+  };
+
+  const cancel = () => {
+    void (async () => {
+      try {
+        const saved = (await requestCancel()) as unknown as SubscriptionRow;
+        applySubscription(user.id, saved);
+        recordBillingNotice(
+          user.id,
+          "Subscription canceled",
+          "Your plan stays active until the end of the billing period.",
+        );
+        toast.success("Subscription canceled.");
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Could not cancel your subscription.");
+      }
+    })();
+  };
+
   return (
     <AppShell title="Subscription" description="Your plan and billing details.">
       <InfoNote
-        title="Test mode — no real payments"
-        description="No payment provider is connected, so plan changes here are recorded as test charges and no money moves. Connecting a provider (with its secret key stored server-side) switches this same screen to live billing."
+        title="No payment provider connected"
+        description="Paid plans are granted by the server only after a verified payment, so upgrades stay unavailable until a payment provider is connected with its secret key stored server-side. Your plan can never be changed from the browser."
       />
+
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_340px]">
         <div className="panel p-5">
