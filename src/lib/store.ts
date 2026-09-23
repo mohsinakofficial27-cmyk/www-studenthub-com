@@ -266,9 +266,12 @@ export function secureToken() {
 
 type SyncSpec = { field: keyof Database; key: "id" | "user_id" };
 
+// Tables the browser is allowed to write. `subscriptions` is deliberately
+// absent: plan entitlement is decided server-side only (see
+// src/lib/subscription.functions.ts) and the database revokes write access to
+// it from signed-in users.
 const SYNC_SPECS: SyncSpec[] = [
   { field: "profiles", key: "user_id" },
-  { field: "subscriptions", key: "user_id" },
   { field: "user_settings", key: "user_id" },
   { field: "notes", key: "id" },
   { field: "quizzes", key: "id" },
@@ -281,6 +284,10 @@ const SYNC_SPECS: SyncSpec[] = [
   { field: "ai_messages", key: "id" },
   { field: "notifications", key: "id" },
 ];
+
+/** Tables read on load — includes the read-only subscription row. */
+const READ_SPECS: SyncSpec[] = [...SYNC_SPECS, { field: "subscriptions", key: "user_id" }];
+
 
 let syncedSnapshot: Database | null = null;
 let syncTimer: ReturnType<typeof setTimeout> | null = null;
