@@ -1,4 +1,5 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
 
@@ -7,9 +8,12 @@ import { InfoNote } from "@/components/empty-state";
 import { SitePage } from "@/components/site-layout";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
-import { changePlan } from "@/lib/data";
+import { applySubscription, recordBillingNotice } from "@/lib/data";
 import { PLANS } from "@/lib/plans";
+import type { SubscriptionRow } from "@/lib/store";
+import { changeSubscriptionPlan } from "@/lib/subscription.functions";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
