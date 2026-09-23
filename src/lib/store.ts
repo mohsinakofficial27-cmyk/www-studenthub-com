@@ -237,6 +237,25 @@ export function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
+/** SHA-256 hash — passwords are never stored or compared in plaintext. */
+export async function hashPassword(password: string) {
+  const bytes = new TextEncoder().encode(password);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+/** Unguessable token from a cryptographic random source. */
+export function secureToken() {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+
 /* ------------------------------------------------------------------ *
  * Cloud sync
  *
