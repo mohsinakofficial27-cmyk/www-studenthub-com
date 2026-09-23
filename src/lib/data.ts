@@ -184,58 +184,33 @@ export function logSession(userId: string, minutes: number, kind: "focus" | "bre
 
 /* ---------------- subscription ---------------- */
 
-const PRICES: Record<PlanId, number> = { free: 0, student: 10, pro: 20 };
-
-export function changePlan(userId: string, plan: PlanId) {
+/**
+ * Plan entitlement is decided on the server (src/lib/subscription.functions.ts)
+ * and the database blocks client writes to `subscriptions`. These helpers only
+ * mirror a server-returned row into the in-memory store for display.
+ */
+export function applySubscription(userId: string, row: SubscriptionRow) {
   mutate((d) => {
-    const sub = d.subscriptions.find((s) => s.user_id === userId);
-    if (!sub) return;
-    sub.plan = plan;
-    sub.status = "active";
-    sub.started_at = todayISO();
-    const renew = new Date();
-    renew.setMonth(renew.getMonth() + 1);
-    sub.renews_at = plan === "free" ? "" : renew.toISOString().slice(0, 10);
-    if (plan !== "free") {
-      sub.history.unshift({
-        id: uid(),
-        date: todayISO(),
-        description: `${plan === "pro" ? "Pro" : "Student"} plan — test mode`,
-        amount: PRICES[plan],
-        status: "Test charge",
-      });
-    }
+    const idx = d.subscriptions.findIndex((s) => s.user_id === userId);
+    if (idx === -1) d.subscriptions.push(row);
+    else d.subscriptions[idx] = row;
+  });
+}
+
+export function recordBillingNotice(userId: string, title: string, body: string) {
+  mutate((d) => {
     d.notifications.unshift({
       id: uid(),
       user_id: userId,
       kind: "billing",
-      title: plan === "free" ? "Subscription canceled" : `Upgraded to ${plan === "pro" ? "Pro" : "Student"}`,
-      body:
-        plan === "free"
-          ? "You are back on the Free plan."
-          : "Test mode: no real payment was taken. Connect a payment provider to go live.",
+      title,
+      body,
       created_at: new Date().toISOString(),
       read: false,
     });
   });
 }
 
-export function cancelPlan(userId: string) {
-  mutate((d) => {
-    const sub = d.subscriptions.find((s) => s.user_id === userId);
-    if (!sub) return;
-    sub.status = "canceled";
-    d.notifications.unshift({
-      id: uid(),
-      user_id: userId,
-      kind: "billing",
-      title: "Subscription canceled",
-      body: "Your plan stays active until the end of the billing period.",
-      created_at: new Date().toISOString(),
-      read: false,
-    });
-  });
-}
 
 /* ---------------- derived stats ---------------- */
 
