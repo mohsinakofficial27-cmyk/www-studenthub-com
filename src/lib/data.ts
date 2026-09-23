@@ -7,10 +7,11 @@ import {
   type Database,
   type DeckRow,
   type NoteRow,
-  type PlanId,
   type QuizRow,
+  type SubscriptionRow,
   type TaskRow,
 } from "./store";
+
 
 /* ---------------- notes ---------------- */
 
