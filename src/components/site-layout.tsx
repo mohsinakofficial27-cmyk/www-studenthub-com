@@ -95,37 +95,36 @@ export function SiteHeader() {
   );
 }
 
+const FOOTER_COLS = [
+  { title: "Product", links: [{ to: "/features", label: "Features" }, { to: "/study-tools", label: "Study Tools" }, { to: "/pricing", label: "Pricing" }] },
+  { title: "Company", links: [{ to: "/about", label: "About" }, { to: "/dashboard", label: "Dashboard" }] },
+  { title: "Account", links: [{ to: "/login", label: "Log in" }, { to: "/signup", label: "Sign up" }, { to: "/forgot-password", label: "Reset password" }] },
+] as const;
+
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-card">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:px-6 md:flex-row md:items-center md:justify-between">
+    <footer className="bg-navy text-navy-foreground">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
         <div>
           <Logo />
-          <p className="mt-3 max-w-xs text-sm text-muted-foreground">Everything You Need to Study Smarter.</p>
+          <p className="mt-4 max-w-xs text-sm text-navy-foreground/65">Everything You Need to Study Smarter.</p>
         </div>
-        <div className="grid grid-cols-2 gap-x-10 gap-y-2 text-sm text-muted-foreground sm:grid-cols-3">
-          <Link to="/features" className="hover:text-foreground">
-            Features
-          </Link>
-          <Link to="/study-tools" className="hover:text-foreground">
-            Study Tools
-          </Link>
-          <Link to="/pricing" className="hover:text-foreground">
-            Pricing
-          </Link>
-          <Link to="/about" className="hover:text-foreground">
-            About
-          </Link>
-          <Link to="/login" className="hover:text-foreground">
-            Login
-          </Link>
-          <Link to="/signup" className="hover:text-foreground">
-            Get Started
-          </Link>
-        </div>
+        {FOOTER_COLS.map((col) => (
+          <div key={col.title}>
+            <p className="text-sm font-semibold">{col.title}</p>
+            <div className="mt-4 flex flex-col gap-2.5 text-sm text-navy-foreground/65">
+              {col.links.map((l) => (
+                <Link key={l.to} to={l.to} className="hover:text-navy-foreground">
+                  {l.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
-      <div className="border-t border-border py-4 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Student Hub. Built for students.
+      <div className="mx-auto flex max-w-6xl justify-between border-t border-navy-foreground/10 px-4 py-5 text-xs text-navy-foreground/55 sm:px-6">
+        <span>© {new Date().getFullYear()} Student Hub</span>
+        <span>Built for students.</span>
       </div>
     </footer>
   );

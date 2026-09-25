@@ -1,20 +1,27 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   ArrowRight,
+  BarChart3,
   BookOpen,
   CalendarDays,
-  CheckCircle2,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  Clock,
   Layers,
   ListChecks,
   MessageSquare,
+  Play,
+  Quote,
+  Target,
   Timer,
-  TrendingUp,
 } from "lucide-react";
+import { useState } from "react";
 
-import { SectionHeading } from "@/components/brand";
 import { SitePage } from "@/components/site-layout";
 import { Button } from "@/components/ui/button";
 import { PLANS } from "@/lib/plans";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -22,214 +29,367 @@ export const Route = createFileRoute("/")({
       { title: "Student Hub — Study Smarter. Achieve More." },
       {
         name: "description",
-        content:
-          "AI-powered study tools, notes, quizzes, planning and productivity in one platform built for students.",
+        content: "AI-powered study tools, notes, quizzes, planning and productivity in one platform built for students.",
       },
       { property: "og:title", content: "Student Hub — Study Smarter. Achieve More." },
       {
         property: "og:description",
         content: "Notes, quizzes, flashcards, planning and focus sessions in one student platform.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Home,
 });
 
-const FEATURES = [
-  { icon: MessageSquare, title: "AI Study Assistant", body: "Ask questions and work through hard ideas step by step." },
-  { icon: BookOpen, title: "AI Notes", body: "Write, summarise and turn notes into study material." },
-  { icon: ListChecks, title: "Quiz Generator", body: "Multiple-choice sets by subject, topic and difficulty." },
-  { icon: CalendarDays, title: "Study Planner", body: "Schedule subjects, tasks and exams, then track completion." },
-  { icon: Layers, title: "Flashcards", body: "Build decks, practise, and rate each card easy to hard." },
-  { icon: Timer, title: "Pomodoro Timer", body: "Focus and break sessions, logged into your study history." },
+const CATEGORIES = {
+  STEM: [
+    { icon: MessageSquare, title: "AI Study Assistant", body: "Work through equations and proofs step by step.", tone: "bg-brand" },
+    { icon: ListChecks, title: "Quiz Generator", body: "Practice sets by topic and difficulty, with explanations.", tone: "bg-coral" },
+    { icon: Layers, title: "Flashcards", body: "Formulas and definitions, rated easy to hard.", tone: "bg-navy" },
+  ],
+  Humanities: [
+    { icon: BookOpen, title: "AI Notes", body: "Summarise readings into key points and questions.", tone: "bg-brand" },
+    { icon: MessageSquare, title: "Essay thinking partner", body: "Explain arguments simply before you write.", tone: "bg-coral" },
+    { icon: Layers, title: "Flashcards", body: "Dates, terms and thinkers, practised daily.", tone: "bg-navy" },
+  ],
+  Business: [
+    { icon: CalendarDays, title: "Study Planner", body: "Tasks, deadlines and exams with a clear calendar.", tone: "bg-brand" },
+    { icon: ListChecks, title: "Quiz Generator", body: "Case-study questions to test your understanding.", tone: "bg-coral" },
+    { icon: Timer, title: "Pomodoro Timer", body: "Focused sessions logged into your study history.", tone: "bg-navy" },
+  ],
+} as const;
+type Cat = keyof typeof CATEGORIES;
+
+const STEPS = [
+  { title: "Capture", body: "Save a note, task or exam the moment it appears." },
+  { title: "Focus", body: "Pick the right next action and start a Pomodoro." },
+  { title: "Reflect", body: "Watch your hours, scores and streak grow." },
 ];
 
+const TESTIMONIALS = [
+  { quote: "I finally know exactly what to do when I sit down to study.", name: "Maya R.", meta: "Psychology · Year 2", tone: "bg-brand-soft" },
+  { quote: "The progress view keeps me honest without making me feel behind.", name: "Omar K.", meta: "Computer Science · Year 3", tone: "bg-card" },
+  { quote: "Turning lecture notes into quiz questions made revision so much more active.", name: "Lena P.", meta: "Biomedical Science · Year 1", tone: "bg-brand-soft" },
+];
+
+const FAQ = [
+  { q: "Is Student Hub free for students?", a: "Yes. The Free plan includes the core tools — notes, planner, Pomodoro and limited AI use — with no card required." },
+  { q: "Can I use it for any course?", a: "Yes. Subjects, decks and tasks are all yours to name, so it works for any course or exam." },
+  { q: "Does the AI Assistant write assignments for me?", a: "No. It explains ideas, breaks problems into steps and quizzes you — it's built to help you learn." },
+  { q: "Can I cancel a paid plan anytime?", a: "Yes. You can cancel from the Subscription page at any time." },
+];
+
+function Eyebrow({ children, className }: { children: string; className?: string }) {
+  return <p className={cn("text-xs font-bold uppercase tracking-[0.12em] text-brand", className)}>{children}</p>;
+}
+
 function Home() {
+  const [cat, setCat] = useState<Cat>("STEM");
+  const [open, setOpen] = useState<number | null>(0);
+
   return (
     <SitePage>
       {/* Hero */}
-      <section className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-14 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:py-20">
-        <div className="rise">
-          <span className="inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1 text-xs font-medium text-accent-foreground">
-            <span className="size-1.5 rounded-full bg-brand" />
-            Everything You Need to Study Smarter
-          </span>
-          <h1 className="mt-5 text-5xl font-semibold leading-[1.05] text-balance sm:text-6xl">
-            Study Smarter. Achieve More.
-          </h1>
-          <p className="mt-5 max-w-lg text-lg text-muted-foreground">
-            Student Hub brings AI-powered study tools, notes, quizzes, planning and productivity into one simple
-            platform.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Button asChild size="lg" className="bg-brand text-brand-foreground hover:bg-brand/90">
-              <Link to="/signup">Start for Free</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link to="/features">Explore Features</Link>
-            </Button>
-          </div>
-          <p className="mt-4 text-xs text-muted-foreground">Free plan, no card required.</p>
-        </div>
-
-        {/* Dashboard preview */}
-        <div className="rise panel p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted-foreground">Your dashboard</p>
-              <p className="font-display text-xl font-semibold">Today at a glance</p>
-            </div>
-            <span className="rounded-full bg-brand-soft px-2.5 py-1 text-xs font-medium text-accent-foreground">
-              Study streak
+      <section className="grid-bg">
+        <div className="mx-auto grid max-w-6xl items-center gap-14 px-4 py-16 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:py-24">
+          <div className="rise">
+            <span className="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand-soft px-3 py-1 text-xs font-semibold text-accent-foreground">
+              <span className="size-1.5 rounded-full bg-coral" />
+              Everything You Need to Study Smarter
             </span>
-          </div>
-
-          <div className="mt-5 grid grid-cols-3 gap-3">
-            {[
-              { label: "Today's progress", value: "68%" },
-              { label: "Study time", value: "2h 40m" },
-              { label: "Quiz average", value: "82%" },
-            ].map((s) => (
-              <div key={s.label} className="rounded-xl bg-surface p-3">
-                <p className="text-xs text-muted-foreground">{s.label}</p>
-                <p className="mt-1 font-display text-xl font-semibold">{s.value}</p>
-              </div>
-            ))}
-          </div>
-
-          <p className="mt-5 text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Today's tasks</p>
-          <div className="mt-2 space-y-1.5">
-            {[
-              { label: "Mathematics — integration", done: true },
-              { label: "English — essay outline", done: true },
-              { label: "Science — lab review", done: false },
-            ].map((t) => (
-              <div key={t.label} className="flex items-center gap-3 rounded-xl bg-surface px-3 py-2.5">
-                <CheckCircle2 className={t.done ? "size-4 text-brand" : "size-4 text-muted-foreground/40"} />
-                <span className="text-sm">{t.label}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <div className="rounded-xl bg-primary p-3 text-primary-foreground">
-              <p className="text-[11px] opacity-70">AI Assistant</p>
-              <p className="mt-1 text-sm leading-snug">“Explain the chain rule step by step.”</p>
+            <h1 className="mt-6 text-5xl font-bold leading-[1.02] sm:text-7xl">
+              Study Smarter.
+              <br />
+              <span className="text-brand">Achieve More.</span>
+            </h1>
+            <p className="mt-6 max-w-lg text-lg text-muted-foreground">
+              Student Hub brings AI-powered study tools, notes, quizzes, planning and productivity into one simple
+              platform.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button asChild size="lg" className="h-12 rounded-xl bg-brand px-6 text-brand-foreground shadow-lg shadow-brand/25 hover:bg-brand/90">
+                <Link to="/signup">
+                  Start for Free <ArrowRight className="ml-1 size-4" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="h-12 rounded-xl bg-card px-6">
+                <Link to="/features">
+                  <Play className="mr-1 size-4" /> Explore Features
+                </Link>
+              </Button>
             </div>
-            <div className="rounded-xl bg-brand-soft p-3">
-              <p className="text-[11px] text-accent-foreground/70">Upcoming exam</p>
-              <p className="mt-1 text-sm font-medium">Calculus II</p>
-              <p className="font-mono text-xs text-muted-foreground">in 12 days</p>
+            <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
+              {["No credit card", "Set up in 2 minutes", "Cancel anytime"].map((t) => (
+                <span key={t} className="flex items-center gap-1.5">
+                  <Check className="size-4 text-success" /> {t}
+                </span>
+              ))}
             </div>
           </div>
-          <p className="mt-4 text-[11px] text-muted-foreground">
-            Example view. Your own dashboard starts empty and fills up as you study.
-          </p>
+
+          {/* Preview card */}
+          <div className="rise relative">
+            <div className="absolute -right-4 top-6 hidden h-40 w-24 rotate-6 rounded-3xl bg-coral/20 sm:block" />
+            <div className="absolute -bottom-5 -left-4 hidden h-28 w-28 -rotate-6 rounded-3xl bg-sun/30 sm:block" />
+            <div className="card-soft relative p-5 sm:p-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase text-brand">Example dashboard</p>
+                  <p className="mt-1 font-display text-xl font-semibold">Good morning, Aisha</p>
+                </div>
+                <span className="grid size-10 place-items-center rounded-full bg-navy text-sm font-semibold text-navy-foreground">AK</span>
+              </div>
+              <div className="mt-5 grid grid-cols-3 gap-3">
+                {[
+                  { icon: Check, v: "4", l: "Tasks today" },
+                  { icon: Clock, v: "2h 20m", l: "Study time" },
+                  { icon: Target, v: "72%", l: "Weekly goal" },
+                ].map(({ icon: I, v, l }) => (
+                  <div key={l} className="rounded-2xl border border-border p-3">
+                    <I className="size-4 text-brand" />
+                    <p className="mt-3 font-display text-lg font-semibold sm:text-xl">{v}</p>
+                    <p className="text-xs text-muted-foreground">{l}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 rounded-2xl bg-navy p-4 text-navy-foreground">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs opacity-70">Next up</p>
+                  <span className="rounded-full bg-sun px-2 py-0.5 font-mono text-xs font-semibold text-sun-foreground">10:30</span>
+                </div>
+                <p className="mt-1 font-display text-lg font-semibold">Calculus II</p>
+                <p className="text-sm opacity-70">Integration · Chapter 6</p>
+                <div className="mt-3 h-1.5 rounded-full bg-navy-foreground/15">
+                  <div className="h-full w-3/5 rounded-full bg-coral" />
+                </div>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="rounded-2xl bg-brand-soft p-4">
+                  <CalendarDays className="size-4 text-brand" />
+                  <p className="mt-3 text-sm font-semibold">3 exams this month</p>
+                </div>
+                <div className="rounded-2xl bg-coral/10 p-4">
+                  <BarChart3 className="size-4 text-coral" />
+                  <p className="mt-3 text-sm font-semibold">8 day study streak</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
+
+      {/* Category tabs */}
+      <div className="bg-navy text-navy-foreground">
+        <div className="mx-auto flex max-w-6xl items-center gap-2 overflow-x-auto px-4 py-3 sm:justify-center sm:px-6">
+          <span className="mr-3 hidden shrink-0 text-sm font-semibold sm:inline">Built for every kind of learner</span>
+          {(Object.keys(CATEGORIES) as Cat[]).map((c) => (
+            <button
+              key={c}
+              onClick={() => setCat(c)}
+              className={cn(
+                "shrink-0 rounded-full px-4 py-1.5 text-sm transition-colors",
+                cat === c ? "bg-navy-foreground text-navy font-semibold" : "text-navy-foreground/70 hover:text-navy-foreground",
+              )}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Features */}
-      <section className="border-y border-border bg-card">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <SectionHeading
-            eyebrow="One platform"
-            title="Every study tool on one desk"
-            subtitle="Tools that sit close together, so your focus stays in one place."
-          />
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map(({ icon: Icon, title, body }) => (
-              <div key={title} className="rounded-2xl border border-border bg-background p-5">
-                <span className="grid size-10 place-items-center rounded-xl bg-brand-soft text-accent-foreground">
-                  <Icon className="size-5" />
-                </span>
-                <h3 className="mt-4 text-lg font-semibold">{title}</h3>
-                <p className="mt-1.5 text-sm text-muted-foreground">{body}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-8">
-            <Button asChild variant="outline">
-              <Link to="/features">
-                See all features <ArrowRight className="ml-1 size-4" />
-              </Link>
-            </Button>
-          </div>
+      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+        <Eyebrow>Your semester, connected</Eyebrow>
+        <h2 className="mt-3 text-4xl font-bold sm:text-5xl">Less juggling. More learning.</h2>
+        <p className="mt-3 text-lg text-muted-foreground">Every study tool on one desk — here's how it helps with {cat}.</p>
+        <div className="mt-10 grid gap-5 md:grid-cols-3">
+          {CATEGORIES[cat].map(({ icon: Icon, title, body, tone }, i) => (
+            <div key={title} className="card-soft p-6 hover:-translate-y-1">
+              <span className={cn("grid size-12 place-items-center rounded-full text-brand-foreground", tone)}>
+                <Icon className="size-5" />
+              </span>
+              <p className="mt-6 font-mono text-xs font-semibold text-muted-foreground">0{i + 1}</p>
+              <h3 className="mt-2 text-xl font-semibold">{title}</h3>
+              <p className="mt-2 text-muted-foreground">{body}</p>
+            </div>
+          ))}
         </div>
+        <Button asChild variant="outline" className="mt-8 rounded-xl">
+          <Link to="/features">
+            See all features <ArrowRight className="ml-1 size-4" />
+          </Link>
+        </Button>
       </section>
 
-      {/* Progress strip */}
-      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <div className="grid items-center gap-8 lg:grid-cols-2">
+      {/* Dark focus section */}
+      <section className="bg-navy text-navy-foreground">
+        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2">
           <div>
-            <SectionHeading
-              eyebrow="Progress tracking"
-              title="See the work adding up"
-              subtitle="Study hours, completed tasks, quiz scores and streaks — all measured from what you actually do in the app. No invented numbers."
-            />
-            <ul className="mt-6 space-y-2 text-sm text-muted-foreground">
-              {["Study hours and weekly trend", "Tasks completed", "Quiz averages by subject", "Current and best streak"].map(
-                (item) => (
-                  <li key={item} className="flex items-center gap-2">
-                    <CheckCircle2 className="size-4 text-brand" /> {item}
-                  </li>
-                ),
-              )}
-            </ul>
-            <Button asChild className="mt-7 bg-brand text-brand-foreground hover:bg-brand/90">
-              <Link to="/signup">Create your free account</Link>
-            </Button>
-          </div>
-          <div className="panel p-6">
-            <div className="flex items-center gap-3">
-              <TrendingUp className="size-5 text-brand" />
-              <p className="font-semibold">Weekly study time</p>
-            </div>
-            <div className="mt-6 flex h-40 items-end gap-3">
-              {[40, 65, 30, 80, 55, 90, 70].map((h, i) => (
-                <div key={i} className="flex-1">
-                  <div className="rounded-t-lg bg-brand/80" style={{ height: `${h}%` }} />
+            <Eyebrow className="text-sun">A calmer daily rhythm</Eyebrow>
+            <h2 className="mt-3 text-4xl font-bold sm:text-5xl">Know what matters next.</h2>
+            <p className="mt-4 text-lg text-navy-foreground/70">
+              Start each day with one clear view of your tasks, upcoming exams and focus sessions.
+            </p>
+            <div className="mt-8 divide-y divide-navy-foreground/10 border-t border-navy-foreground/10">
+              {STEPS.map((s, i) => (
+                <div key={s.title} className="flex gap-4 py-5">
+                  <span className="font-mono text-sm font-semibold text-sun">0{i + 1}</span>
+                  <div>
+                    <p className="font-semibold">{s.title}</p>
+                    <p className="mt-1 text-sm text-navy-foreground/65">{s.body}</p>
+                  </div>
                 </div>
               ))}
             </div>
-            <div className="mt-2 flex justify-between text-xs text-muted-foreground">
-              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
-                <span key={d}>{d}</span>
+          </div>
+          <div className="rounded-3xl border border-navy-foreground/15 bg-navy-foreground/10 p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-navy-foreground/60">Tuesday focus</p>
+                <p className="font-display text-xl font-semibold">Deep work plan</p>
+              </div>
+              <span className="rounded-full bg-success/20 px-2.5 py-1 text-xs font-semibold text-success">On track</span>
+            </div>
+            <div className="mt-5 space-y-3">
+              {[
+                { t: "09:00", n: "Review organic chemistry", d: "45 min", c: "bg-brand" },
+                { t: "11:30", n: "Research methods seminar", d: "60 min", c: "bg-coral" },
+                { t: "15:00", n: "Draft literature review", d: "90 min", c: "bg-sun" },
+              ].map((r) => (
+                <div key={r.t} className="flex items-center gap-4 rounded-2xl bg-card px-4 py-4 text-card-foreground">
+                  <span className="font-mono text-sm text-muted-foreground">{r.t}</span>
+                  <span className={cn("h-9 w-1 rounded-full", r.c)} />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold">{r.n}</p>
+                    <p className="text-xs text-muted-foreground">{r.d}</p>
+                  </div>
+                  <ChevronRight className="size-4 text-muted-foreground" />
+                </div>
               ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Pricing teaser */}
-      <section className="border-t border-border bg-card">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <SectionHeading eyebrow="Pricing" title="Simple plans, student prices" />
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {PLANS.map((plan) => (
+      {/* Pricing */}
+      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+        <div className="text-center">
+          <Eyebrow>Simple pricing</Eyebrow>
+          <h2 className="mt-3 text-4xl font-bold sm:text-5xl">Start free. Grow when you need.</h2>
+        </div>
+        <div className="mt-12 grid gap-5 md:grid-cols-3">
+          {PLANS.map((plan) => {
+            const dark = plan.featured;
+            return (
               <div
                 key={plan.id}
-                className={
-                  plan.featured
-                    ? "rounded-2xl border-2 border-brand bg-background p-6"
-                    : "rounded-2xl border border-border bg-background p-6"
-                }
+                className={cn(
+                  "relative rounded-[1.25rem] border p-7",
+                  dark ? "border-navy bg-navy text-navy-foreground shadow-2xl shadow-navy/30" : "card-soft",
+                )}
               >
-                <p className="font-display text-lg font-semibold">{plan.name}</p>
-                <p className="mt-1 text-3xl font-semibold">
+                {dark ? (
+                  <span className="absolute right-5 top-5 rounded-full bg-sun px-2.5 py-1 text-xs font-bold text-sun-foreground">
+                    Most popular
+                  </span>
+                ) : null}
+                {plan.premium ? (
+                  <span className="absolute right-5 top-5 rounded-full bg-brand-soft px-2.5 py-1 text-xs font-bold text-accent-foreground">
+                    Premium
+                  </span>
+                ) : null}
+                <p className="font-semibold">{plan.name}</p>
+                <p className="mt-4 font-display text-4xl font-bold">
                   ${plan.price}
-                  <span className="text-sm font-normal text-muted-foreground">/month</span>
+                  <span className={cn("ml-1 text-base font-normal", dark ? "text-navy-foreground/60" : "text-muted-foreground")}>/ month</span>
                 </p>
-                <p className="mt-2 text-sm text-muted-foreground">{plan.tagline}</p>
+                <p className={cn("mt-2 text-sm", dark ? "text-navy-foreground/70" : "text-muted-foreground")}>{plan.tagline}</p>
                 <Button
                   asChild
-                  className={plan.featured ? "mt-5 w-full bg-brand text-brand-foreground hover:bg-brand/90" : "mt-5 w-full"}
-                  variant={plan.featured ? "default" : "outline"}
+                  className={cn(
+                    "mt-6 w-full rounded-xl",
+                    dark && "bg-sun text-sun-foreground hover:bg-sun/90",
+                  )}
+                  variant={dark ? "default" : "outline"}
                 >
                   <Link to="/pricing">{plan.cta}</Link>
                 </Button>
+                <ul className="mt-6 space-y-2.5 text-sm">
+                  {plan.features.slice(0, 5).map((f) => (
+                    <li key={f} className="flex gap-2">
+                      <Check className={cn("mt-0.5 size-4 shrink-0", dark ? "text-sun" : "text-success")} /> {f}
+                    </li>
+                  ))}
+                </ul>
               </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="bg-surface">
+        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <Eyebrow className="text-coral">What students want</Eyebrow>
+              <h2 className="mt-3 text-4xl font-bold">Real momentum, real results.</h2>
+            </div>
+            <p className="text-muted-foreground">Illustrative examples of how students use Student Hub.</p>
+          </div>
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            {TESTIMONIALS.map((t) => (
+              <figure key={t.name} className={cn("rounded-[1.25rem] border border-border p-6", t.tone)}>
+                <Quote className="size-7 text-brand" />
+                <blockquote className="mt-4 leading-relaxed">“{t.quote}”</blockquote>
+                <figcaption className="mt-6">
+                  <p className="font-semibold">{t.name}</p>
+                  <p className="text-xs text-muted-foreground">{t.meta}</p>
+                </figcaption>
+              </figure>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="mx-auto grid max-w-6xl gap-10 px-4 py-20 sm:px-6 lg:grid-cols-[1fr_1.4fr]">
+        <div>
+          <Eyebrow>Questions, answered</Eyebrow>
+          <h2 className="mt-3 text-4xl font-bold">Before you begin.</h2>
+          <p className="mt-3 text-muted-foreground">Still wondering if Student Hub fits your study style?</p>
+        </div>
+        <div className="card-soft divide-y divide-border px-6">
+          {FAQ.map((f, i) => (
+            <div key={f.q}>
+              <button
+                onClick={() => setOpen(open === i ? null : i)}
+                className="flex w-full items-center justify-between gap-4 py-5 text-left font-semibold"
+                aria-expanded={open === i}
+              >
+                {f.q}
+                <ChevronDown className={cn("size-4 shrink-0 transition-transform", open === i && "rotate-180")} />
+              </button>
+              {open === i ? <p className="-mt-2 pb-5 text-sm text-muted-foreground">{f.a}</p> : null}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
+        <div className="flex flex-col items-start justify-between gap-6 rounded-3xl bg-brand p-8 text-brand-foreground sm:p-12 md:flex-row md:items-center">
+          <div>
+            <h2 className="text-3xl font-bold sm:text-4xl">Your clearest semester starts here.</h2>
+            <p className="mt-2 opacity-85">Set up your workspace in minutes. Keep it for every course ahead.</p>
+          </div>
+          <Button asChild size="lg" variant="secondary" className="rounded-xl bg-card text-foreground hover:bg-card/90">
+            <Link to="/signup">
+              Create your workspace <ArrowRight className="ml-1 size-4" />
+            </Link>
+          </Button>
         </div>
       </section>
     </SitePage>
