@@ -69,9 +69,9 @@ const STEPS = [
 ];
 
 const TESTIMONIALS = [
-  { quote: "I finally know exactly what to do when I sit down to study.", name: "Maya R.", meta: "Psychology · Year 2", tone: "bg-brand-soft" },
-  { quote: "The progress view keeps me honest without making me feel behind.", name: "Omar K.", meta: "Computer Science · Year 3", tone: "bg-card" },
-  { quote: "Turning lecture notes into quiz questions made revision so much more active.", name: "Lena P.", meta: "Biomedical Science · Year 1", tone: "bg-brand-soft" },
+  { quote: "I finally know exactly what to do when I sit down to study.", name: "Maya R.", meta: "Psychology • 2 months ago", tone: "bg-brand-soft" },
+  { quote: "The progress view keeps me honest without making me feel behind.", name: "Omar K.", meta: "Computer Science • 5 months ago", tone: "bg-card" },
+  { quote: "Turning lecture notes into quiz questions made revision so much more active.", name: "Lena P.", meta: "Biomedical Science • 1 month ago", tone: "bg-brand-soft" },
 ];
 
 const FAQ = [
@@ -341,10 +341,10 @@ function Home() {
           </div>
           <div className="mt-10 grid gap-5 md:grid-cols-3">
             {TESTIMONIALS.map((t) => (
-              <figure key={t.name} className={cn("rounded-[1.25rem] border border-border p-6", t.tone)}>
+              <figure key={t.name} className={cn("flex h-full flex-col rounded-[1.25rem] border border-border p-6", t.tone)}>
                 <Quote className="size-7 text-brand" />
                 <blockquote className="mt-4 leading-relaxed">“{t.quote}”</blockquote>
-                <figcaption className="mt-6">
+                <figcaption className="mt-auto pt-6">
                   <p className="font-semibold">{t.name}</p>
                   <p className="text-xs text-muted-foreground">{t.meta}</p>
                 </figcaption>
