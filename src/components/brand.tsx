@@ -1,13 +1,12 @@
 import { Link } from "@tanstack/react-router";
 
+import logoUrl from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 
 export function Logo({ className, to = "/" }: { className?: string; to?: string }) {
   return (
     <Link to={to} className={cn("flex items-center gap-2.5", className)}>
-      <span className="grid size-9 place-items-center rounded-xl bg-primary font-display text-lg font-semibold text-primary-foreground">
-        S
-      </span>
+      <img src={logoUrl} alt="Student Hub logo" width={816} height={816} className="size-9 object-contain" />
       <span className="font-display text-lg font-semibold tracking-tight">Student Hub</span>
     </Link>
   );
