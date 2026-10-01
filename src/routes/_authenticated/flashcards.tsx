@@ -19,6 +19,8 @@ export const Route = createFileRoute("/_authenticated/flashcards")({
       { name: "description", content: "Build decks, practise with flip cards and rate how well you knew each one." },
       { property: "og:title", content: "Flashcards — Student Hub" },
       { property: "og:description", content: "Decks and practice mode." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: FlashcardsPage,

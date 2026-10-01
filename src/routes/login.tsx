@@ -17,6 +17,8 @@ export const Route = createFileRoute("/login")({
       { name: "description", content: "Sign in to your Student Hub study dashboard." },
       { property: "og:title", content: "Login — Student Hub" },
       { property: "og:description", content: "Sign in to your study dashboard." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: LoginPage,

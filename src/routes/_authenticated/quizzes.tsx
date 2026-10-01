@@ -20,6 +20,8 @@ export const Route = createFileRoute("/_authenticated/quizzes")({
       { name: "description", content: "Generate multiple-choice quizzes by subject, topic and difficulty, and track your scores." },
       { property: "og:title", content: "Quiz Generator — Student Hub" },
       { property: "og:description", content: "Practice quizzes with instant marking." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: QuizzesPage,

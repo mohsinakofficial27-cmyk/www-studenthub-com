@@ -22,6 +22,8 @@ export const Route = createFileRoute("/pricing")({
       { name: "description", content: "Free, Student at $10/month and Pro at $20/month. Student pricing, no surprises." },
       { property: "og:title", content: "Pricing — Student Hub" },
       { property: "og:description", content: "Free, Student ($10/mo) and Pro ($20/mo) plans." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: PricingPage,

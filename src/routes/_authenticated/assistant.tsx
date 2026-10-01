@@ -20,6 +20,8 @@ export const Route = createFileRoute("/_authenticated/assistant")({
       { name: "description", content: "Ask study questions and get explanations, steps, summaries and self-tests." },
       { property: "og:title", content: "AI Study Assistant — Student Hub" },
       { property: "og:description", content: "Your study questions, answered." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AssistantPage,

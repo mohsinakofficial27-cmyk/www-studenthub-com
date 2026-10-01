@@ -20,6 +20,8 @@ export const Route = createFileRoute("/_authenticated/notes")({
       { name: "description", content: "Write, summarise and organise your study notes, then turn them into flashcards." },
       { property: "og:title", content: "My Notes — Student Hub" },
       { property: "og:description", content: "Your study notes, organised." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: NotesPage,

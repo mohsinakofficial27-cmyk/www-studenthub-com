@@ -19,6 +19,8 @@ export const Route = createFileRoute("/_authenticated/subscription")({
       { name: "description", content: "See your plan, renewal date and billing history, and change plans." },
       { property: "og:title", content: "Subscription — Student Hub" },
       { property: "og:description", content: "Manage your Student Hub plan." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: SubscriptionPage,

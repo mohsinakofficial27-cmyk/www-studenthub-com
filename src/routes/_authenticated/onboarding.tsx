@@ -18,6 +18,8 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
       { name: "description", content: "Tell Student Hub your year, subjects, goals and study hours." },
       { property: "og:title", content: "Set up your study profile — Student Hub" },
       { property: "og:description", content: "Personalise your Student Hub dashboard." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: OnboardingPage,

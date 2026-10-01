@@ -15,6 +15,8 @@ export const Route = createFileRoute("/study-tools")({
       },
       { property: "og:title", content: "Study Tools — Student Hub" },
       { property: "og:description", content: "Seven tools, one study workspace." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: StudyToolsPage,

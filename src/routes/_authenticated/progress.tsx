@@ -15,6 +15,8 @@ export const Route = createFileRoute("/_authenticated/progress")({
       { name: "description", content: "Study hours, completed tasks, quiz scores, streaks and subject performance." },
       { property: "og:title", content: "Progress — Student Hub" },
       { property: "og:description", content: "See how your studying is going." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ProgressPage,

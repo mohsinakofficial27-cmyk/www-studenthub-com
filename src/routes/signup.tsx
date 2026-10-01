@@ -17,6 +17,8 @@ export const Route = createFileRoute("/signup")({
       { name: "description", content: "Create a free Student Hub account and start studying smarter." },
       { property: "og:title", content: "Sign up — Student Hub" },
       { property: "og:description", content: "Create a free Student Hub account." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: SignupPage,
