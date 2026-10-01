@@ -25,6 +25,8 @@ export const Route = createFileRoute("/features")({
       },
       { property: "og:title", content: "Features — Student Hub" },
       { property: "og:description", content: "Every Student Hub study tool, explained." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: FeaturesPage,

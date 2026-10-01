@@ -19,6 +19,8 @@ export const Route = createFileRoute("/_authenticated/profile")({
       { name: "description", content: "Update your details, subjects, password and notification settings." },
       { property: "og:title", content: "Profile — Student Hub" },
       { property: "og:description", content: "Manage your Student Hub account." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ProfilePage,

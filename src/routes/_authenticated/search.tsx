@@ -15,6 +15,8 @@ export const Route = createFileRoute("/_authenticated/search")({
       { name: "description", content: "Search across your notes, flashcards, quizzes and planner tasks." },
       { property: "og:title", content: "Search — Student Hub" },
       { property: "og:description", content: "Find anything in your study workspace." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: SearchPage,

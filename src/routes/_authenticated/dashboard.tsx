@@ -24,6 +24,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
       { name: "description", content: "Your streak, today's tasks, study time and quiz average in one view." },
       { property: "og:title", content: "Dashboard — Student Hub" },
       { property: "og:description", content: "Your personal study dashboard." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: DashboardPage,

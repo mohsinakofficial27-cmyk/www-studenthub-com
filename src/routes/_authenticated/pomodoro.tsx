@@ -18,6 +18,8 @@ export const Route = createFileRoute("/_authenticated/pomodoro")({
       { name: "description", content: "Focus and break timer with every session saved to your study history." },
       { property: "og:title", content: "Pomodoro — Student Hub" },
       { property: "og:description", content: "Focus timer with session tracking." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: PomodoroPage,

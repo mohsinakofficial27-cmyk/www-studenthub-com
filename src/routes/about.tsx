@@ -11,6 +11,8 @@ export const Route = createFileRoute("/about")({
       { name: "description", content: "Why Student Hub exists and how it handles your study data." },
       { property: "og:title", content: "About — Student Hub" },
       { property: "og:description", content: "One calm workspace instead of six scattered study apps." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AboutPage,

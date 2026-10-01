@@ -21,6 +21,8 @@ export const Route = createFileRoute("/_authenticated/planner")({
       { name: "description", content: "Schedule subjects, topics, tasks and exams by day, week or month." },
       { property: "og:title", content: "Study Planner — Student Hub" },
       { property: "og:description", content: "Plan your study week." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: PlannerPage,
