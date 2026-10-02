@@ -222,9 +222,9 @@ function Home() {
       <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
         <Eyebrow>Your semester, connected</Eyebrow>
         <h2 className="mt-3 text-4xl font-bold sm:text-5xl">Less juggling. More learning.</h2>
-        <p className="mt-3 text-lg text-muted-foreground">Every study tool on one desk — here's how it helps with {cat}.</p>
+        <p className="mt-3 text-lg text-muted-foreground">Every study tool on one desk — here's how it helps with STEM.</p>
         <div className="mt-10 grid gap-5 md:grid-cols-3">
-          {CATEGORIES[cat].map(({ icon: Icon, title, body, tone }, i) => (
+          {CATEGORIES.STEM.map(({ icon: Icon, title, body, tone }, i) => (
             <div key={title} className="card-soft p-6 hover:-translate-y-1">
               <span className={cn("grid size-12 place-items-center rounded-full text-brand-foreground", tone)}>
                 <Icon className="size-5" />
