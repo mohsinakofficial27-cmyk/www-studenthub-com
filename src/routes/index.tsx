@@ -117,7 +117,6 @@ function Eyebrow({ children, className }: { children: string; className?: string
 }
 
 function Home() {
-  const [cat, setCat] = useState<Cat>("STEM");
   const [open, setOpen] = useState<number | null>(0);
 
   return (
@@ -211,22 +210,11 @@ function Home() {
         </div>
       </section>
 
-      {/* Category tabs */}
-      <div className="bg-navy text-navy-foreground">
-        <div className="mx-auto flex max-w-6xl items-center gap-2 overflow-x-auto px-4 py-3 sm:justify-center sm:px-6">
-          <span className="mr-3 hidden shrink-0 text-sm font-semibold sm:inline">Built for every kind of learner</span>
-          {(Object.keys(CATEGORIES) as Cat[]).map((c) => (
-            <button
-              key={c}
-              onClick={() => setCat(c)}
-              className={cn(
-                "shrink-0 rounded-full px-4 py-1.5 text-sm transition-colors",
-                cat === c ? "bg-navy-foreground text-navy font-semibold" : "text-navy-foreground/70 hover:text-navy-foreground",
-              )}
-            >
-              {c}
-            </button>
-          ))}
+      {/* Learner marquee */}
+      <div className="overflow-hidden bg-navy py-4 text-navy-foreground">
+        <div className="marquee-track">
+          <MarqueeChunk />
+          <MarqueeChunk ariaHidden />
         </div>
       </div>
 
