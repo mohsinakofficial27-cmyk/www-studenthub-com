@@ -60,7 +60,16 @@ const CATEGORIES = {
     { icon: Timer, title: "Pomodoro Timer", body: "Focused sessions logged into your study history.", tone: "bg-navy" },
   ],
 } as const;
-type Cat = keyof typeof CATEGORIES;
+
+const MARQUEE_ITEMS = [
+  "Built for every kind of learner",
+  "STEM",
+  "Humanities",
+  "Business",
+  "AI Tools",
+  "Study Resources",
+  "Smart Learning",
+];
 
 const STEPS = [
   { title: "Capture", body: "Save a note, task or exam the moment it appears." },
@@ -81,12 +90,33 @@ const FAQ = [
   { q: "Can I cancel a paid plan anytime?", a: "Yes. You can cancel from the Subscription page at any time." },
 ];
 
+function MarqueeChunk({ ariaHidden = false }: { ariaHidden?: boolean }) {
+  return (
+    <div className="flex shrink-0 items-center" aria-hidden={ariaHidden || undefined}>
+      {[0, 1, 2, 3].map((rep) =>
+        MARQUEE_ITEMS.map((item, i) => (
+          <span key={`${rep}-${i}`} className="flex items-center">
+            <span
+              className={cn(
+                "whitespace-nowrap text-sm",
+                i === 0 ? "font-semibold text-sun" : "font-medium text-navy-foreground/85",
+              )}
+            >
+              {item}
+            </span>
+            <span className="mx-7 size-1.5 shrink-0 rounded-full bg-coral/70" />
+          </span>
+        )),
+      )}
+    </div>
+  );
+}
+
 function Eyebrow({ children, className }: { children: string; className?: string }) {
   return <p className={cn("text-xs font-bold uppercase tracking-[0.12em] text-brand", className)}>{children}</p>;
 }
 
 function Home() {
-  const [cat, setCat] = useState<Cat>("STEM");
   const [open, setOpen] = useState<number | null>(0);
 
   return (
@@ -180,22 +210,11 @@ function Home() {
         </div>
       </section>
 
-      {/* Category tabs */}
-      <div className="bg-navy text-navy-foreground">
-        <div className="mx-auto flex max-w-6xl items-center gap-2 overflow-x-auto px-4 py-3 sm:justify-center sm:px-6">
-          <span className="mr-3 hidden shrink-0 text-sm font-semibold sm:inline">Built for every kind of learner</span>
-          {(Object.keys(CATEGORIES) as Cat[]).map((c) => (
-            <button
-              key={c}
-              onClick={() => setCat(c)}
-              className={cn(
-                "shrink-0 rounded-full px-4 py-1.5 text-sm transition-colors",
-                cat === c ? "bg-navy-foreground text-navy font-semibold" : "text-navy-foreground/70 hover:text-navy-foreground",
-              )}
-            >
-              {c}
-            </button>
-          ))}
+      {/* Learner marquee */}
+      <div className="overflow-hidden bg-navy py-4 text-navy-foreground">
+        <div className="marquee-track">
+          <MarqueeChunk />
+          <MarqueeChunk ariaHidden />
         </div>
       </div>
 
@@ -203,9 +222,9 @@ function Home() {
       <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
         <Eyebrow>Your semester, connected</Eyebrow>
         <h2 className="mt-3 text-4xl font-bold sm:text-5xl">Less juggling. More learning.</h2>
-        <p className="mt-3 text-lg text-muted-foreground">Every study tool on one desk — here's how it helps with {cat}.</p>
+        <p className="mt-3 text-lg text-muted-foreground">Every study tool on one desk — here's how it helps with STEM.</p>
         <div className="mt-10 grid gap-5 md:grid-cols-3">
-          {CATEGORIES[cat].map(({ icon: Icon, title, body, tone }, i) => (
+          {CATEGORIES.STEM.map(({ icon: Icon, title, body, tone }, i) => (
             <div key={title} className="card-soft p-6 hover:-translate-y-1">
               <span className={cn("grid size-12 place-items-center rounded-full text-brand-foreground", tone)}>
                 <Icon className="size-5" />

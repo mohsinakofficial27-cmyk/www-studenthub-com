@@ -178,6 +178,23 @@
   background-size: auto, auto, 40px 40px, 40px 40px;
 }
 
+@keyframes sh-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@utility marquee-track {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  animation: sh-marquee 32s linear infinite;
+  will-change: transform;
+}
+
 @utility card-soft {
   border-radius: 1.25rem;
   background-color: var(--color-card);
