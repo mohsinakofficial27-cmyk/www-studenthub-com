@@ -118,8 +118,22 @@ function Eyebrow({ children, className }: { children: string; className?: string
 }
 
 function RatingSection() {
-  const [rating, setRating] = useState(0);
+  const [rating, setRatingState] = useState(0);
   const [hovered, setHovered] = useState(0);
+  const [failed, setFailed] = useState(false);
+
+  async function setRating(star: number) {
+    if (rating > 0) return;
+    setRatingState(star);
+    setFailed(false);
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data } = await supabase.auth.getUser();
+    const { error } = await supabase.from("site_ratings").insert({ rating: star, user_id: data.user?.id ?? null });
+    if (error) {
+      setRatingState(0);
+      setFailed(true);
+    }
+  }
 
   return (
     <section className="bg-background" aria-label="Rate your experience">
@@ -157,8 +171,8 @@ function RatingSection() {
             );
           })}
         </div>
-        <p className="mt-4 h-6 text-sm font-medium text-success" aria-live="polite">
-          {rating > 0 ? "Thanks for your feedback!" : ""}
+        <p className={cn("mt-4 h-6 text-sm font-medium", failed ? "text-destructive" : "text-success")} aria-live="polite">
+          {failed ? "Couldn't save your rating — please try again." : rating > 0 ? "Thanks for your feedback!" : ""}
         </p>
       </div>
     </section>
