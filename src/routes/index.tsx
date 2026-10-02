@@ -13,6 +13,7 @@ import {
   MessageSquare,
   Play,
   Quote,
+  Star,
   Target,
   Timer,
 } from "lucide-react";
@@ -114,6 +115,54 @@ function MarqueeChunk({ ariaHidden = false }: { ariaHidden?: boolean }) {
 
 function Eyebrow({ children, className }: { children: string; className?: string }) {
   return <p className={cn("text-xs font-bold uppercase tracking-[0.12em] text-brand", className)}>{children}</p>;
+}
+
+function RatingSection() {
+  const [rating, setRating] = useState(0);
+  const [hovered, setHovered] = useState(0);
+
+  return (
+    <section className="bg-background" aria-label="Rate your experience">
+      <div className="mx-auto flex max-w-6xl flex-col items-center px-4 py-16 text-center sm:px-6">
+        <Eyebrow>Your feedback</Eyebrow>
+        <h2 className="mt-3 text-3xl font-bold sm:text-4xl">How was your experience with Student Hub?</h2>
+        <p className="mt-2 text-muted-foreground">Tap a star to rate us — it takes two seconds.</p>
+        <div className="mt-6 flex items-center gap-2" role="radiogroup" aria-label="Rating out of 5 stars">
+          {[1, 2, 3, 4, 5].map((star) => {
+            const active = star <= (hovered || rating);
+            return (
+              <button
+                key={star}
+                type="button"
+                role="radio"
+                aria-checked={rating === star}
+                aria-label={`${star} star${star > 1 ? "s" : ""}`}
+                onClick={() => setRating(star)}
+                onMouseEnter={() => setHovered(star)}
+                onMouseLeave={() => setHovered(0)}
+                onFocus={() => setHovered(star)}
+                onBlur={() => setHovered(0)}
+                className={cn(
+                  "grid size-12 place-items-center rounded-full transition-transform duration-200 sm:size-14",
+                  "hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
+                )}
+              >
+                <Star
+                  className={cn(
+                    "size-9 sm:size-10",
+                    active ? "fill-sun text-sun drop-shadow-sm" : "fill-muted text-muted-foreground/40",
+                  )}
+                />
+              </button>
+            );
+          })}
+        </div>
+        <p className="mt-4 h-6 text-sm font-medium text-success" aria-live="polite">
+          {rating > 0 ? "Thanks for your feedback!" : ""}
+        </p>
+      </div>
+    </section>
+  );
 }
 
 function Home() {
@@ -411,6 +460,9 @@ function Home() {
           </Button>
         </div>
       </section>
+
+      {/* Rating */}
+      <RatingSection />
     </SitePage>
   );
 }
