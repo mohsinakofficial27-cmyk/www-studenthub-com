@@ -60,7 +60,16 @@ const CATEGORIES = {
     { icon: Timer, title: "Pomodoro Timer", body: "Focused sessions logged into your study history.", tone: "bg-navy" },
   ],
 } as const;
-type Cat = keyof typeof CATEGORIES;
+
+const MARQUEE_ITEMS = [
+  "Built for every kind of learner",
+  "STEM",
+  "Humanities",
+  "Business",
+  "AI Tools",
+  "Study Resources",
+  "Smart Learning",
+];
 
 const STEPS = [
   { title: "Capture", body: "Save a note, task or exam the moment it appears." },
@@ -80,6 +89,28 @@ const FAQ = [
   { q: "Does the AI Assistant write assignments for me?", a: "No. It explains ideas, breaks problems into steps and quizzes you — it's built to help you learn." },
   { q: "Can I cancel a paid plan anytime?", a: "Yes. You can cancel from the Subscription page at any time." },
 ];
+
+function MarqueeChunk({ ariaHidden = false }: { ariaHidden?: boolean }) {
+  return (
+    <div className="flex shrink-0 items-center" aria-hidden={ariaHidden || undefined}>
+      {[0, 1, 2, 3].map((rep) =>
+        MARQUEE_ITEMS.map((item, i) => (
+          <span key={`${rep}-${i}`} className="flex items-center">
+            <span
+              className={cn(
+                "whitespace-nowrap text-sm",
+                i === 0 ? "font-semibold text-sun" : "font-medium text-navy-foreground/85",
+              )}
+            >
+              {item}
+            </span>
+            <span className="mx-7 size-1.5 shrink-0 rounded-full bg-coral/70" />
+          </span>
+        )),
+      )}
+    </div>
+  );
+}
 
 function Eyebrow({ children, className }: { children: string; className?: string }) {
   return <p className={cn("text-xs font-bold uppercase tracking-[0.12em] text-brand", className)}>{children}</p>;
