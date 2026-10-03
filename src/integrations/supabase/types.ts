@@ -65,6 +65,87 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_usage: {
+        Row: {
+          count: number
+          day: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          day: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          day?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      contact_messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      feedback: {
+        Row: {
+          created_at: string
+          fair_price: string
+          id: string
+          issues: string
+          likes: string
+          rating: number
+          user_id: string | null
+          wanted_feature: string
+          would_pay: boolean
+        }
+        Insert: {
+          created_at?: string
+          fair_price?: string
+          id?: string
+          issues?: string
+          likes?: string
+          rating: number
+          user_id?: string | null
+          wanted_feature?: string
+          would_pay?: boolean
+        }
+        Update: {
+          created_at?: string
+          fair_price?: string
+          id?: string
+          issues?: string
+          likes?: string
+          rating?: number
+          user_id?: string | null
+          wanted_feature?: string
+          would_pay?: boolean
+        }
+        Relationships: []
+      }
       flashcard_decks: {
         Row: {
           created_at: string
@@ -445,6 +526,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      consume_ai_question: { Args: { _limit: number }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
