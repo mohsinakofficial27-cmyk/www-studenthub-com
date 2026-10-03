@@ -49,7 +49,7 @@ function AboutPage() {
             <Link to="/signup">Start for Free</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link to="/pricing">See pricing</Link>
+            <Link to="/pricing">See the free plan</Link>
           </Button>
         </div>
       </section>

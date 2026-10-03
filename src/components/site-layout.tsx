@@ -11,7 +11,7 @@ const NAV = [
   { to: "/", label: "Home" },
   { to: "/features", label: "Features" },
   { to: "/study-tools", label: "Study Tools" },
-  { to: "/pricing", label: "Pricing" },
+  { to: "/pricing", label: "Free Plan" },
   { to: "/about", label: "About" },
 ] as const;
 
@@ -128,8 +128,12 @@ const FOOTER_COLS = [
     links: [
       { to: "/features", label: "Features" },
       { to: "/study-tools", label: "Study Tools" },
-      { to: "/pricing", label: "Pricing" },
+      { to: "/pricing", label: "Free Plan" },
+      { to: "/feedback", label: "Feedback" },
       { to: "/about", label: "About Student Hub" },
+      { to: "/contact", label: "Contact" },
+      { to: "/privacy", label: "Privacy Policy" },
+      { to: "/terms", label: "Terms of Use" },
     ],
   },
   {
@@ -137,7 +141,6 @@ const FOOTER_COLS = [
     links: [
       { to: "/dashboard", label: "Dashboard" },
       { to: "/profile", label: "Profile" },
-      { to: "/subscription", label: "Subscription" },
       { to: "/login", label: "Log in" },
       { to: "/signup", label: "Get Started" },
     ],
