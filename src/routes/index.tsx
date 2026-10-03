@@ -12,8 +12,6 @@ import {
   ListChecks,
   MessageSquare,
   Play,
-  Quote,
-  Star,
   Target,
   Timer,
 } from "lucide-react";
@@ -21,7 +19,7 @@ import { useState } from "react";
 
 import { SitePage } from "@/components/site-layout";
 import { Button } from "@/components/ui/button";
-import { PLANS } from "@/lib/plans";
+import { AssistantDemo, FreePlanCard } from "@/components/launch";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -78,18 +76,12 @@ const STEPS = [
   { title: "Reflect", body: "Watch your hours, scores and streak grow." },
 ];
 
-const TESTIMONIALS = [
-  { quote: "I finally know exactly what to do when I sit down to study.", name: "Maya R.", meta: "Psychology • 2 months ago", tone: "bg-brand-soft" },
-  { quote: "The progress view keeps me honest without making me feel behind.", name: "Omar K.", meta: "Computer Science • 5 months ago", tone: "bg-card" },
-  { quote: "Turning lecture notes into quiz questions made revision so much more active.", name: "Lena P.", meta: "Biomedical Science • 1 month ago", tone: "bg-brand-soft" },
-];
 
 const FAQ = [
-  { q: "Is Student Hub free for students?", a: "Yes. The Free plan includes the core tools — notes, planner, Pomodoro and limited AI use — with no card required." },
-  { q: "Can I use it for any course?", a: "Yes. Subjects, decks and tasks are all yours to name, so it works for any course or exam." },
-  { q: "Does the AI Assistant write assignments for me?", a: "No. It explains ideas, breaks problems into steps and quizzes you — it's built to help you learn." },
-  { q: "Can I cancel a paid plan anytime?", a: "Yes. You can cancel from the Subscription page at any time." },
-];
+  { q: "Is Student Hub free?", a: "Yes. Student Hub is completely free during our launch. Every study tool — the AI Study Assistant, notes, quizzes, flashcards, planner and Pomodoro timer — is included, with a fair daily limit on AI questions so the service stays fast for everyone." },
+  { q: "Can I use it for any course?", a: "Yes. Student Hub works for any subject — from maths and science to history, languages and business. You name your own subjects, decks and tasks, and the AI assistant can help with any topic you're studying." },
+  { q: "Does the AI write my assignments for me?", a: "No. The AI Study Assistant is built to help you learn: it explains concepts in simple language, walks you through problems step by step and quizzes you with practice questions — so the understanding (and the work) stays yours." },
+]
 
 function MarqueeChunk({ ariaHidden = false }: { ariaHidden?: boolean }) {
   return (
@@ -117,68 +109,6 @@ function Eyebrow({ children, className }: { children: string; className?: string
   return <p className={cn("text-xs font-bold uppercase tracking-[0.12em] text-brand", className)}>{children}</p>;
 }
 
-function RatingSection() {
-  const [rating, setRatingState] = useState(0);
-  const [hovered, setHovered] = useState(0);
-  const [failed, setFailed] = useState(false);
-
-  async function setRating(star: number) {
-    if (rating > 0) return;
-    setRatingState(star);
-    setFailed(false);
-    const { supabase } = await import("@/integrations/supabase/client");
-    const { data } = await supabase.auth.getUser();
-    const { error } = await supabase.from("site_ratings").insert({ rating: star, user_id: data.user?.id ?? null });
-    if (error) {
-      setRatingState(0);
-      setFailed(true);
-    }
-  }
-
-  return (
-    <section className="bg-background" aria-label="Rate your experience">
-      <div className="mx-auto flex max-w-6xl flex-col items-center px-4 py-16 text-center sm:px-6">
-        <Eyebrow>Your feedback</Eyebrow>
-        <h2 className="mt-3 text-3xl font-bold sm:text-4xl">How was your experience with Student Hub?</h2>
-        <p className="mt-2 text-muted-foreground">Tap a star to rate us — it takes two seconds.</p>
-        <div className="mt-6 flex items-center gap-2" role="radiogroup" aria-label="Rating out of 5 stars">
-          {[1, 2, 3, 4, 5].map((star) => {
-            const active = star <= (hovered || rating);
-            return (
-              <button
-                key={star}
-                type="button"
-                role="radio"
-                aria-checked={rating === star}
-                aria-label={`${star} star${star > 1 ? "s" : ""}`}
-                onClick={() => setRating(star)}
-                onMouseEnter={() => setHovered(star)}
-                onMouseLeave={() => setHovered(0)}
-                onFocus={() => setHovered(star)}
-                onBlur={() => setHovered(0)}
-                className={cn(
-                  "grid size-12 place-items-center rounded-full transition-transform duration-200 sm:size-14",
-                  "hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
-                )}
-              >
-                <Star
-                  className={cn(
-                    "size-9 sm:size-10",
-                    active ? "fill-sun text-sun drop-shadow-sm" : "fill-muted text-muted-foreground/40",
-                  )}
-                />
-              </button>
-            );
-          })}
-        </div>
-        <p className={cn("mt-4 h-6 text-sm font-medium", failed ? "text-destructive" : "text-success")} aria-live="polite">
-          {failed ? "Couldn't save your rating — please try again." : rating > 0 ? "Thanks for your feedback!" : ""}
-        </p>
-      </div>
-    </section>
-  );
-}
-
 function Home() {
   const [open, setOpen] = useState<number | null>(0);
 
@@ -201,6 +131,9 @@ function Home() {
               Student Hub brings AI-powered study tools, notes, quizzes, planning and productivity into one simple
               platform.
             </p>
+            <p className="mt-3 max-w-lg font-semibold text-foreground">
+              Turn your notes into quizzes and flashcards in one click.
+            </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg" className="h-12 rounded-xl bg-brand px-6 text-brand-foreground shadow-lg shadow-brand/25 hover:bg-brand/90">
                 <Link to="/signup">
@@ -214,7 +147,7 @@ function Home() {
               </Button>
             </div>
             <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
-              {["No credit card", "Set up in 2 minutes", "Cancel anytime"].map((t) => (
+              {["100% free while we launch", "Set up in 2 minutes"].map((t) => (
                 <span key={t} className="flex items-center gap-1.5">
                   <Check className="size-4 text-success" /> {t}
                 </span>
@@ -305,6 +238,8 @@ function Home() {
         </Button>
       </section>
 
+      <AssistantDemo />
+
       {/* Dark focus section */}
       <section className="bg-navy text-navy-foreground">
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2">
@@ -355,84 +290,28 @@ function Home() {
         </div>
       </section>
 
-      {/* Pricing */}
+      {/* Free plan */}
       <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
         <div className="text-center">
           <Eyebrow>Simple pricing</Eyebrow>
-          <h2 className="mt-3 text-4xl font-bold sm:text-5xl">Start free. Grow when you need.</h2>
+          <h2 className="mt-3 text-4xl font-bold sm:text-5xl">Free during launch.</h2>
         </div>
-        <div className="mt-12 grid gap-5 md:grid-cols-3">
-          {PLANS.map((plan) => {
-            const dark = plan.featured;
-            return (
-              <div
-                key={plan.id}
-                className={cn(
-                  "relative rounded-[1.25rem] border p-7",
-                  dark ? "border-navy bg-navy text-navy-foreground shadow-2xl shadow-navy/30" : "card-soft",
-                )}
-              >
-                {dark ? (
-                  <span className="absolute right-5 top-5 rounded-full bg-sun px-2.5 py-1 text-xs font-bold text-sun-foreground">
-                    Most popular
-                  </span>
-                ) : null}
-                {plan.premium ? (
-                  <span className="absolute right-5 top-5 rounded-full bg-brand-soft px-2.5 py-1 text-xs font-bold text-accent-foreground">
-                    Premium
-                  </span>
-                ) : null}
-                <p className="font-semibold">{plan.name}</p>
-                <p className="mt-4 font-display text-4xl font-bold">
-                  ${plan.price}
-                  <span className={cn("ml-1 text-base font-normal", dark ? "text-navy-foreground/60" : "text-muted-foreground")}>/ month</span>
-                </p>
-                <p className={cn("mt-2 text-sm", dark ? "text-navy-foreground/70" : "text-muted-foreground")}>{plan.tagline}</p>
-                <Button
-                  asChild
-                  className={cn(
-                    "mt-6 w-full rounded-xl",
-                    dark && "bg-sun text-sun-foreground hover:bg-sun/90",
-                  )}
-                  variant={dark ? "default" : "outline"}
-                >
-                  <Link to="/pricing">{plan.cta}</Link>
-                </Button>
-                <ul className="mt-6 space-y-2.5 text-sm">
-                  {plan.features.slice(0, 5).map((f) => (
-                    <li key={f} className="flex gap-2">
-                      <Check className={cn("mt-0.5 size-4 shrink-0", dark ? "text-sun" : "text-success")} /> {f}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            );
-          })}
-        </div>
+        <FreePlanCard />
       </section>
 
-      {/* Testimonials */}
+      {/* First students CTA */}
       <section className="bg-surface">
-        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <Eyebrow className="text-coral">What students want</Eyebrow>
-              <h2 className="mt-3 text-4xl font-bold">Real momentum, real results.</h2>
-            </div>
-            <p className="text-muted-foreground">Illustrative examples of how students use Student Hub.</p>
-          </div>
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
-            {TESTIMONIALS.map((t) => (
-              <figure key={t.name} className={cn("flex h-full flex-col rounded-[1.25rem] border border-border p-6", t.tone)}>
-                <Quote className="size-7 text-brand" />
-                <blockquote className="mt-4 leading-relaxed">“{t.quote}”</blockquote>
-                <figcaption className="mt-auto pt-6">
-                  <p className="font-semibold">{t.name}</p>
-                  <p className="text-xs text-muted-foreground">{t.meta}</p>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
+        <div className="mx-auto flex max-w-6xl flex-col items-center px-4 py-16 text-center sm:px-6">
+          <Eyebrow className="text-coral">Just launched</Eyebrow>
+          <h2 className="mt-3 text-4xl font-bold">Be one of our first students.</h2>
+          <p className="mt-3 max-w-xl text-muted-foreground">
+            Join early, help shape what we build next and study smarter from day one.
+          </p>
+          <Button asChild size="lg" className="mt-6 h-12 rounded-xl bg-brand px-6 text-brand-foreground hover:bg-brand/90">
+            <Link to="/signup">
+              Be one of our first students <ArrowRight className="ml-1 size-4" />
+            </Link>
+          </Button>
         </div>
       </section>
 
@@ -475,8 +354,6 @@ function Home() {
         </div>
       </section>
 
-      {/* Rating */}
-      <RatingSection />
     </SitePage>
   );
 }
