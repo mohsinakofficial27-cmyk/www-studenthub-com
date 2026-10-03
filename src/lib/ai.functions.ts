@@ -19,17 +19,32 @@ const inputSchema = z.object({
     .max(40),
 });
 
+export const DAILY_AI_LIMIT = 15;
+
 export const askAssistantAI = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => inputSchema.parse(data))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const apiKey = process.env["LOVABLE_API_KEY"];
     if (!apiKey) return { ok: false as const, error: "The AI service isn't configured yet." };
+
+    const { data: remaining, error: quotaError } = await context.supabase.rpc("consume_ai_question", {
+      _limit: DAILY_AI_LIMIT,
+    });
+    if (quotaError) return { ok: false as const, error: "Couldn't check your daily limit. Please try again." };
+    if ((remaining as number) < 0) {
+      return {
+        ok: false as const,
+        limitReached: true,
+        remaining: 0,
+        error: `You've used all ${DAILY_AI_LIMIT} AI questions for today. Your limit resets tomorrow — keep studying with your notes, flashcards and quizzes in the meantime!`,
+      };
+    }
 
     const input = [
       {
         role: "system",
-        content: `You are Student Hub's friendly AI study assistant for students. Be accurate, clear and encouraging. Use short markdown-free formatting (plain text, numbered lists allowed). ${MODE_PROMPTS[data.mode]}`,
+        content: `You are Student Hub's friendly AI study assistant for students. Be accurate, clear and encouraging. Use short markdown-free formatting (plain text, numbered lists allowed). Never write full assignments for students; explain and guide instead. ${MODE_PROMPTS[data.mode]}`,
       },
       ...data.messages.slice(-20),
     ];
@@ -86,5 +101,5 @@ export const askAssistantAI = createServerFn({ method: "POST" })
     if (failed || !text.trim()) {
       return { ok: false as const, error: "The AI couldn't produce an answer. Try rephrasing your question." };
     }
-    return { ok: true as const, content: text.trim() };
+    return { ok: true as const, content: text.trim(), remaining: remaining as number };
   });
