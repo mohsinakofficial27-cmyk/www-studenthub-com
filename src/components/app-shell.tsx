@@ -3,7 +3,7 @@ import {
   Bell,
   BookOpen,
   CalendarDays,
-  CreditCard,
+  MessageCircleHeart,
   LayoutGrid,
   Layers,
   ListChecks,
@@ -35,7 +35,7 @@ export const APP_NAV = [
   { to: "/pomodoro", label: "Pomodoro", icon: Timer },
   { to: "/progress", label: "Progress", icon: TrendingUp },
   { to: "/profile", label: "Profile", icon: User },
-  { to: "/subscription", label: "Subscription", icon: CreditCard },
+  { to: "/feedback", label: "Feedback", icon: MessageCircleHeart },
 ] as const;
 
 const MOBILE_NAV = [

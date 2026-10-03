@@ -72,8 +72,8 @@ function SubscriptionPage() {
   return (
     <AppShell title="Subscription" description="Your plan and billing details.">
       <InfoNote
-        title="No payment provider connected"
-        description="Paid plans are granted by the server only after a verified payment, so upgrades stay unavailable until a payment provider is connected with its secret key stored server-side. Your plan can never be changed from the browser."
+        title="Free during launch"
+        description="Student Hub is 100% free while we launch. Premium features may come later — tell us what you would want on the Feedback page."
       />
 
 
@@ -102,7 +102,7 @@ function SubscriptionPage() {
           </dl>
 
           <div className="mt-6 flex flex-wrap gap-2">
-            {PLANS.filter((p) => p.id !== sub?.plan).map((p) => (
+            {PLANS.filter((p) => p.id === "free" && p.id !== sub?.plan).map((p) => (
               <Button
                 key={p.id}
                 variant={p.id === "free" ? "outline" : "default"}

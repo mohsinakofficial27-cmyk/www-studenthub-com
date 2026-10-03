@@ -1,13 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { Copy, MessageSquare, Plus, RefreshCw, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, InfoNote } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { AI_CONNECTED, AI_MODES, askAssistant, type AiMode } from "@/lib/ai";
+import { supabase } from "@/integrations/supabase/client";
+import { AI_MODES, type AiMode } from "@/lib/ai";
+import { DAILY_AI_LIMIT, askAssistantAI } from "@/lib/ai.functions";
 import { useAuth, useDb } from "@/lib/auth";
 import { scopedRows } from "@/lib/data";
 import { mutate, uid } from "@/lib/store";
@@ -30,10 +33,22 @@ export const Route = createFileRoute("/_authenticated/assistant")({
 function AssistantPage() {
   const { user } = useAuth();
   const db = useDb();
+  const ask = useServerFn(askAssistantAI);
   const [mode, setMode] = useState<AiMode>("explain");
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [remaining, setRemaining] = useState<number | null>(null);
+  const [limitMsg, setLimitMsg] = useState("");
+
+  useEffect(() => {
+    if (!user) return;
+    void (async () => {
+      const today = new Date().toISOString().slice(0, 10);
+      const { data } = await supabase.from("ai_usage").select("count").eq("user_id", user.id).eq("day", today).maybeSingle();
+      setRemaining(Math.max(0, DAILY_AI_LIMIT - (data?.count ?? 0)));
+    })();
+  }, [user]);
 
   if (!user) return null;
   const conversations = scopedRows(db.ai_conversations, user.id);
@@ -71,7 +86,18 @@ function AssistantPage() {
       });
     }
     try {
-      const result = await askAssistant(text, mode);
+      const history = (current ? messages : [])
+        .map((m) => ({ role: m.role === "assistant" ? ("assistant" as const) : ("user" as const), content: m.content.slice(0, 8000) }))
+        .filter((m) => m.content.trim());
+      if (replaceLastAnswer && history.length && history[history.length - 1]!.role === "assistant") history.pop();
+      if (!replaceLastAnswer) history.push({ role: "user", content: text.slice(0, 8000) });
+      const result = await ask({ data: { mode, messages: history.slice(-40) } });
+      if ("remaining" in result && typeof result.remaining === "number") setRemaining(result.remaining);
+      if (!result.ok) {
+        if ("limitReached" in result && result.limitReached) setLimitMsg(result.error);
+        else toast.error(result.error);
+        return;
+      }
       mutate((d) => {
         if (replaceLastAnswer) {
           const list = d.ai_messages.filter((m) => m.conversation_id === convoId && m.role === "assistant");
@@ -111,11 +137,18 @@ function AssistantPage() {
         </Button>
       }
     >
-      {!AI_CONNECTED ? (
-        <InfoNote
-          title="No AI provider connected yet"
-          description="Answers below are offline study frameworks written into the app, not model output. Once a provider key is added as a server-side setting, the same screen will return real answers."
-        />
+      <p className="text-sm text-muted-foreground" aria-live="polite">
+        {remaining === null
+          ? "Checking your daily AI questions…"
+          : `${remaining} of ${DAILY_AI_LIMIT} AI questions left today (fair usage limit, resets daily).`}
+      </p>
+      {limitMsg || remaining === 0 ? (
+        <div className="mt-3">
+          <InfoNote
+            title="Daily limit reached"
+            description={limitMsg || `You've used all ${DAILY_AI_LIMIT} AI questions for today. Your limit resets tomorrow.`}
+          />
+        </div>
       ) : null}
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[260px_1fr]">
@@ -233,13 +266,19 @@ function AssistantPage() {
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                  e.preventDefault();
+                  if (!busy && input.trim() && remaining !== 0) void send(input);
+                }
+              }}
               rows={2}
               placeholder="Ask anything about your subjects…"
               className="flex-1 resize-none"
             />
             <Button
               type="submit"
-              disabled={busy || !input.trim()}
+              disabled={busy || !input.trim() || remaining === 0}
               className="bg-brand text-brand-foreground hover:bg-brand/90 sm:self-end"
             >
               {busy ? "Thinking…" : "Ask"}
