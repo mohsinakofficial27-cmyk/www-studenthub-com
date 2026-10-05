@@ -56,10 +56,10 @@ function ResetPasswordPage() {
   return (
     <AuthCard
       title="Set a new password"
-      subtitle="Enter your reset code and choose a new password."
+      subtitle="Choose a new password for your account."
       footer={
         <>
-          Need a new code?{" "}
+          Need a new link?{" "}
           <Link to="/forgot-password" className="font-medium text-foreground underline">
             Request one
           </Link>
@@ -68,10 +68,6 @@ function ResetPasswordPage() {
     >
       <form onSubmit={submit} className="space-y-4" noValidate>
         {error ? <ErrorNote title="Reset failed" description={error} /> : null}
-        <div className="space-y-2">
-          <Label htmlFor="token">Reset code</Label>
-          <Input id="token" value={token} onChange={(e) => setToken(e.target.value)} />
-        </div>
         <div className="space-y-2">
           <Label htmlFor="password">New password</Label>
           <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
