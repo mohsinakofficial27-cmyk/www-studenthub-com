@@ -26,7 +26,7 @@ export const Route = createFileRoute("/forgot-password")({
 function ForgotPasswordPage() {
   const { requestReset } = useAuth();
   const [email, setEmail] = useState("");
-  const [token, setToken] = useState("");
+  const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -35,7 +35,8 @@ function ForgotPasswordPage() {
     setError("");
     setBusy(true);
     try {
-      setToken(await requestReset(email));
+      await requestReset(email);
+      setSent(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not start the reset.");
     } finally {
@@ -46,7 +47,7 @@ function ForgotPasswordPage() {
   return (
     <AuthCard
       title="Reset your password"
-      subtitle="We'll create a reset code for your account."
+      subtitle="We'll email you a reset link."
       footer={
         <>
           Remembered it?{" "}
@@ -56,17 +57,14 @@ function ForgotPasswordPage() {
         </>
       }
     >
-      {token ? (
+      {sent ? (
         <div className="space-y-4">
           <InfoNote
-            title="No email provider connected yet"
-            description="Your reset code is shown here instead of being emailed. Connect an email service to send it properly."
+            title="Check your email"
+            description="If an account exists for that email, we've sent a password reset link. Open it to choose a new password."
           />
-          <p className="rounded-xl bg-surface px-4 py-3 font-mono text-sm break-all">{token}</p>
           <Button asChild className="w-full bg-brand text-brand-foreground hover:bg-brand/90">
-            <Link to="/reset-password" search={{ token }}>
-              Continue to reset password
-            </Link>
+            <Link to="/login">Back to login</Link>
           </Button>
         </div>
       ) : (
@@ -77,7 +75,7 @@ function ForgotPasswordPage() {
             <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <Button type="submit" disabled={busy} className="w-full bg-brand text-brand-foreground hover:bg-brand/90">
-            {busy ? "Working…" : "Send reset code"}
+            {busy ? "Working…" : "Send reset link"}
           </Button>
         </form>
       )}

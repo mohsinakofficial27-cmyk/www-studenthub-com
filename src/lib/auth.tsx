@@ -1,14 +1,15 @@
-import { createContext, useCallback, useContext, useMemo, useSyncExternalStore } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
 
+import { supabase } from "@/integrations/supabase/client";
+
 import {
-  hashPassword,
+  loadUserData,
   mutate,
   read,
-  secureToken,
+  resetStore,
   subscribe,
   todayISO,
-  uid,
   type Database,
   type ProfileRow,
   type UserRow,
@@ -39,9 +40,57 @@ const AuthContext = createContext<AuthValue | null>(null);
 
 const AVATAR_COLORS = ["#0e7c66", "#2563eb", "#b45309", "#7c3aed", "#be123c"];
 
+function userRowFrom(supabaseUser: { id: string; email?: string; created_at?: string; user_metadata?: Record<string, unknown> }): UserRow {
+  return {
+    id: supabaseUser.id,
+    name: (supabaseUser.user_metadata?.["name"] as string) || supabaseUser.email?.split("@")[0] || "Student",
+    email: supabaseUser.email ?? "",
+    password_hash: "",
+    created_at: supabaseUser.created_at ?? new Date().toISOString(),
+  };
+}
+
+/** Create the starter rows (profile, free subscription, settings, welcome note). */
+function seedStarterRows(user: UserRow) {
+  mutate((d) => {
+    if (!d.profiles.some((p) => p.user_id === user.id)) {
+      d.profiles.push({
+        user_id: user.id,
+        name: user.name,
+        grade: "",
+        subjects: [],
+        goals: "",
+        exams: "",
+        daily_hours: 2,
+        avatar_color: AVATAR_COLORS[0]!,
+        onboarded: false,
+      });
+    }
+    if (!d.subscriptions.some((s) => s.user_id === user.id)) {
+      d.subscriptions.push({
+        user_id: user.id,
+        plan: "free",
+        status: "active",
+        mode: "test",
+        started_at: todayISO(),
+        renews_at: "",
+        history: [],
+      });
+    }
+    if (!d.user_settings.some((s) => s.user_id === user.id)) {
+      d.user_settings.push({
+        user_id: user.id,
+        notify_tasks: true,
+        notify_exams: true,
+        notify_streak: true,
+        notify_billing: true,
+      });
+    }
+  });
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const db = useDb();
-  const hydrated = typeof window !== "undefined";
 
   const user = useMemo(
     () => db.users.find((u) => u.id === db.session_user_id) ?? null,
@@ -52,136 +101,111 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [db.profiles, db.session_user_id],
   );
 
+  // Restore the cloud session on page load and keep the local cache in sync.
+  useEffect(() => {
+    void (async () => {
+      const { data } = await supabase.auth.getSession();
+      const su = data.session?.user;
+      if (su && read().session_user_id !== su.id) {
+        try {
+          await loadUserData(su.id, userRowFrom(su));
+        } catch (err) {
+          console.error("Could not load your data", err);
+        }
+      }
+    })();
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") resetStore();
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
   const signUp = useCallback(async ({ name, email, password }: { name: string; email: string; password: string }) => {
     const normalized = email.trim().toLowerCase();
-    if (read().users.some((u) => u.email === normalized)) {
-      throw new Error("An account with that email already exists.");
-    }
-    const password_hash = await hashPassword(password);
-    const id = uid();
-    mutate((d) => {
-      d.users.push({ id, name: name.trim(), email: normalized, password_hash, created_at: new Date().toISOString() });
-      d.profiles.push({
-        user_id: id,
-        name: name.trim(),
-        grade: "",
-        subjects: [],
-        goals: "",
-        exams: "",
-        daily_hours: 2,
-        avatar_color: AVATAR_COLORS[d.users.length % AVATAR_COLORS.length]!,
-        onboarded: false,
-      });
-      d.subscriptions.push({
-        user_id: id,
-        plan: "free",
-        status: "active",
-        mode: "test",
-        started_at: todayISO(),
-        renews_at: "",
-        history: [],
-      });
-      d.user_settings.push({
-        user_id: id,
-        notify_tasks: true,
-        notify_exams: true,
-        notify_streak: true,
-        notify_billing: true,
-      });
-      d.notifications.push({
-        id: uid(),
-        user_id: id,
-        kind: "account",
-        title: "Welcome to Student Hub",
-        body: "Finish onboarding to personalise your dashboard.",
-        created_at: new Date().toISOString(),
-        read: false,
-      });
-      d.session_user_id = id;
+    const { data, error } = await supabase.auth.signUp({
+      email: normalized,
+      password,
+      options: { data: { name: name.trim() } },
     });
+    if (error) throw new Error(error.message);
+    if (!data.session || !data.user) {
+      throw new Error("Account created! Please check your email to confirm your account, then log in.");
+    }
+    const row = userRowFrom(data.user);
+    row.name = name.trim();
+    await loadUserData(data.user.id, row);
+    seedStarterRows(row);
   }, []);
 
   const signIn = useCallback(async ({ email, password }: { email: string; password: string }) => {
     const normalized = email.trim().toLowerCase();
-    const found = read().users.find((u) => u.email === normalized);
-    const password_hash = await hashPassword(password);
-    if (!found || found.password_hash !== password_hash) {
-      throw new Error("Email or password is incorrect.");
-    }
-    mutate((d) => {
-      d.session_user_id = found.id;
-    });
+    const { data, error } = await supabase.auth.signInWithPassword({ email: normalized, password });
+    if (error || !data.user) throw new Error("Email or password is incorrect.");
+    await loadUserData(data.user.id, userRowFrom(data.user));
   }, []);
 
   const signOut = useCallback(() => {
-    mutate((d) => {
-      d.session_user_id = null;
-    });
+    void supabase.auth.signOut();
+    resetStore();
   }, []);
 
   const requestReset = useCallback(async (email: string) => {
     const normalized = email.trim().toLowerCase();
-    const found = read().users.find((u) => u.email === normalized);
-    if (!found) throw new Error("No account found with that email.");
-    // Without an email provider connected we surface the token in the UI
-    // instead of sending a message. Swap this for a server-side email send.
-    // The token must be unguessable: it is the only thing standing between an
-    // attacker and this account, so it comes from a cryptographic random
-    // source (never uid()/Math.random()).
-    const token = secureToken();
-    if (typeof window !== "undefined") window.sessionStorage.setItem(`reset.${token}`, found.id);
-    return token;
+    const { error } = await supabase.auth.resetPasswordForEmail(normalized, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) throw new Error(error.message);
+    return "";
   }, []);
 
-  const resetPassword = useCallback(async ({ token, password }: { token: string; password: string }) => {
-    const userId = typeof window !== "undefined" ? window.sessionStorage.getItem(`reset.${token}`) : null;
-    if (!userId) throw new Error("This reset link is invalid or has expired.");
-    const password_hash = await hashPassword(password);
-    mutate((d) => {
-      const u = d.users.find((x) => x.id === userId);
-      if (u) u.password_hash = password_hash;
-    });
-    if (typeof window !== "undefined") window.sessionStorage.removeItem(`reset.${token}`);
+  const resetPassword = useCallback(async ({ password }: { token: string; password: string }) => {
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) throw new Error(error.message);
   }, []);
 
   const changePassword = useCallback(async ({ current, next }: { current: string; next: string }) => {
-    const db2 = read();
-    const me = db2.users.find((u) => u.id === db2.session_user_id);
-    if (!me) throw new Error("You are not signed in.");
-    if (me.password_hash !== (await hashPassword(current))) throw new Error("Current password is incorrect.");
-    const password_hash = await hashPassword(next);
-    mutate((d) => {
-      const u = d.users.find((x) => x.id === me.id);
-      if (u) u.password_hash = password_hash;
-    });
+    const email = read().users.find((u) => u.id === read().session_user_id)?.email;
+    if (!email) throw new Error("You are not signed in.");
+    const { error: checkError } = await supabase.auth.signInWithPassword({ email, password: current });
+    if (checkError) throw new Error("Current password is incorrect.");
+    const { error } = await supabase.auth.updateUser({ password: next });
+    if (error) throw new Error(error.message);
   }, []);
 
   const deleteAccount = useCallback(() => {
-    const id = read().session_user_id;
-    if (!id) return;
-    mutate((d) => {
-      d.users = d.users.filter((u) => u.id !== id);
-      d.profiles = d.profiles.filter((r) => r.user_id !== id);
-      d.subscriptions = d.subscriptions.filter((r) => r.user_id !== id);
-      d.notes = d.notes.filter((r) => r.user_id !== id);
-      d.quizzes = d.quizzes.filter((r) => r.user_id !== id);
-      d.quiz_attempts = d.quiz_attempts.filter((r) => r.user_id !== id);
-      d.flashcard_decks = d.flashcard_decks.filter((r) => r.user_id !== id);
-      d.flashcards = d.flashcards.filter((r) => r.user_id !== id);
-      d.study_tasks = d.study_tasks.filter((r) => r.user_id !== id);
-      d.study_sessions = d.study_sessions.filter((r) => r.user_id !== id);
-      d.ai_conversations = d.ai_conversations.filter((r) => r.user_id !== id);
-      d.ai_messages = d.ai_messages.filter((r) => r.user_id !== id);
-      d.user_settings = d.user_settings.filter((r) => r.user_id !== id);
-      d.notifications = d.notifications.filter((r) => r.user_id !== id);
-      d.session_user_id = null;
-    });
+    void (async () => {
+      const id = read().session_user_id;
+      if (id) {
+        // Remove every row the student owns; the auth account itself is
+        // deactivated server-side.
+        const tables = [
+          "profiles",
+          "notes",
+          "quizzes",
+          "quiz_attempts",
+          "flashcard_decks",
+          "flashcards",
+          "study_tasks",
+          "study_sessions",
+          "ai_conversations",
+          "ai_messages",
+          "user_settings",
+          "notifications",
+        ];
+        await Promise.all(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          tables.map((t) => (supabase as any).from(t).delete().eq("user_id", id)),
+        );
+      }
+      await supabase.auth.signOut();
+      resetStore();
+    })();
   }, []);
 
   const value: AuthValue = {
     user,
     profile,
-    loading: !hydrated,
+    loading: false,
     signUp,
     signIn,
     signOut,
