@@ -26,7 +26,7 @@ export const Route = createFileRoute("/forgot-password")({
 function ForgotPasswordPage() {
   const { requestReset } = useAuth();
   const [email, setEmail] = useState("");
-  const [token, setToken] = useState("");
+  const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -35,7 +35,8 @@ function ForgotPasswordPage() {
     setError("");
     setBusy(true);
     try {
-      setToken(await requestReset(email));
+      await requestReset(email);
+      setSent(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not start the reset.");
     } finally {
@@ -46,7 +47,7 @@ function ForgotPasswordPage() {
   return (
     <AuthCard
       title="Reset your password"
-      subtitle="We'll create a reset code for your account."
+      subtitle="We'll email you a reset link."
       footer={
         <>
           Remembered it?{" "}
