@@ -29,10 +29,8 @@ export const Route = createFileRoute("/reset-password")({
 });
 
 function ResetPasswordPage() {
-  const search = Route.useSearch();
   const { resetPassword } = useAuth();
   const navigate = useNavigate();
-  const [token, setToken] = useState(search.token ?? "");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
@@ -45,7 +43,7 @@ function ResetPasswordPage() {
     if (password !== confirm) return setError("Passwords do not match.");
     setBusy(true);
     try {
-      await resetPassword({ token: token.trim(), password });
+      await resetPassword({ token: "", password });
       toast.success("Password updated. You can sign in now.");
       void navigate({ to: "/login" });
     } catch (err) {
