@@ -57,17 +57,14 @@ function ForgotPasswordPage() {
         </>
       }
     >
-      {token ? (
+      {sent ? (
         <div className="space-y-4">
           <InfoNote
-            title="No email provider connected yet"
-            description="Your reset code is shown here instead of being emailed. Connect an email service to send it properly."
+            title="Check your email"
+            description="If an account exists for that email, we've sent a password reset link. Open it to choose a new password."
           />
-          <p className="rounded-xl bg-surface px-4 py-3 font-mono text-sm break-all">{token}</p>
           <Button asChild className="w-full bg-brand text-brand-foreground hover:bg-brand/90">
-            <Link to="/reset-password" search={{ token }}>
-              Continue to reset password
-            </Link>
+            <Link to="/login">Back to login</Link>
           </Button>
         </div>
       ) : (
@@ -78,7 +75,7 @@ function ForgotPasswordPage() {
             <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <Button type="submit" disabled={busy} className="w-full bg-brand text-brand-foreground hover:bg-brand/90">
-            {busy ? "Working…" : "Send reset code"}
+            {busy ? "Working…" : "Send reset link"}
           </Button>
         </form>
       )}
