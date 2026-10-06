@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { AuthCard } from "@/components/auth-card";
+import { PasswordInput } from "@/components/password-input";
 import { ErrorNote } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,11 +71,11 @@ function ResetPasswordPage() {
         {error ? <ErrorNote title="Reset failed" description={error} /> : null}
         <div className="space-y-2">
           <Label htmlFor="password">New password</Label>
-          <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <PasswordInput id="password" value={password} onChange={(e) => setPassword(e.target.value)} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="confirm">Confirm new password</Label>
-          <Input id="confirm" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+          <PasswordInput id="confirm" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
         </div>
         <Button type="submit" disabled={busy} className="w-full bg-brand text-brand-foreground hover:bg-brand/90">
           {busy ? "Updating…" : "Update password"}

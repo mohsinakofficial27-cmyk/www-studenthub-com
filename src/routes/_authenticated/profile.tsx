@@ -3,6 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
+import { PasswordInput } from "@/components/password-input";
 import { ErrorNote } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -148,11 +149,11 @@ function ProfilePage() {
             {pwError ? <ErrorNote title="Could not update" description={pwError} /> : null}
             <div className="space-y-2">
               <Label htmlFor="cur">Current password</Label>
-              <Input id="cur" type="password" value={current} onChange={(e) => setCurrent(e.target.value)} />
+              <PasswordInput id="cur" value={current} onChange={(e) => setCurrent(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="new">New password</Label>
-              <Input id="new" type="password" value={next} onChange={(e) => setNext(e.target.value)} />
+              <PasswordInput id="new" value={next} onChange={(e) => setNext(e.target.value)} />
             </div>
             <Button type="submit" variant="outline">
               Update password

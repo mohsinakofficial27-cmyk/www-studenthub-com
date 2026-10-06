@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { AuthCard } from "@/components/auth-card";
+import { PasswordInput } from "@/components/password-input";
 import { ErrorNote } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,9 +82,8 @@ function SignupPage() {
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
             value={form.password}
             onChange={set("password")}
             autoComplete="new-password"
@@ -92,9 +92,8 @@ function SignupPage() {
         </div>
         <div className="space-y-2">
           <Label htmlFor="confirm">Confirm password</Label>
-          <Input
+          <PasswordInput
             id="confirm"
-            type="password"
             value={form.confirm}
             onChange={set("confirm")}
             autoComplete="new-password"
