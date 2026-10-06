@@ -12,7 +12,9 @@
     "format": "prettier --write ."
   },
   "overrides": {
-    "rolldown": "1.2.1"
+    "rolldown": "1.2.1",
+    "source-map-js@1.2.1": "1.2.2",
+    "esbuild@0.18.20": "0.25.12"
   },
   "dependencies": {
     "@esbuild-kit/core-utils": "^3.3.2",
