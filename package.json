@@ -14,7 +14,10 @@
   "overrides": {
     "rolldown": "1.2.1",
     "source-map-js": "1.2.2",
-    "nanoid": "3.3.19"
+    "nanoid": "3.3.19",
+    "@esbuild-kit/core-utils": {
+      "esbuild": "0.25.12"
+    }
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
