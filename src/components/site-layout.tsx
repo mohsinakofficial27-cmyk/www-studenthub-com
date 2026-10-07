@@ -154,7 +154,7 @@ export function SiteFooter() {
         <div className="flex flex-col gap-4 border-b border-navy-foreground/15 pb-10 sm:flex-row sm:items-end sm:justify-between lg:pb-14">
           <div>
             <Logo />
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-navy-foreground/65">Everything You Need to Study Smarter.</p>
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-navy-foreground/65">Your AI-powered student workspace.</p>
           </div>
           <p className="max-w-xs text-sm leading-relaxed text-navy-foreground/65 sm:text-right">Your space to learn, plan and stay focused.</p>
         </div>
