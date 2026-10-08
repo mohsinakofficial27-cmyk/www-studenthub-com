@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
-import { addTask } from "@/lib/data";
+import { createTask } from "@/lib/data";
 import { mutate } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
