@@ -105,7 +105,7 @@ function OnboardingPage() {
     });
     for (const e of exams) {
       if (!e.title.trim() || !e.date) continue;
-      addTask(user.id, {
+      createTask(user.id, {
         title: e.title.trim(),
         subject: subjects[0] ?? "General",
         date: e.date,
@@ -117,7 +117,7 @@ function OnboardingPage() {
     }
     for (const a of deadlines) {
       if (!a.title.trim() || !a.date) continue;
-      addTask(user.id, {
+      createTask(user.id, {
         title: a.title.trim(),
         subject: subjects[0] ?? "General",
         date: a.date,
