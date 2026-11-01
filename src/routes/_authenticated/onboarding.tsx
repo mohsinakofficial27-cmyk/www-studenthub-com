@@ -108,6 +108,7 @@ function OnboardingPage() {
       createTask(user.id, {
         title: e.title.trim(),
         subject: subjects[0] ?? "General",
+        topic: "",
         date: e.date,
         time: "09:00",
         minutes: 120,
@@ -120,6 +121,7 @@ function OnboardingPage() {
       createTask(user.id, {
         title: a.title.trim(),
         subject: subjects[0] ?? "General",
+        topic: "",
         date: a.date,
         time: "18:00",
         minutes: 60,
