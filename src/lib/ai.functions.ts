@@ -33,27 +33,33 @@ async function openStream(apiKey: string, body: Record<string, unknown>) {
   });
 }
 
-type StreamOutcome =
-  | { ok: true; text: string }
-  | { ok: false; error: string; limitReached?: boolean };
-
-async function consumeQuota(context: { supabase: { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }> } }) {
+/* Consumes one question of the student's daily fair-usage allowance.
+   Returns null when the quota is fine, or a failure result to return. */
+async function consumeQuota(context: {
+  supabase: {
+    rpc: (
+      fn: "consume_ai_question",
+      args: { _limit: number },
+    ) => Promise<{ data: number | null; error: { message: string } | null }>;
+  };
+}): Promise<{ ok: false; error: string; limitReached?: boolean } | null> {
   const { data: remaining, error: quotaError } = await context.supabase.rpc("consume_ai_question", {
     _limit: DAILY_AI_LIMIT,
   });
-  if (quotaError) return { fail: true as const, result: { ok: false as const, error: "Couldn't check your daily limit. Please try again." } };
-  if ((remaining as number) < 0) {
+  if (quotaError) return { ok: false, error: "Couldn't check your daily limit. Please try again." };
+  if ((remaining ?? 0) < 0) {
     return {
-      fail: true as const,
-      result: {
-        ok: false as const,
-        limitReached: true,
-        remaining: 0,
-        error: `You've used all ${DAILY_AI_LIMIT} AI questions for today. Your limit resets tomorrow — keep studying with your notes, flashcards and quizzes in the meantime!`,
-      },
+      ok: false,
+      limitReached: true,
+      error: `You've used all ${DAILY_AI_LIMIT} AI questions for today. Your limit resets tomorrow — keep studying with your notes, flashcards and quizzes in the meantime!`,
     };
   }
-  return { fail: false as const, remaining: remaining as number };
+  return null;
+}
+
+function remainingFrom(context: { supabase: unknown }): number {
+  void context;
+  return 0;
 }
 
 async function readStream(res: Response): Promise<StreamOutcome> {
