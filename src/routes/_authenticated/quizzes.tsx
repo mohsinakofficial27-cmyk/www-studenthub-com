@@ -11,7 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { generateQuizAI } from "@/lib/ai.functions";
 import { useAuth, useDb } from "@/lib/auth";
-import { createQuiz, recordAttempt, scopedRows } from "@/lib/data";
+import { applyAttempt, createQuiz, scopedRows } from "@/lib/data";
+import { recordQuizAttempt } from "@/lib/quiz.functions";
 import { uid } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
