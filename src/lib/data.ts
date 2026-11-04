@@ -4,6 +4,7 @@ import {
   todayISO,
   uid,
   type CardRow,
+  type CourseRow,
   type Database,
   type DeckRow,
   type NoteRow,
@@ -12,6 +13,76 @@ import {
   type SubscriptionRow,
   type TaskRow,
 } from "./store";
+
+/* ---------------- courses ---------------- */
+
+export function createCourse(userId: string, input: Partial<CourseRow>) {
+  const id = uid();
+  mutate((d) => {
+    d.courses.push({
+      id,
+      user_id: userId,
+      name: input.name?.trim() || "New course",
+      instructor: input.instructor?.trim() ?? "",
+      credits: Number(input.credits) || 3,
+      grade: input.grade ?? "",
+      target_grade: input.target_grade ?? "",
+      color: input.color || "#0e7c66",
+      created_at: new Date().toISOString(),
+    });
+  });
+  return id;
+}
+
+export function updateCourse(id: string, patch: Partial<CourseRow>) {
+  mutate((d) => {
+    const c = d.courses.find((x) => x.id === id);
+    if (c) Object.assign(c, patch);
+  });
+}
+
+export function deleteCourse(id: string) {
+  mutate((d) => {
+    d.courses = d.courses.filter((x) => x.id !== id);
+  });
+}
+
+/* ---------------- GPA maths (estimates from the student's own entries) ------- */
+
+const GRADE_POINTS: Record<string, number> = {
+  "A+": 4.0, A: 4.0, "A-": 3.7,
+  "B+": 3.3, B: 3.0, "B-": 2.7,
+  "C+": 2.3, C: 2.0, "C-": 1.7,
+  "D+": 1.3, D: 1.0, F: 0,
+};
+
+export const GRADE_OPTIONS = Object.keys(GRADE_POINTS);
+
+export function gradePoints(grade: string): number | null {
+  return grade in GRADE_POINTS ? GRADE_POINTS[grade] : null;
+}
+
+/** Weighted GPA across graded courses. Returns null when nothing is graded. */
+export function computeGpa(courses: CourseRow[]): number | null {
+  let points = 0;
+  let credits = 0;
+  for (const c of courses) {
+    const p = gradePoints(c.grade);
+    if (p === null) continue;
+    points += p * c.credits;
+    credits += c.credits;
+  }
+  if (!credits) return null;
+  return Math.round((points / credits) * 100) / 100;
+}
+
+/** Required final-exam percentage to reach a target overall grade.
+ *  current: current average %, weight: final worth as 0-1, target: desired overall % */
+export function finalExamNeeded(current: number, weight: number, target: number): number | null {
+  if (weight <= 0 || weight > 1) return null;
+  const needed = (target - (1 - weight) * current) / weight;
+  return Math.round(needed * 10) / 10;
+}
 
 
 /* ---------------- notes ---------------- */
