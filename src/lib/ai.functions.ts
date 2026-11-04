@@ -38,8 +38,8 @@ async function openStream(apiKey: string, body: Record<string, unknown>) {
 async function consumeQuota(context: {
   supabase: {
     rpc: (
-      fn: string,
-      args: Record<string, unknown>,
+      fn: "consume_ai_question",
+      args: { _limit: number },
     ) => PromiseLike<{ data: unknown; error: { message: string } | null }>;
   };
 }): Promise<
