@@ -34,32 +34,30 @@ async function openStream(apiKey: string, body: Record<string, unknown>) {
 }
 
 /* Consumes one question of the student's daily fair-usage allowance.
-   Returns null when the quota is fine, or a failure result to return. */
+   Returns a failure result to return, or { ok: true, remaining } on success. */
 async function consumeQuota(context: {
   supabase: {
     rpc: (
-      fn: "consume_ai_question",
-      args: { _limit: number },
-    ) => Promise<{ data: number | null; error: { message: string } | null }>;
+      fn: string,
+      args: Record<string, unknown>,
+    ) => PromiseLike<{ data: unknown; error: { message: string } | null }>;
   };
-}): Promise<{ ok: false; error: string; limitReached?: boolean } | null> {
+}): Promise<
+  { ok: false; error: string; limitReached?: boolean } | { ok: true; remaining: number }
+> {
   const { data: remaining, error: quotaError } = await context.supabase.rpc("consume_ai_question", {
     _limit: DAILY_AI_LIMIT,
   });
   if (quotaError) return { ok: false, error: "Couldn't check your daily limit. Please try again." };
-  if ((remaining ?? 0) < 0) {
+  const left = Number(remaining ?? 0);
+  if (left < 0) {
     return {
       ok: false,
       limitReached: true,
       error: `You've used all ${DAILY_AI_LIMIT} AI questions for today. Your limit resets tomorrow — keep studying with your notes, flashcards and quizzes in the meantime!`,
     };
   }
-  return null;
-}
-
-function remainingFrom(context: { supabase: unknown }): number {
-  void context;
-  return 0;
+  return { ok: true, remaining: Math.max(left, 0) };
 }
 
 async function readStream(res: Response): Promise<StreamOutcome> {
