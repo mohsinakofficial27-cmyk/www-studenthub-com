@@ -134,7 +134,13 @@ export const askAssistantAI = createServerFn({ method: "POST" })
         role: "system",
         content: `You are Student Hub's friendly AI study assistant for students. Be accurate, clear and encouraging. Use short markdown-free formatting (plain text, numbered lists allowed). Never write full assignments for students; explain and guide instead. ${MODE_PROMPTS[data.mode]}`,
       },
-      ...data.messages.slice(-20),
+      // Roles are assigned here, server-side: the caller's history is passed
+      // through a fixed mapping and can never introduce a system or
+      // instruction role into the model input.
+      ...data.messages.slice(-20).map((m) => ({
+        role: m.role === "assistant" ? ("assistant" as const) : ("user" as const),
+        content: m.content,
+      })),
     ];
 
     let res: Response;
