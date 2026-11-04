@@ -7,6 +7,7 @@ import {
   type Database,
   type DeckRow,
   type NoteRow,
+  type QuizAttemptRow,
   type QuizRow,
   type SubscriptionRow,
   type TaskRow,

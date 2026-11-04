@@ -275,7 +275,6 @@ const SYNC_SPECS: SyncSpec[] = [
   { field: "user_settings", key: "user_id" },
   { field: "notes", key: "id" },
   { field: "quizzes", key: "id" },
-  { field: "quiz_attempts", key: "id" },
   { field: "flashcard_decks", key: "id" },
   { field: "flashcards", key: "id" },
   { field: "study_tasks", key: "id" },
