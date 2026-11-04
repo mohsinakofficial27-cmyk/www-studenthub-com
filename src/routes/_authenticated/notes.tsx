@@ -108,7 +108,12 @@ function NotesPage() {
         cards.forEach((c: { front: string; back: string }) => createCard(user.id, deckId, c.front, c.back));
         toast.success(`${cards.length} flashcards created in a new deck.`);
       } else {
-        const questions = result.questions.map((q, i) => ({ ...q, id: `q${i}` }));
+        const questions = result.questions.map(
+          (q: { prompt: string; options: string[]; answer: number; explanation: string }, i: number) => ({
+            ...q,
+            id: `q${i}`,
+          }),
+        );
         if (!questions.length) {
           toast.error("The AI couldn't write questions for these notes. Try again.");
           return;

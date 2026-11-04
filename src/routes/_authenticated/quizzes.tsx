@@ -73,7 +73,12 @@ function QuizzesPage() {
         else toast.error(result.error);
         return;
       }
-      const questions = result.questions.map((q, i) => ({ ...q, id: `q${i}` }));
+      const questions = result.questions.map(
+        (q: { prompt: string; options: string[]; answer: number; explanation: string }, i: number) => ({
+          ...q,
+          id: `q${i}`,
+        }),
+      );
       const id = createQuiz(user.id, {
         subject: subject.trim(),
         topic: topic.trim(),
