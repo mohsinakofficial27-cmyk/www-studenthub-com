@@ -155,17 +155,15 @@ export function createQuiz(userId: string, quiz: Omit<QuizRow, "id" | "user_id" 
   return id;
 }
 
-export function recordAttempt(userId: string, quizId: string, answers: number[], score: number, total: number) {
+/**
+ * Quiz attempts are recorded server-side (src/lib/quiz.functions.ts grades the
+ * answers against the stored quiz) and the database blocks direct client
+ * INSERT/UPDATE on `quiz_attempts`. This helper only mirrors a server-returned
+ * row into the in-memory store for display.
+ */
+export function applyAttempt(row: QuizAttemptRow) {
   mutate((d) => {
-    d.quiz_attempts.unshift({
-      id: uid(),
-      user_id: userId,
-      quiz_id: quizId,
-      answers,
-      score,
-      total,
-      taken_at: new Date().toISOString(),
-    });
+    d.quiz_attempts.unshift(row);
   });
 }
 
