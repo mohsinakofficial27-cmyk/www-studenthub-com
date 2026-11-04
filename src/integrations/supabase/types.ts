@@ -534,6 +534,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      record_quiz_attempt: {
+        Args: { _answers: Json; _quiz_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "user"
