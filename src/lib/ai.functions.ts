@@ -125,7 +125,7 @@ export const askAssistantAI = createServerFn({ method: "POST" })
     if (!apiKey) return { ok: false as const, error: "The AI service isn't configured yet." };
 
     const quota = await consumeQuota(context);
-    if (quota.fail) return quota.result;
+    if (!quota.ok) return quota;
 
     const input = [
       {
@@ -168,7 +168,7 @@ export const askCoachAI = createServerFn({ method: "POST" })
     if (!apiKey) return { ok: false as const, error: "The AI service isn't configured yet." };
 
     const quota = await consumeQuota(context);
-    if (quota.fail) return quota.result;
+    if (!quota.ok) return quota;
 
     const input = [
       {
@@ -266,7 +266,7 @@ export const generateNoteStudy = createServerFn({ method: "POST" })
     if (!apiKey) return { ok: false as const, error: "The AI service isn't configured yet." };
 
     const quota = await consumeQuota(context);
-    if (quota.fail) return quota.result;
+    if (!quota.ok) return quota;
 
     const input = [
       {
@@ -365,7 +365,7 @@ export const generateQuizAI = createServerFn({ method: "POST" })
     if (!apiKey) return { ok: false as const, error: "The AI service isn't configured yet." };
 
     const quota = await consumeQuota(context);
-    if (quota.fail) return quota.result;
+    if (!quota.ok) return quota;
 
     const input = [
       {
