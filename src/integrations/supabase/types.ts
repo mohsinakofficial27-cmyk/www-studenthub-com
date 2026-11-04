@@ -110,6 +110,50 @@ export type Database = {
         }
         Relationships: []
       }
+      courses: {
+        Row: {
+          color: string
+          created_at: string
+          credits: number
+          grade: string
+          id: string
+          instructor: string
+          name: string
+          target_grade: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          credits?: number
+          grade?: string
+          id: string
+          instructor?: string
+          name?: string
+          target_grade?: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          credits?: number
+          grade?: string
+          id?: string
+          instructor?: string
+          name?: string
+          target_grade?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       feedback: {
         Row: {
           created_at: string
