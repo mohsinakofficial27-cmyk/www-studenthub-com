@@ -283,6 +283,53 @@ export function recordBillingNotice(userId: string, title: string, body: string)
 }
 
 
+/* ---------------- deadline protection & week schedule ---------------- */
+
+function dateKey(offsetDays: number) {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return d.toISOString().slice(0, 10);
+}
+
+export interface DeadlineSummary {
+  overdue: TaskRow[];
+  dueToday: TaskRow[];
+  dueTomorrow: TaskRow[];
+  dueThisWeek: TaskRow[]; // after tomorrow, within 7 days
+  completedToday: number;
+}
+
+export function deadlineSummary(db: Database, userId: string): DeadlineSummary {
+  const today = dateKey(0);
+  const tomorrow = dateKey(1);
+  const weekEnd = dateKey(6);
+  const tasks = db.study_tasks.filter((t) => t.user_id === userId);
+  return {
+    overdue: tasks.filter((t) => !t.done && t.date < today),
+    dueToday: tasks.filter((t) => !t.done && t.date === today),
+    dueTomorrow: tasks.filter((t) => !t.done && t.date === tomorrow),
+    dueThisWeek: tasks.filter((t) => !t.done && t.date > tomorrow && t.date <= weekEnd),
+    completedToday: tasks.filter((t) => t.done && t.date === today).length,
+  };
+}
+
+/** Minutes of planned (not done) study per day for the next 7 days. */
+export function weekSchedule(db: Database, userId: string): { day: string; minutes: number; date: string }[] {
+  const tasks = db.study_tasks.filter((t) => t.user_id === userId && !t.done);
+  const out: { day: string; minutes: number; date: string }[] = [];
+  for (let i = 0; i < 7; i += 1) {
+    const key = dateKey(i);
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    out.push({
+      day: d.toLocaleDateString(undefined, { weekday: "short" }),
+      minutes: tasks.filter((t) => t.date === key && !t.is_exam).reduce((sum, t) => sum + t.minutes, 0),
+      date: key,
+    });
+  }
+  return out;
+}
+
 /* ---------------- derived stats ---------------- */
 
 export interface Stats {
