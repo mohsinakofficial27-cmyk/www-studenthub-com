@@ -37,6 +37,7 @@ function QuizzesPage() {
   const { user } = useAuth();
   const db = useDb();
   const generate = useServerFn(generateQuizAI);
+  const record = useServerFn(recordQuizAttempt);
   const [subject, setSubject] = useState("");
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
@@ -91,14 +92,22 @@ function QuizzesPage() {
 
   const score = quiz ? quiz.questions.reduce((s, q, i) => s + (answers[i] === q.answer ? 1 : 0), 0) : 0;
 
-  const submit = () => {
+  const submit = async () => {
     if (!quiz) return;
     if (answers.some((a) => a < 0)) {
       toast.error("Answer every question before submitting.");
       return;
     }
     setSubmitted(true);
-    recordAttempt(user.id, quiz.id, answers, score, quiz.questions.length);
+    try {
+      // The database grades the answers against the stored quiz, so the score
+      // saved here is the server-computed one, never a client-supplied value.
+      const result = await record({ data: { quizId: quiz.id, answers } });
+      if (result.ok && result.attempt) applyAttempt(result.attempt);
+      else toast.error(result.error ?? "Couldn't save your attempt. Please try again.");
+    } catch {
+      toast.error("Couldn't save your attempt. Please try again.");
+    }
   };
 
   return (
