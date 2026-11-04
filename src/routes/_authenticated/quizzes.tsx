@@ -279,7 +279,7 @@ function QuizzesPage() {
                     </Button>
                   </>
                 ) : (
-                  <Button onClick={submit} className="bg-brand text-brand-foreground hover:bg-brand/90">
+                  <Button onClick={() => void submit()} className="bg-brand text-brand-foreground hover:bg-brand/90">
                     Submit answers
                   </Button>
                 )}
