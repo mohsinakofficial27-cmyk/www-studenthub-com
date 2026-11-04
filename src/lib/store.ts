@@ -107,6 +107,18 @@ export interface CardRow {
   confidence: "unrated" | "easy" | "medium" | "hard";
 }
 
+export interface CourseRow {
+  id: string;
+  user_id: string;
+  name: string;
+  instructor: string;
+  credits: number;
+  grade: string; // letter grade, e.g. "A-" — "" while ungraded
+  target_grade: string;
+  color: string;
+  created_at: string;
+}
+
 export interface TaskRow {
   id: string;
   user_id: string;
@@ -168,6 +180,7 @@ export interface Database {
   users: UserRow[];
   profiles: ProfileRow[];
   subscriptions: SubscriptionRow[];
+  courses: CourseRow[];
   notes: NoteRow[];
   quizzes: QuizRow[];
   quiz_attempts: QuizAttemptRow[];
@@ -186,6 +199,7 @@ const empty = (): Database => ({
   users: [],
   profiles: [],
   subscriptions: [],
+  courses: [],
   notes: [],
   quizzes: [],
   quiz_attempts: [],
@@ -273,6 +287,7 @@ type SyncSpec = { field: keyof Database; key: "id" | "user_id" };
 const SYNC_SPECS: SyncSpec[] = [
   { field: "profiles", key: "user_id" },
   { field: "user_settings", key: "user_id" },
+  { field: "courses", key: "id" },
   { field: "notes", key: "id" },
   { field: "quizzes", key: "id" },
   { field: "flashcard_decks", key: "id" },

@@ -322,6 +322,132 @@ export const generateNoteStudy = createServerFn({ method: "POST" })
     };
   });
 
+/* ---------------- AI Syllabus Scanner ---------------- */
+
+interface SyllabusExtraction {
+  courses: { name: string; instructor: string }[];
+  items: { kind: "assignment" | "exam" | "project"; title: string; course: string; date: string; priority: string }[];
+}
+
+const syllabusSchema = z.object({
+  text: z.string().trim().max(40000).default(""),
+  image: z
+    .string()
+    .regex(/^data:image\/(png|jpeg|jpg|webp);base64,[A-Za-z0-9+/=]+$/)
+    .max(6_000_000)
+    .optional(),
+});
+
+const syllabusFormat = {
+  type: "json_schema" as const,
+  name: "syllabus_extraction",
+  strict: true,
+  schema: {
+    type: "object",
+    additionalProperties: false,
+    required: ["courses", "items"],
+    properties: {
+      courses: {
+        type: "array",
+        maxItems: 12,
+        items: {
+          type: "object",
+          additionalProperties: false,
+          required: ["name", "instructor"],
+          properties: {
+            name: { type: "string", description: "Course name or code, e.g. 'Biology 101'." },
+            instructor: { type: "string", description: "Instructor name if the syllabus states one, else empty string." },
+          },
+        },
+      },
+      items: {
+        type: "array",
+        maxItems: 30,
+        items: {
+          type: "object",
+          additionalProperties: false,
+          required: ["kind", "title", "course", "date", "priority"],
+          properties: {
+            kind: { type: "string", enum: ["assignment", "exam", "project"] },
+            title: { type: "string" },
+            course: { type: "string", description: "Course name this item belongs to, else empty string." },
+            date: { type: "string", description: "Due/exam date as YYYY-MM-DD when confidently stated, else empty string." },
+            priority: { type: "string", enum: ["low", "medium", "high"] },
+          },
+        },
+      },
+    },
+  },
+};
+
+const SYLLABUS_SYSTEM =
+  "You extract study commitments from a student's syllabus or course document. " +
+  "List every course mentioned and every assignment, exam and project with its due date. " +
+  "Convert any date you are confident about into YYYY-MM-DD format using the year stated in the document (or the current year if unstated). " +
+  "If a date is ambiguous or missing, return an empty string rather than guessing. " +
+  "Set priority: high for exams and soon-due work, medium for regular assignments, low for distant projects. " +
+  "Only include entries actually stated in the document.";
+
+export const parseSyllabusAI = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => syllabusSchema.parse(data))
+  .handler(async ({ data, context }) => {
+    const apiKey = process.env["LOVABLE_API_KEY"];
+    if (!apiKey) return { ok: false as const, error: "The AI service isn't configured yet." };
+    if (!data.text.trim() && !data.image) {
+      return { ok: false as const, error: "Upload a syllabus file or paste its text first." };
+    }
+
+    const quota = await consumeQuota(context);
+    if (!quota.ok) return quota;
+
+    const userContent: Record<string, unknown>[] = [
+      { type: "input_text", text: `Extract the courses, assignments, exams and projects from this syllabus document.\n\n${data.text.slice(0, 38000)}`.trim() },
+    ];
+    if (data.image) userContent.push({ type: "input_image", image_url: data.image });
+
+    let res: Response;
+    try {
+      res = await openStream(apiKey, {
+        model: MODEL,
+        input: [{ role: "user", content: userContent }],
+        stream: true,
+        store: false,
+        reasoning: { effort: "low" },
+        text: { format: syllabusFormat },
+      });
+    } catch {
+      return { ok: false as const, error: "Couldn't reach the AI service. Check your connection and try again." };
+    }
+
+    const outcome = await readStream(res);
+    if (!outcome.ok) return { ok: false as const, error: outcome.error };
+    const parsed = parseJson<SyllabusExtraction>(outcome.text);
+    if (!parsed || !Array.isArray(parsed.items)) {
+      return { ok: false as const, error: "The AI couldn't read this syllabus. Try a clearer photo or paste the text." };
+    }
+    const kindOf = (k: unknown): "assignment" | "exam" | "project" =>
+      k === "exam" ? "exam" : k === "project" ? "project" : "assignment";
+    return {
+      ok: true as const,
+      courses: parsed.courses
+        .filter((c) => c && typeof c.name === "string" && c.name.trim())
+        .map((c) => ({ name: c.name.trim().slice(0, 80), instructor: String(c.instructor ?? "").trim().slice(0, 80) }))
+        .slice(0, 12),
+      items: parsed.items
+        .filter((i) => i && typeof i.title === "string" && i.title.trim())
+        .map((i) => ({
+          kind: kindOf(i.kind),
+          title: i.title.trim().slice(0, 120),
+          course: String(i.course ?? "").trim().slice(0, 80),
+          date: /^\d{4}-\d{2}-\d{2}$/.test(String(i.date ?? "")) ? String(i.date) : "",
+          priority: i.priority === "high" ? "high" : i.priority === "low" ? "low" : "medium",
+        }))
+        .slice(0, 30),
+      remaining: quota.remaining,
+    };
+  });
+
 /* ---------------- AI Quiz Generator ---------------- */
 
 const quizRequestSchema = z.object({
