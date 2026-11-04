@@ -11,7 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { generateQuizAI } from "@/lib/ai.functions";
 import { useAuth, useDb } from "@/lib/auth";
-import { createQuiz, recordAttempt, scopedRows } from "@/lib/data";
+import { applyAttempt, createQuiz, scopedRows } from "@/lib/data";
+import { recordQuizAttempt } from "@/lib/quiz.functions";
 import { uid } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -36,6 +37,7 @@ function QuizzesPage() {
   const { user } = useAuth();
   const db = useDb();
   const generate = useServerFn(generateQuizAI);
+  const record = useServerFn(recordQuizAttempt);
   const [subject, setSubject] = useState("");
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
@@ -71,7 +73,12 @@ function QuizzesPage() {
         else toast.error(result.error);
         return;
       }
-      const questions = result.questions.map((q, i) => ({ ...q, id: `q${i}` }));
+      const questions = result.questions.map(
+        (q: { prompt: string; options: string[]; answer: number; explanation: string }, i: number) => ({
+          ...q,
+          id: `q${i}`,
+        }),
+      );
       const id = createQuiz(user.id, {
         subject: subject.trim(),
         topic: topic.trim(),
@@ -90,14 +97,22 @@ function QuizzesPage() {
 
   const score = quiz ? quiz.questions.reduce((s, q, i) => s + (answers[i] === q.answer ? 1 : 0), 0) : 0;
 
-  const submit = () => {
+  const submit = async () => {
     if (!quiz) return;
     if (answers.some((a) => a < 0)) {
       toast.error("Answer every question before submitting.");
       return;
     }
     setSubmitted(true);
-    recordAttempt(user.id, quiz.id, answers, score, quiz.questions.length);
+    try {
+      // The database grades the answers against the stored quiz, so the score
+      // saved here is the server-computed one, never a client-supplied value.
+      const result = await record({ data: { quizId: quiz.id, answers } });
+      if (result.ok && result.attempt) applyAttempt(result.attempt);
+      else toast.error(result.error ?? "Couldn't save your attempt. Please try again.");
+    } catch {
+      toast.error("Couldn't save your attempt. Please try again.");
+    }
   };
 
   return (
@@ -269,7 +284,7 @@ function QuizzesPage() {
                     </Button>
                   </>
                 ) : (
-                  <Button onClick={submit} className="bg-brand text-brand-foreground hover:bg-brand/90">
+                  <Button onClick={() => void submit()} className="bg-brand text-brand-foreground hover:bg-brand/90">
                     Submit answers
                   </Button>
                 )}

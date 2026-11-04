@@ -34,33 +34,33 @@ async function openStream(apiKey: string, body: Record<string, unknown>) {
 }
 
 /* Consumes one question of the student's daily fair-usage allowance.
-   Returns null when the quota is fine, or a failure result to return. */
+   Returns a failure result to return, or { ok: true, remaining } on success. */
 async function consumeQuota(context: {
   supabase: {
     rpc: (
       fn: "consume_ai_question",
       args: { _limit: number },
-    ) => Promise<{ data: number | null; error: { message: string } | null }>;
+    ) => PromiseLike<{ data: unknown; error: { message: string } | null }>;
   };
-}): Promise<{ ok: false; error: string; limitReached?: boolean } | null> {
+}): Promise<
+  { ok: false; error: string; limitReached?: boolean } | { ok: true; remaining: number }
+> {
   const { data: remaining, error: quotaError } = await context.supabase.rpc("consume_ai_question", {
     _limit: DAILY_AI_LIMIT,
   });
   if (quotaError) return { ok: false, error: "Couldn't check your daily limit. Please try again." };
-  if ((remaining ?? 0) < 0) {
+  const left = Number(remaining ?? 0);
+  if (left < 0) {
     return {
       ok: false,
       limitReached: true,
       error: `You've used all ${DAILY_AI_LIMIT} AI questions for today. Your limit resets tomorrow — keep studying with your notes, flashcards and quizzes in the meantime!`,
     };
   }
-  return null;
+  return { ok: true, remaining: Math.max(left, 0) };
 }
 
-function remainingFrom(context: { supabase: unknown }): number {
-  void context;
-  return 0;
-}
+type StreamOutcome = { ok: false; error: string } | { ok: true; text: string };
 
 async function readStream(res: Response): Promise<StreamOutcome> {
   if (!res.ok || !res.body) {
@@ -127,14 +127,20 @@ export const askAssistantAI = createServerFn({ method: "POST" })
     if (!apiKey) return { ok: false as const, error: "The AI service isn't configured yet." };
 
     const quota = await consumeQuota(context);
-    if (quota.fail) return quota.result;
+    if (!quota.ok) return quota;
 
     const input = [
       {
         role: "system",
         content: `You are Student Hub's friendly AI study assistant for students. Be accurate, clear and encouraging. Use short markdown-free formatting (plain text, numbered lists allowed). Never write full assignments for students; explain and guide instead. ${MODE_PROMPTS[data.mode]}`,
       },
-      ...data.messages.slice(-20),
+      // Roles are assigned here, server-side: the caller's history is passed
+      // through a fixed mapping and can never introduce a system or
+      // instruction role into the model input.
+      ...data.messages.slice(-20).map((m) => ({
+        role: m.role === "assistant" ? ("assistant" as const) : ("user" as const),
+        content: m.content,
+      })),
     ];
 
     let res: Response;
@@ -164,7 +170,7 @@ export const askCoachAI = createServerFn({ method: "POST" })
     if (!apiKey) return { ok: false as const, error: "The AI service isn't configured yet." };
 
     const quota = await consumeQuota(context);
-    if (quota.fail) return quota.result;
+    if (!quota.ok) return quota;
 
     const input = [
       {
@@ -262,7 +268,7 @@ export const generateNoteStudy = createServerFn({ method: "POST" })
     if (!apiKey) return { ok: false as const, error: "The AI service isn't configured yet." };
 
     const quota = await consumeQuota(context);
-    if (quota.fail) return quota.result;
+    if (!quota.ok) return quota;
 
     const input = [
       {
@@ -361,7 +367,7 @@ export const generateQuizAI = createServerFn({ method: "POST" })
     if (!apiKey) return { ok: false as const, error: "The AI service isn't configured yet." };
 
     const quota = await consumeQuota(context);
-    if (quota.fail) return quota.result;
+    if (!quota.ok) return quota;
 
     const input = [
       {

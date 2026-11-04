@@ -38,7 +38,12 @@ export default defineTool({
       .order("updated_at", { ascending: false })
       .limit(limit ?? 20);
     if (favorites_only) query = query.eq("favorite", true);
-    if (search) query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`);
+    if (search) {
+      // The caller's text must not alter the PostgREST OR-filter syntax:
+      // strip the characters PostgREST treats as filter syntax, then cap length.
+      const safe = search.replace(/[%,()]/g, " ").replace(/\s+/g, " ").trim().slice(0, 100);
+      if (safe) query = query.or(`title.ilike.%${safe}%,content.ilike.%${safe}%`);
+    }
     const { data, error } = await query;
     if (error) throw new ToolError(error.message);
     const notes = (data ?? []).map(toNoteJson);

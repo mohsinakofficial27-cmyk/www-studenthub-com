@@ -275,7 +275,6 @@ const SYNC_SPECS: SyncSpec[] = [
   { field: "user_settings", key: "user_id" },
   { field: "notes", key: "id" },
   { field: "quizzes", key: "id" },
-  { field: "quiz_attempts", key: "id" },
   { field: "flashcard_decks", key: "id" },
   { field: "flashcards", key: "id" },
   { field: "study_tasks", key: "id" },
@@ -285,8 +284,17 @@ const SYNC_SPECS: SyncSpec[] = [
   { field: "notifications", key: "id" },
 ];
 
-/** Tables read on load — includes the read-only subscription row. */
-const READ_SPECS: SyncSpec[] = [...SYNC_SPECS, { field: "subscriptions", key: "user_id" }];
+// Read-only tables: quiz attempts are written server-side only (the database
+// grades answers against the stored quiz — see src/lib/quiz.functions.ts), and
+// the subscription row is decided server-side (see
+// src/lib/subscription.functions.ts).
+const READ_ONLY_SPECS: SyncSpec[] = [
+  { field: "quiz_attempts", key: "id" },
+  { field: "subscriptions", key: "user_id" },
+];
+
+/** Tables read on load — sync specs plus the read-only rows. */
+const READ_SPECS: SyncSpec[] = [...SYNC_SPECS, ...READ_ONLY_SPECS];
 
 
 let syncedSnapshot: Database | null = null;
