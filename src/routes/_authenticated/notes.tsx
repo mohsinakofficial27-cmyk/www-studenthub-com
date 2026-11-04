@@ -105,7 +105,7 @@ function NotesPage() {
           return;
         }
         const deckId = createDeck(user.id, note.title || "AI deck", note.subject);
-        cards.forEach((c) => createCard(user.id, deckId, c.front, c.back));
+        cards.forEach((c: { front: string; back: string }) => createCard(user.id, deckId, c.front, c.back));
         toast.success(`${cards.length} flashcards created in a new deck.`);
       } else {
         const questions = result.questions.map((q, i) => ({ ...q, id: `q${i}` }));
