@@ -60,6 +60,8 @@ async function consumeQuota(context: {
   return { ok: true, remaining: Math.max(left, 0) };
 }
 
+type StreamOutcome = { ok: false; error: string } | { ok: true; text: string };
+
 async function readStream(res: Response): Promise<StreamOutcome> {
   if (!res.ok || !res.body) {
     console.error("AI gateway error", res.status, await res.text().catch(() => ""));
