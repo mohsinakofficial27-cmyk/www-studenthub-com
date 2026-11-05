@@ -26,6 +26,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
 import { Route as AuthenticatedCoachRouteImport } from './routes/_authenticated/coach'
+import { Route as AuthenticatedCoursesRouteImport } from './routes/_authenticated/courses'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedFlashcardsRouteImport } from './routes/_authenticated/flashcards'
 import { Route as AuthenticatedGpaRouteImport } from './routes/_authenticated/gpa'
@@ -124,6 +125,11 @@ const AuthenticatedCoachRoute = AuthenticatedCoachRouteImport.update({
   path: '/coach',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCoursesRoute = AuthenticatedCoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -209,6 +215,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRoute
   '/assistant': typeof AuthenticatedAssistantRoute
   '/coach': typeof AuthenticatedCoachRoute
+  '/courses': typeof AuthenticatedCoursesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/flashcards': typeof AuthenticatedFlashcardsRoute
   '/gpa': typeof AuthenticatedGpaRoute
@@ -240,6 +247,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRoute
   '/assistant': typeof AuthenticatedAssistantRoute
   '/coach': typeof AuthenticatedCoachRoute
+  '/courses': typeof AuthenticatedCoursesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/flashcards': typeof AuthenticatedFlashcardsRoute
   '/gpa': typeof AuthenticatedGpaRoute
@@ -273,6 +281,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
   '/_authenticated/coach': typeof AuthenticatedCoachRoute
+  '/_authenticated/courses': typeof AuthenticatedCoursesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/flashcards': typeof AuthenticatedFlashcardsRoute
   '/_authenticated/gpa': typeof AuthenticatedGpaRoute
@@ -306,6 +315,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/assistant'
     | '/coach'
+    | '/courses'
     | '/dashboard'
     | '/flashcards'
     | '/gpa'
@@ -337,6 +347,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/assistant'
     | '/coach'
+    | '/courses'
     | '/dashboard'
     | '/flashcards'
     | '/gpa'
@@ -369,6 +380,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/assistant'
     | '/_authenticated/coach'
+    | '/_authenticated/courses'
     | '/_authenticated/dashboard'
     | '/_authenticated/flashcards'
     | '/_authenticated/gpa'
@@ -522,6 +534,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCoachRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/courses': {
+      id: '/_authenticated/courses'
+      path: '/courses'
+      fullPath: '/courses'
+      preLoaderRoute: typeof AuthenticatedCoursesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -620,6 +639,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
   AuthenticatedCoachRoute: typeof AuthenticatedCoachRoute
+  AuthenticatedCoursesRoute: typeof AuthenticatedCoursesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFlashcardsRoute: typeof AuthenticatedFlashcardsRoute
   AuthenticatedGpaRoute: typeof AuthenticatedGpaRoute
@@ -639,6 +659,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
   AuthenticatedCoachRoute: AuthenticatedCoachRoute,
+  AuthenticatedCoursesRoute: AuthenticatedCoursesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFlashcardsRoute: AuthenticatedFlashcardsRoute,
   AuthenticatedGpaRoute: AuthenticatedGpaRoute,
