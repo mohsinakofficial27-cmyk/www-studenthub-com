@@ -19,7 +19,7 @@ import {
   scopedRows,
   updateCourse,
 } from "@/lib/data";
-import { selectClass } from "@/components/ui/select";
+import { selectClass } from "@/lib/ui";
 
 export const Route = createFileRoute("/_authenticated/gpa")({
   head: () => ({
