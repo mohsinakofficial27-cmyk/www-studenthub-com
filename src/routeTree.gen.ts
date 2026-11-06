@@ -39,6 +39,7 @@ import { Route as AuthenticatedProgressRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedQuizzesRouteImport } from './routes/_authenticated/quizzes'
 import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated/search'
 import { Route as AuthenticatedSubscriptionRouteImport } from './routes/_authenticated/subscription'
+import { Route as AuthenticatedSyllabusRouteImport } from './routes/_authenticated/syllabus'
 import { Route as AuthenticatedAdminFeedbackRouteImport } from './routes/_authenticated/admin_.feedback'
 
 const IndexRoute = IndexRouteImport.update({
@@ -191,6 +192,11 @@ const AuthenticatedSubscriptionRoute =
     path: '/subscription',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSyllabusRoute = AuthenticatedSyllabusRouteImport.update({
+  id: '/syllabus',
+  path: '/syllabus',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAdminFeedbackRoute =
   AuthenticatedAdminFeedbackRouteImport.update({
     id: '/admin_/feedback',
@@ -228,6 +234,7 @@ export interface FileRoutesByFullPath {
   '/quizzes': typeof AuthenticatedQuizzesRoute
   '/search': typeof AuthenticatedSearchRoute
   '/subscription': typeof AuthenticatedSubscriptionRoute
+  '/syllabus': typeof AuthenticatedSyllabusRoute
   '/admin/feedback': typeof AuthenticatedAdminFeedbackRoute
 }
 export interface FileRoutesByTo {
@@ -260,6 +267,7 @@ export interface FileRoutesByTo {
   '/quizzes': typeof AuthenticatedQuizzesRoute
   '/search': typeof AuthenticatedSearchRoute
   '/subscription': typeof AuthenticatedSubscriptionRoute
+  '/syllabus': typeof AuthenticatedSyllabusRoute
   '/admin/feedback': typeof AuthenticatedAdminFeedbackRoute
 }
 export interface FileRoutesById {
@@ -294,6 +302,7 @@ export interface FileRoutesById {
   '/_authenticated/quizzes': typeof AuthenticatedQuizzesRoute
   '/_authenticated/search': typeof AuthenticatedSearchRoute
   '/_authenticated/subscription': typeof AuthenticatedSubscriptionRoute
+  '/_authenticated/syllabus': typeof AuthenticatedSyllabusRoute
   '/_authenticated/admin_/feedback': typeof AuthenticatedAdminFeedbackRoute
 }
 export interface FileRouteTypes {
@@ -328,6 +337,7 @@ export interface FileRouteTypes {
     | '/quizzes'
     | '/search'
     | '/subscription'
+    | '/syllabus'
     | '/admin/feedback'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -360,6 +370,7 @@ export interface FileRouteTypes {
     | '/quizzes'
     | '/search'
     | '/subscription'
+    | '/syllabus'
     | '/admin/feedback'
   id:
     | '__root__'
@@ -393,6 +404,7 @@ export interface FileRouteTypes {
     | '/_authenticated/quizzes'
     | '/_authenticated/search'
     | '/_authenticated/subscription'
+    | '/_authenticated/syllabus'
     | '/_authenticated/admin_/feedback'
   fileRoutesById: FileRoutesById
 }
@@ -625,6 +637,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSubscriptionRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/syllabus': {
+      id: '/_authenticated/syllabus'
+      path: '/syllabus'
+      fullPath: '/syllabus'
+      preLoaderRoute: typeof AuthenticatedSyllabusRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin_/feedback': {
       id: '/_authenticated/admin_/feedback'
       path: '/admin/feedback'
@@ -652,6 +671,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedQuizzesRoute: typeof AuthenticatedQuizzesRoute
   AuthenticatedSearchRoute: typeof AuthenticatedSearchRoute
   AuthenticatedSubscriptionRoute: typeof AuthenticatedSubscriptionRoute
+  AuthenticatedSyllabusRoute: typeof AuthenticatedSyllabusRoute
   AuthenticatedAdminFeedbackRoute: typeof AuthenticatedAdminFeedbackRoute
 }
 
@@ -672,6 +692,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedQuizzesRoute: AuthenticatedQuizzesRoute,
   AuthenticatedSearchRoute: AuthenticatedSearchRoute,
   AuthenticatedSubscriptionRoute: AuthenticatedSubscriptionRoute,
+  AuthenticatedSyllabusRoute: AuthenticatedSyllabusRoute,
   AuthenticatedAdminFeedbackRoute: AuthenticatedAdminFeedbackRoute,
 }
 
