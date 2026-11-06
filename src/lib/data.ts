@@ -59,7 +59,7 @@ const GRADE_POINTS: Record<string, number> = {
 export const GRADE_OPTIONS = Object.keys(GRADE_POINTS);
 
 export function gradePoints(grade: string): number | null {
-  return grade in GRADE_POINTS ? GRADE_POINTS[grade] : null;
+  return grade in GRADE_POINTS ? (GRADE_POINTS[grade] ?? 0) : null;
 }
 
 /** Weighted GPA across graded courses. Returns null when nothing is graded. */
