@@ -99,14 +99,6 @@ function SyllabusPage() {
     }
   };
 
-  // Image (if any) is kept in a ref — never rendered, only its data URL
-  // travels with the scan request to the server-side AI.
-  const imageRef = useRef("");
-
-  // Image (if any) is kept in a ref — never rendered, only its data URL
-  // travels with the scan request to the server-side AI.
-  const imageRef = useRef("");
-
   const scan = async () => {
     if (!text.trim() && !imageRef.current) {
       toast.error("Upload a syllabus file or paste its text first.");
