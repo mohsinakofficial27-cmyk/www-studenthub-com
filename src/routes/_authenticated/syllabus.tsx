@@ -84,7 +84,6 @@ function SyllabusPage() {
           reader.onerror = () => reject(new Error("read failed"));
           reader.readAsDataURL(file);
         });
-        void dataUrl; // sent with the scan request below
         imageRef.current = dataUrl;
         toast.success("Image ready. Press Scan syllabus to read it.");
       } else {
@@ -97,9 +96,9 @@ function SyllabusPage() {
     }
   };
 
-  // Image (if any) is kept outside React state so it never renders; only its
-  // data URL travels with the scan request to the server-side AI.
-  const imageRef = { current: "" };
+  // Image (if any) is kept in a ref — never rendered, only its data URL
+  // travels with the scan request to the server-side AI.
+  const imageRef = useRef("");
 
   const scan = async () => {
     if (!text.trim() && !imageRef.current) {
