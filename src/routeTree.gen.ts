@@ -38,6 +38,7 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedProgressRouteImport } from './routes/_authenticated/progress'
 import { Route as AuthenticatedQuizzesRouteImport } from './routes/_authenticated/quizzes'
 import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated/search'
+import { Route as AuthenticatedStudyModeRouteImport } from './routes/_authenticated/study-mode'
 import { Route as AuthenticatedSubscriptionRouteImport } from './routes/_authenticated/subscription'
 import { Route as AuthenticatedSyllabusRouteImport } from './routes/_authenticated/syllabus'
 import { Route as AuthenticatedAdminFeedbackRouteImport } from './routes/_authenticated/admin_.feedback'
@@ -186,6 +187,11 @@ const AuthenticatedSearchRoute = AuthenticatedSearchRouteImport.update({
   path: '/search',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedStudyModeRoute = AuthenticatedStudyModeRouteImport.update({
+  id: '/study-mode',
+  path: '/study-mode',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSubscriptionRoute =
   AuthenticatedSubscriptionRouteImport.update({
     id: '/subscription',
@@ -233,6 +239,7 @@ export interface FileRoutesByFullPath {
   '/progress': typeof AuthenticatedProgressRoute
   '/quizzes': typeof AuthenticatedQuizzesRoute
   '/search': typeof AuthenticatedSearchRoute
+  '/study-mode': typeof AuthenticatedStudyModeRoute
   '/subscription': typeof AuthenticatedSubscriptionRoute
   '/syllabus': typeof AuthenticatedSyllabusRoute
   '/admin/feedback': typeof AuthenticatedAdminFeedbackRoute
@@ -266,6 +273,7 @@ export interface FileRoutesByTo {
   '/progress': typeof AuthenticatedProgressRoute
   '/quizzes': typeof AuthenticatedQuizzesRoute
   '/search': typeof AuthenticatedSearchRoute
+  '/study-mode': typeof AuthenticatedStudyModeRoute
   '/subscription': typeof AuthenticatedSubscriptionRoute
   '/syllabus': typeof AuthenticatedSyllabusRoute
   '/admin/feedback': typeof AuthenticatedAdminFeedbackRoute
@@ -301,6 +309,7 @@ export interface FileRoutesById {
   '/_authenticated/progress': typeof AuthenticatedProgressRoute
   '/_authenticated/quizzes': typeof AuthenticatedQuizzesRoute
   '/_authenticated/search': typeof AuthenticatedSearchRoute
+  '/_authenticated/study-mode': typeof AuthenticatedStudyModeRoute
   '/_authenticated/subscription': typeof AuthenticatedSubscriptionRoute
   '/_authenticated/syllabus': typeof AuthenticatedSyllabusRoute
   '/_authenticated/admin_/feedback': typeof AuthenticatedAdminFeedbackRoute
@@ -336,6 +345,7 @@ export interface FileRouteTypes {
     | '/progress'
     | '/quizzes'
     | '/search'
+    | '/study-mode'
     | '/subscription'
     | '/syllabus'
     | '/admin/feedback'
@@ -369,6 +379,7 @@ export interface FileRouteTypes {
     | '/progress'
     | '/quizzes'
     | '/search'
+    | '/study-mode'
     | '/subscription'
     | '/syllabus'
     | '/admin/feedback'
@@ -403,6 +414,7 @@ export interface FileRouteTypes {
     | '/_authenticated/progress'
     | '/_authenticated/quizzes'
     | '/_authenticated/search'
+    | '/_authenticated/study-mode'
     | '/_authenticated/subscription'
     | '/_authenticated/syllabus'
     | '/_authenticated/admin_/feedback'
@@ -630,6 +642,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSearchRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/study-mode': {
+      id: '/_authenticated/study-mode'
+      path: '/study-mode'
+      fullPath: '/study-mode'
+      preLoaderRoute: typeof AuthenticatedStudyModeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/subscription': {
       id: '/_authenticated/subscription'
       path: '/subscription'
@@ -670,6 +689,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProgressRoute: typeof AuthenticatedProgressRoute
   AuthenticatedQuizzesRoute: typeof AuthenticatedQuizzesRoute
   AuthenticatedSearchRoute: typeof AuthenticatedSearchRoute
+  AuthenticatedStudyModeRoute: typeof AuthenticatedStudyModeRoute
   AuthenticatedSubscriptionRoute: typeof AuthenticatedSubscriptionRoute
   AuthenticatedSyllabusRoute: typeof AuthenticatedSyllabusRoute
   AuthenticatedAdminFeedbackRoute: typeof AuthenticatedAdminFeedbackRoute
@@ -691,6 +711,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProgressRoute: AuthenticatedProgressRoute,
   AuthenticatedQuizzesRoute: AuthenticatedQuizzesRoute,
   AuthenticatedSearchRoute: AuthenticatedSearchRoute,
+  AuthenticatedStudyModeRoute: AuthenticatedStudyModeRoute,
   AuthenticatedSubscriptionRoute: AuthenticatedSubscriptionRoute,
   AuthenticatedSyllabusRoute: AuthenticatedSyllabusRoute,
   AuthenticatedAdminFeedbackRoute: AuthenticatedAdminFeedbackRoute,

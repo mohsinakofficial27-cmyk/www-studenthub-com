@@ -441,7 +441,7 @@ export const parseSyllabusAI = createServerFn({ method: "POST" })
           title: i.title.trim().slice(0, 120),
           course: String(i.course ?? "").trim().slice(0, 80),
           date: /^\d{4}-\d{2}-\d{2}$/.test(String(i.date ?? "")) ? String(i.date) : "",
-          priority: i.priority === "high" ? "high" : i.priority === "low" ? "low" : "medium",
+          priority: (i.priority === "high" ? "high" : i.priority === "low" ? "low" : "medium") as "low" | "medium" | "high",
         }))
         .slice(0, 30),
       remaining: quota.remaining,
