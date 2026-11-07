@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Bell,
+  Sparkles,
   Calculator,
   Focus,
   GraduationCap,
@@ -32,6 +33,7 @@ import { cn } from "@/lib/utils";
 export const APP_NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutGrid },
   { to: "/assistant", label: "AI Study Assistant", icon: MessageSquare },
+  { to: "/coach", label: "AI Coach", icon: Sparkles },
   { to: "/notes", label: "AI Notes", icon: BookOpen },
   { to: "/quizzes", label: "Quiz Generator", icon: ListChecks },
   { to: "/planner", label: "Study Planner", icon: CalendarDays },
