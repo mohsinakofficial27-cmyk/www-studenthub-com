@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/study-mode")({
       { name: "description", content: "A calm, distraction-free focus screen with a timer, your current task and saved sessions." },
       { property: "og:title", content: "Study Mode — Student Hub" },
       { property: "og:description", content: "One task, one timer, no distractions." },
-      { property: "og:type", "website" },
+      { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
@@ -35,9 +35,9 @@ function StudyModePage() {
   const [taskId, setTaskId] = useState<string>("");
   const completeRef = useRef<() => void>(() => {});
 
-  if (!user) return null;
-  const stats = computeStats(db, user.id);
-  const tasks = scopedRows(db.study_tasks, user.id).filter((t) => !t.done);
+  const uidv = user?.id ?? "";
+  const stats = computeStats(db, uidv);
+  const tasks = scopedRows(db.study_tasks, uidv).filter((t) => !t.done);
   const today = new Date().toISOString().slice(0, 10);
   const todayTasks = tasks.filter((t) => t.date === today);
   const candidates = todayTasks.length ? todayTasks : tasks.slice(0, 6);
@@ -46,8 +46,7 @@ function StudyModePage() {
   const finish = useCallback(
     (completedMinutes: number) => {
       setRunning(false);
-      setLeft((m) => m); // keep state coherent
-      logSession(user.id, completedMinutes, "focus");
+      if (user) logSession(user.id, completedMinutes, "focus");
       setDone(completedMinutes);
       setMinutes(completedMinutes);
       setLeft(completedMinutes * 60);
@@ -77,6 +76,8 @@ function StudyModePage() {
     }, 1000);
     return () => window.clearInterval(id);
   }, [running]);
+
+  if (!user) return null;
 
   const pick = (m: number) => {
     setMinutes(m);

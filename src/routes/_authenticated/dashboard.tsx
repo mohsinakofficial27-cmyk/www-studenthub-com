@@ -15,7 +15,7 @@ import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth, useDb } from "@/lib/auth";
-import { computeStats, updateTask } from "@/lib/data";
+import { computeGpa, computeStats, deadlineSummary, scopedRows, updateTask, weekSchedule } from "@/lib/data";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -36,7 +36,7 @@ const QUICK: { label: string; to: string; icon: LucideIcon }[] = [
   { label: "Create Notes", to: "/notes", icon: BookOpen },
   { label: "Generate Quiz", to: "/quizzes", icon: ListChecks },
   { label: "Plan Study Session", to: "/planner", icon: CalendarDays },
-  { label: "Start Pomodoro", to: "/pomodoro", icon: Timer },
+  { label: "Start Study Mode", to: "/study-mode", icon: Timer },
 ];
 
 function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
@@ -54,6 +54,10 @@ function DashboardPage() {
   const db = useDb();
   if (!user) return null;
   const stats = computeStats(db, user.id);
+  const dl = deadlineSummary(db, user.id);
+  const week = weekSchedule(db, user.id);
+  const gpa = computeGpa(scopedRows(db.courses, user.id));
+  const atRisk = [...dl.overdue, ...dl.dueToday.filter((t) => t.priority === "high")];
   const firstName = (profile?.name ?? user.name).split(" ")[0];
 
   return (
@@ -90,6 +94,58 @@ function DashboardPage() {
               : "Add an exam in the planner"
           }
         />
+      </div>
+
+      <div className="mt-6 grid gap-4 lg:grid-cols-3">
+        <div className="panel p-5 lg:col-span-2">
+          <h2 className="text-lg font-semibold">Deadline Protection</h2>
+          <div className="mt-3 grid grid-cols-2 gap-2 text-center sm:grid-cols-5">
+            {[
+              ["Overdue", dl.overdue.length],
+              ["Due today", dl.dueToday.length],
+              ["Tomorrow", dl.dueTomorrow.length],
+              ["This week", dl.dueThisWeek.length],
+              ["Done today", dl.completedToday],
+            ].map(([l, v]) => (
+              <div key={String(l)} className="rounded-xl bg-surface px-2 py-3">
+                <p className="text-xl font-semibold">{v}</p>
+                <p className="text-xs text-muted-foreground">{l}</p>
+              </div>
+            ))}
+          </div>
+          {atRisk.length ? (
+            <ul className="mt-3 space-y-1.5">
+              {atRisk.slice(0, 4).map((t) => (
+                <li key={t.id} className="rounded-xl border border-warning/50 px-3 py-2 text-sm">
+                  ⚠ {t.title} {t.date < new Date().toISOString().slice(0, 10) ? "is overdue" : "is due today"} — recommended: start a 30-minute session now.
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-sm text-muted-foreground">No at-risk tasks. You're on track.</p>
+          )}
+          <div className="mt-4">
+            <p className="text-xs font-semibold uppercase text-muted-foreground">This week's planned study</p>
+            <div className="mt-2 grid grid-cols-7 gap-1 text-center text-xs">
+              {week.map((d) => (
+                <div key={d.date} className="rounded-lg bg-surface py-2">
+                  <p className="text-muted-foreground">{d.day}</p>
+                  <p className="font-medium">{d.minutes ? `${d.minutes}m` : "—"}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="panel p-5">
+          <h2 className="text-lg font-semibold">GPA</h2>
+          <p className="mt-2 text-3xl font-semibold">{gpa !== null ? gpa.toFixed(2) : "—"}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{gpa !== null ? "Estimate from your course grades" : "Add courses and grades to see it"}</p>
+          <div className="mt-4 grid gap-2">
+            <Button asChild variant="outline" size="sm"><Link to="/gpa">GPA Center</Link></Button>
+            <Button asChild variant="outline" size="sm"><Link to="/coach">Ask AI Coach for a plan</Link></Button>
+            <Button asChild variant="outline" size="sm"><Link to="/syllabus">Scan a syllabus</Link></Button>
+          </div>
+        </div>
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
