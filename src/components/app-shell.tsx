@@ -1,6 +1,10 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Bell,
+  Calculator,
+  Focus,
+  GraduationCap,
+  ScanLine,
   BookOpen,
   CalendarDays,
   MessageCircleHeart,
@@ -31,6 +35,10 @@ export const APP_NAV = [
   { to: "/notes", label: "AI Notes", icon: BookOpen },
   { to: "/quizzes", label: "Quiz Generator", icon: ListChecks },
   { to: "/planner", label: "Study Planner", icon: CalendarDays },
+  { to: "/courses", label: "Courses", icon: GraduationCap },
+  { to: "/gpa", label: "GPA Center", icon: Calculator },
+  { to: "/syllabus", label: "Syllabus Scanner", icon: ScanLine },
+  { to: "/study-mode", label: "Study Mode", icon: Focus },
   { to: "/flashcards", label: "Flashcards", icon: Layers },
   { to: "/pomodoro", label: "Pomodoro", icon: Timer },
   { to: "/progress", label: "Progress", icon: TrendingUp },
@@ -41,7 +49,7 @@ export const APP_NAV = [
 const MOBILE_NAV = [
   { to: "/dashboard", label: "Home", icon: LayoutGrid },
   { to: "/assistant", label: "Ask AI", icon: MessageSquare },
-  { to: "/pomodoro", label: "Focus", icon: Timer },
+  { to: "/study-mode", label: "Focus", icon: Timer },
   { to: "/planner", label: "Plan", icon: CalendarDays },
   { to: "/progress", label: "Progress", icon: TrendingUp },
 ] as const;
