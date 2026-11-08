@@ -13,3 +13,11 @@ Remaining:
 - [x] Progress = Study Analytics: focus sessions, most productive day, consistency, tasks/day chart
 - [x] Navigation updated (sidebar + mobile)
 - [x] Typecheck, build, browser smoke test
+
+## Student Hub 2.0
+- [ ] Inspect existing authentication, data, route, and UI patterns for the requested features
+- [ ] Build authenticated YouTube Study Player with persisted lectures, notes, timestamps, and progress
+- [ ] Build secure public sharing for flashcard decks and notes, including import and Shared With Me
+- [ ] Add admin-manageable playlist records and real-data growth analytics
+- [ ] Add database schema, grants, RLS, and authenticated server-side sharing operations
+- [ ] Test player, sharing, import/revoke, authorization, and responsive flows; verify diagnostics
