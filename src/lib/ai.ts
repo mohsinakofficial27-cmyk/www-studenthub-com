@@ -15,6 +15,14 @@
  */
 
 export const AI_CONNECTED = false;
+export const AI_SETUP_MESSAGE =
+  "AI service is not configured. Add LOVABLE_API_KEY to the server environment and restart the app.";
+export const AI_USAGE_SETUP_MESSAGE =
+  "AI usage tracking is not configured in Supabase; using the local study fallback.";
+
+export function isAiSetupIssue(message: string) {
+  return /AI service isn't configured|AI service is not configured|LOVABLE_API_KEY/i.test(message);
+}
 
 export const AI_MODES = [
   { id: "explain", label: "Explain Simply" },
@@ -22,6 +30,11 @@ export const AI_MODES = [
   { id: "exam", label: "Exam Prep" },
   { id: "summarize", label: "Summarize" },
   { id: "quiz", label: "Quiz Me" },
+  { id: "math", label: "Math Solver" },
+  { id: "essay", label: "Essay Assistant" },
+  { id: "research", label: "Research Assistant" },
+  { id: "homework", label: "Homework Explainer" },
+  { id: "language", label: "Language Learning" },
 ] as const;
 
 export type AiMode = (typeof AI_MODES)[number]["id"];
@@ -37,6 +50,16 @@ const FRAMES: Record<AiMode, (q: string) => string> = {
     `Offline study guide — "${q}"\n\nCompress it:\n- Core claim in one line.\n- Three supporting points, five words each.\n- One example.\n- One thing it is often confused with.`,
   quiz: (q) =>
     `Offline study guide — "${q}"\n\nSelf-test:\n1. Define the main term without looking.\n2. Give an example and a non-example.\n3. Explain it to someone two years below you.\n4. Where would this appear in an exam question?`,
+  math: (q) =>
+    `Offline math practice — "${q}"\n\nWrite down what is known, choose a rule that connects it to the unknown, and show each operation. Check the result by substituting it back into the original problem.`,
+  essay: (q) =>
+    `Offline writing guide — "${q}"\n\nBrainstorm three possible claims. Choose one you can support with evidence, outline the reasoning, then revise for clarity and grammar while keeping your own voice.`,
+  research: (q) =>
+    `Offline research guide — "${q}"\n\nTurn the topic into a focused question. List the evidence you still need, record sources as you verify them, and label any generated ideas as suggestions rather than facts.`,
+  homework: (q) =>
+    `Offline homework guide — "${q}"\n\nIdentify what the question asks, break it into smaller steps, and explain the idea behind each step. Try a similar example to check your understanding.`,
+  language: (q) =>
+    `Offline language practice — "${q}"\n\nWrite a short response in your target language, note one new word, and check its grammar and pronunciation using a trusted learning source.`,
 };
 
 export interface AskResult {
@@ -47,6 +70,28 @@ export interface AskResult {
 export async function askAssistant(question: string, mode: AiMode): Promise<AskResult> {
   await new Promise((r) => setTimeout(r, 450));
   return { content: FRAMES[mode](question.trim()), offline: !AI_CONNECTED };
+}
+
+export function buildOfflineCoachReply(question: string, scheduleContext: string) {
+  const today = scheduleContext.match(/Today is ([0-9]{4}-[0-9]{2}-[0-9]{2})\./)?.[1];
+  const taskList = scheduleContext.match(/Scheduled tasks .*?: ([^\n]*)/)?.[1] ?? "";
+  const openTasks = taskList
+    .split(" ;; ")
+    .filter((task) => task && task.endsWith("| open"))
+    .sort((left, right) => {
+      const leftDate = left.slice(0, 10);
+      const rightDate = right.slice(0, 10);
+      const leftOverdue = Boolean(today && leftDate < today);
+      const rightOverdue = Boolean(today && rightDate < today);
+      if (leftOverdue !== rightOverdue) return leftOverdue ? -1 : 1;
+      return leftDate.localeCompare(rightDate);
+    })
+    .slice(0, 3);
+  const schedule = openTasks.length
+    ? `Your open schedule items${today ? " (overdue first)" : ""}:\n${openTasks.map((task, index) => `${index + 1}. ${task}`).join("\n")}`
+    : "Your saved schedule has no open tasks listed right now.";
+
+  return `Offline coach guide (not AI-generated)\n\nYou asked: "${question.trim()}"\n\n${schedule}\n\nTry this next: choose one item above, work on it for 25 minutes, then update its status in your planner.`;
 }
 
 /* ---------------- quiz generation ---------------- */
@@ -189,7 +234,12 @@ const BANK: Record<string, GeneratedQuestion[]> = {
     {
       id: "h3",
       prompt: "'Causation' in history means:",
-      options: ["Order of events", "Why events happened", "Who wrote a source", "How long an era lasted"],
+      options: [
+        "Order of events",
+        "Why events happened",
+        "Who wrote a source",
+        "How long an era lasted",
+      ],
       answer: 1,
       explanation: "Causation asks what made an event occur.",
     },
@@ -219,9 +269,11 @@ export interface GenerateQuizInput {
   count: number;
 }
 
-export async function generateQuizQuestions(input: GenerateQuizInput): Promise<GeneratedQuestion[]> {
+export async function generateQuizQuestions(
+  input: GenerateQuizInput,
+): Promise<GeneratedQuestion[]> {
   await new Promise((r) => setTimeout(r, 500));
-  const pool = BANK[input.subject] ?? BANK['Mathematics']!;
+  const pool = BANK[input.subject] ?? BANK["Mathematics"]!;
   const picked: GeneratedQuestion[] = [];
   for (let i = 0; i < input.count; i += 1) {
     const base = pool[i % pool.length]!;

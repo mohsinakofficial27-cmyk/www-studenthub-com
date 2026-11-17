@@ -10,12 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth, useDb } from "@/lib/auth";
 import {
-  GRADE_OPTIONS,
   computeGpa,
   createCourse,
   deleteCourse,
   finalExamNeeded,
   gradePoints,
+  gradeOptionsForSystem,
+  maximumGradePoints,
   scopedRows,
   updateCourse,
 } from "@/lib/data";
@@ -42,24 +43,27 @@ function GpaPage() {
   const [finalCalc, setFinalCalc] = useState({ current: "", weight: "40", target: "80" });
 
   if (!user) return null;
+  const gradingSystem = db.user_settings.find((row) => row.user_id === user.id)?.grading_system ?? "gpa4";
+  const gradeOptions = gradeOptionsForSystem(gradingSystem);
+  const maxGradePoints = maximumGradePoints(gradingSystem);
   const courses = scopedRows(db.courses, user.id);
-  const gpa = computeGpa(courses);
-  const graded = courses.filter((c) => gradePoints(c.grade) !== null);
+  const gpa = computeGpa(courses, gradingSystem);
+  const graded = courses.filter((c) => gradePoints(c.grade, gradingSystem) !== null);
   const totalCredits = graded.reduce((s, c) => s + c.credits, 0);
-  const targetGrades = courses.map((c) => c.target_grade).filter(Boolean);
   const targetGpa = computeGpa(
     courses.filter((c) => c.target_grade).map((c) => ({ ...c, grade: c.target_grade })),
+    gradingSystem,
   );
   // What average grade is needed across ungraded credits to reach the target GPA?
   const ungradedCredits = courses.reduce((s, c) => s + c.credits, 0) - totalCredits;
   let neededAvg: number | null = null;
   if (gpa !== null && targetGpa !== null && ungradedCredits > 0) {
-    const currentPoints = graded.reduce((s, c) => s + (gradePoints(c.grade) ?? 0) * c.credits, 0);
+    const currentPoints = graded.reduce((s, c) => s + (gradePoints(c.grade, gradingSystem) ?? 0) * c.credits, 0);
     neededAvg =
       Math.round(
         (((targetGpa * (totalCredits + ungradedCredits) - currentPoints) / ungradedCredits) * 100) / 100,
       );
-    if (neededAvg > 4) neededAvg = -1; // unreachable flag
+    if (neededAvg > maxGradePoints) neededAvg = -1;
   }
 
   const add = (e: React.FormEvent) => {
@@ -90,14 +94,18 @@ function GpaPage() {
     <AppShell title="GPA Center" description="Your course grades, credits and GPA — all estimates are based on what you enter.">
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="panel p-5">
-          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Current GPA</p>
+          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            {gradingSystem === "percentage" ? "Current percentage average" : "Current GPA"}
+          </p>
           <p className="mt-2 text-3xl font-semibold">{gpa !== null ? gpa.toFixed(2) : "—"}</p>
           <p className="mt-1 text-xs text-muted-foreground">
             {graded.length ? `${graded.length} graded course${graded.length === 1 ? "" : "s"} · ${totalCredits} credits` : "Add grades to your courses"}
           </p>
         </div>
         <div className="panel p-5">
-          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Target GPA</p>
+          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            {gradingSystem === "percentage" ? "Target percentage" : "Target GPA"}
+          </p>
           <p className="mt-2 text-3xl font-semibold">{targetGpa !== null ? targetGpa.toFixed(2) : "—"}</p>
           <p className="mt-1 text-xs text-muted-foreground">Set a target grade on each course</p>
         </div>
@@ -106,10 +114,12 @@ function GpaPage() {
           {neededAvg === null ? (
             <p className="mt-2 text-sm text-muted-foreground">Add graded and ungraded courses with a target set.</p>
           ) : neededAvg === -1 ? (
-            <p className="mt-2 text-sm text-muted-foreground">This target is above a 4.0 average — adjust it to reach it more realistically.</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              This target is above a {maxGradePoints.toFixed(1)} {gradingSystem === "percentage" ? "average" : "scale"} — adjust it to reach it more realistically.
+            </p>
           ) : (
             <p className="mt-2 text-sm">
-              You need about <span className="font-semibold">{neededAvg.toFixed(2)}</span> GPA average across your{" "}
+              You need about <span className="font-semibold">{neededAvg.toFixed(2)}</span> {gradingSystem === "percentage" ? "average" : "GPA average"} across your{" "}
               {ungradedCredits} ungraded credit{ungradedCredits === 1 ? "" : "s"}.
             </p>
           )}
@@ -161,7 +171,8 @@ function GpaPage() {
                         onChange={(e) => updateCourse(c.id, { grade: e.target.value })}
                       >
                         <option value="">Not graded</option>
-                        {GRADE_OPTIONS.map((g) => (
+                        {c.grade && !gradeOptions.includes(c.grade) ? <option key={`saved-${c.grade}`} value={c.grade}>{c.grade} (saved; other scale)</option> : null}
+                        {gradeOptions.map((g) => (
                           <option key={g} value={g}>{g}</option>
                         ))}
                       </select>
@@ -175,14 +186,15 @@ function GpaPage() {
                         onChange={(e) => updateCourse(c.id, { target_grade: e.target.value })}
                       >
                         <option value="">None</option>
-                        {GRADE_OPTIONS.map((g) => (
+                        {c.target_grade && !gradeOptions.includes(c.target_grade) ? <option key={`saved-${c.target_grade}`} value={c.target_grade}>{c.target_grade} (saved; other scale)</option> : null}
+                        {gradeOptions.map((g) => (
                           <option key={g} value={g}>{g}</option>
                         ))}
                       </select>
                     </div>
                     <div className="flex items-end">
                       <p className="text-xs text-muted-foreground">
-                        {gradePoints(c.grade) !== null ? `${gradePoints(c.grade)?.toFixed(1)} grade points` : "Awaiting grade"}
+                        {gradePoints(c.grade, gradingSystem) !== null ? `${gradePoints(c.grade, gradingSystem)?.toFixed(1)} ${gradingSystem === "percentage" ? "%" : "grade points"}` : "Awaiting grade"}
                       </p>
                     </div>
                   </div>
@@ -240,7 +252,13 @@ function GpaPage() {
           </form>
           <InfoNote
             title="How GPA is calculated"
-            description="Grade points per credit (A = 4.0, A- = 3.7, B+ = 3.3 …) weighted by each course's credits. Everything is an estimate from your own entries."
+            description={
+              gradingSystem === "percentage"
+                ? "Weighted average of the percentages you enter. Percentage-to-letter conversions vary by institution, so no conversion is assumed."
+                : gradingSystem === "uk"
+                  ? "UK degree classifications use an approximate 4.0 equivalent for planning only; universities use different rules. Check your institution's official scale."
+                  : `Grades are weighted by course credits using your selected ${maxGradePoints.toFixed(1)}-point scale. Grade conversions vary by institution, so treat this as an estimate and use your school's official scale.`
+            }
           />
           <Button asChild variant="outline" className="w-full">
             <Link to="/courses">Open course pages</Link>

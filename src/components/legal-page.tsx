@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import { SitePage } from "@/components/site-layout";
 
-export const CONTACT_EMAIL = "mohsinakofficial27@gmail.com";
+export const CONTACT_EMAIL = "thestudenthub.connect@gmail.com";
 
 export function LegalPage({ title, updated, children }: { title: string; updated?: string; children: ReactNode }) {
   return (

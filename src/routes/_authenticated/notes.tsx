@@ -11,8 +11,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { generateNoteStudy } from "@/lib/ai.functions";
+import { isAiSetupIssue } from "@/lib/ai";
 import { useAuth, useDb } from "@/lib/auth";
-import { createCard, createDeck, createNote, createQuiz, deleteNote, scopedRows, updateNote } from "@/lib/data";
+import {
+  createCard,
+  createDeck,
+  createNote,
+  createQuiz,
+  deleteNote,
+  scopedRows,
+  updateNote,
+} from "@/lib/data";
 import { mutate, uid } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -20,7 +29,11 @@ export const Route = createFileRoute("/_authenticated/notes")({
   head: () => ({
     meta: [
       { title: "AI Notes — Student Hub" },
-      { name: "description", content: "Paste your notes and turn them into a summary, flashcards and a practice quiz with AI." },
+      {
+        name: "description",
+        content:
+          "Paste your notes and turn them into a summary, flashcards and a practice quiz with AI.",
+      },
       { property: "og:title", content: "AI Notes — Student Hub" },
       { property: "og:description", content: "Your notes, turned into a study system." },
       { property: "og:type", content: "website" },
@@ -33,9 +46,24 @@ export const Route = createFileRoute("/_authenticated/notes")({
 type Tab = "all" | "recent" | "favorites";
 
 const SUGGESTIONS = [
-  { title: "Photosynthesis", subject: "Biology", content: "Photosynthesis is the process plants use to convert light energy into chemical energy. It takes place in the chloroplasts, which contain chlorophyll. Carbon dioxide and water are converted into glucose and oxygen. Light-dependent reactions happen in the thylakoid membrane, while the Calvin cycle happens in the stroma. The overall equation is 6CO2 + 6H2O -> C6H12O6 + 6O2." },
-  { title: "Supply and demand", subject: "Economics", content: "Demand is the quantity of a good buyers want at each price; it slopes downward because lower prices make goods more attractive. Supply is the quantity sellers offer at each price; it slopes upward. The market clears where the two curves cross: the equilibrium price. A shortage pushes prices up, a surplus pushes prices down. Shifts in demand or supply move the equilibrium." },
-  { title: "The American Revolution", subject: "History", content: "The American Revolution (1765-1783) began as a dispute over taxation without representation. Key events include the Stamp Act, the Boston Tea Party, and the battles of Lexington and Concord. The Declaration of Independence was signed on July 4, 1776. Washington's army won decisive victories at Trenton and Saratoga. The Treaty of Paris in 1783 recognized American independence." },
+  {
+    title: "Photosynthesis",
+    subject: "Biology",
+    content:
+      "Photosynthesis is the process plants use to convert light energy into chemical energy. It takes place in the chloroplasts, which contain chlorophyll. Carbon dioxide and water are converted into glucose and oxygen. Light-dependent reactions happen in the thylakoid membrane, while the Calvin cycle happens in the stroma. The overall equation is 6CO2 + 6H2O -> C6H12O6 + 6O2.",
+  },
+  {
+    title: "Supply and demand",
+    subject: "Economics",
+    content:
+      "Demand is the quantity of a good buyers want at each price; it slopes downward because lower prices make goods more attractive. Supply is the quantity sellers offer at each price; it slopes upward. The market clears where the two curves cross: the equilibrium price. A shortage pushes prices up, a surplus pushes prices down. Shifts in demand or supply move the equilibrium.",
+  },
+  {
+    title: "The American Revolution",
+    subject: "History",
+    content:
+      "The American Revolution (1765-1783) began as a dispute over taxation without representation. Key events include the Stamp Act, the Boston Tea Party, and the battles of Lexington and Concord. The Declaration of Independence was signed on July 4, 1776. Washington's army won decisive victories at Trenton and Saratoga. The Treaty of Paris in 1783 recognized American independence.",
+  },
 ];
 
 function NotesPage() {
@@ -89,9 +117,13 @@ function NotesPage() {
     }
     setBusyId(`${noteId}:${action}`);
     try {
-      const result = await generate({ data: { title: note.title, subject: note.subject, content: note.content } });
+      const result = await generate({
+        data: { title: note.title, subject: note.subject, content: note.content },
+      });
       if (!result.ok) {
         if ("limitReached" in result && result.limitReached) setLimitMsg(result.error);
+        else if (("setupRequired" in result && result.setupRequired) || isAiSetupIssue(result.error))
+          toast.info(result.error);
         else toast.error(result.error);
         return;
       }
@@ -105,11 +137,16 @@ function NotesPage() {
           return;
         }
         const deckId = createDeck(user.id, note.title || "AI deck", note.subject);
-        cards.forEach((c: { front: string; back: string }) => createCard(user.id, deckId, c.front, c.back));
+        cards.forEach((c: { front: string; back: string }) =>
+          createCard(user.id, deckId, c.front, c.back),
+        );
         toast.success(`${cards.length} flashcards created in a new deck.`);
       } else {
         const questions = result.questions.map(
-          (q: { prompt: string; options: string[]; answer: number; explanation: string }, i: number) => ({
+          (
+            q: { prompt: string; options: string[]; answer: number; explanation: string },
+            i: number,
+          ) => ({
             ...q,
             id: `q${i}`,
           }),
@@ -124,7 +161,9 @@ function NotesPage() {
           difficulty: "medium",
           questions,
         });
-        toast.success(`${questions.length}-question practice quiz created. Find it in Quiz Generator.`);
+        toast.success(
+          `${questions.length}-question practice quiz created. Find it in Quiz Generator.`,
+        );
       }
     } catch {
       toast.error("The AI is unavailable right now. Please try again in a moment.");
@@ -138,7 +177,10 @@ function NotesPage() {
     busyId === `${noteId}:${action}` ? <Loader2 className="size-3.5 animate-spin" /> : null;
 
   return (
-    <AppShell title="AI Notes" description="Paste your material — the AI turns it into a summary, flashcards and a practice quiz.">
+    <AppShell
+      title="AI Notes"
+      description="Paste your material — the AI turns it into a summary, flashcards and a practice quiz."
+    >
       {limitMsg ? (
         <InfoNote title="Daily limit reached" description={limitMsg} />
       ) : (
@@ -149,7 +191,7 @@ function NotesPage() {
       )}
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_380px]">
-        <div className="panel p-5">
+        <div className="panel ai-glow-border p-5">
           <div className="flex flex-wrap items-center gap-2">
             {(["all", "recent", "favorites"] as Tab[]).map((t) => (
               <button
@@ -208,17 +250,26 @@ function NotesPage() {
                     >
                       <Star className={cn("size-4", n.favorite && "fill-warning text-warning")} />
                     </Button>
-                    <Button variant="ghost" size="icon" aria-label="Delete note" onClick={() => deleteNote(n.id)}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Delete note"
+                      onClick={() => deleteNote(n.id)}
+                    >
                       <Trash2 className="size-4" />
                     </Button>
                   </div>
 
                   {openId === n.id ? (
                     <div className="mt-3 space-y-3 border-t border-border pt-3">
-                      <p className="text-sm whitespace-pre-wrap text-muted-foreground">{n.content}</p>
+                      <p className="text-sm whitespace-pre-wrap text-muted-foreground">
+                        {n.content}
+                      </p>
                       {n.summary ? (
                         <div className="rounded-xl bg-surface p-3">
-                          <p className="text-xs font-semibold uppercase text-muted-foreground">AI summary</p>
+                          <p className="text-xs font-semibold uppercase text-muted-foreground">
+                            AI summary
+                          </p>
                           <p className="mt-1 text-sm">{n.summary}</p>
                           {n.key_points?.length ? (
                             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
@@ -236,7 +287,8 @@ function NotesPage() {
                           disabled={busyId !== null}
                           onClick={() => void runAi(n.id, n, "summary")}
                         >
-                          {busyLabel(n.id, "summary")} <Sparkles className="size-3.5" /> AI summary & key points
+                          {busyLabel(n.id, "summary")} <Sparkles className="size-3.5" /> AI summary
+                          & key points
                         </Button>
                         <Button
                           size="sm"
@@ -264,7 +316,7 @@ function NotesPage() {
         </div>
 
         <div className="space-y-4">
-          <form onSubmit={save} className="panel h-fit space-y-4 p-5">
+          <form onSubmit={save} className="panel ai-glow-border h-fit space-y-4 p-5">
             <h2 className="text-lg font-semibold">New note</h2>
             <div className="space-y-2">
               <Label htmlFor="title">Title</Label>
@@ -289,7 +341,10 @@ function NotesPage() {
                 placeholder="Paste a lecture, a chapter, or write your own notes here."
               />
             </div>
-            <Button type="submit" className="w-full bg-brand text-brand-foreground hover:bg-brand/90">
+            <Button
+              type="submit"
+              className="w-full bg-brand text-brand-foreground hover:bg-brand/90"
+            >
               Save note
             </Button>
           </form>

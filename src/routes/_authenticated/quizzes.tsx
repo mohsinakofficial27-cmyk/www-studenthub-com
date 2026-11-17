@@ -10,8 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { generateQuizAI } from "@/lib/ai.functions";
+import { isAiSetupIssue } from "@/lib/ai";
 import { useAuth, useDb } from "@/lib/auth";
-import { applyAttempt, createQuiz, scopedRows } from "@/lib/data";
+import { applyAttempt, applyLocalAttempt, createQuiz, scopedRows } from "@/lib/data";
 import { recordQuizAttempt } from "@/lib/quiz.functions";
 import { uid } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -70,6 +71,8 @@ function QuizzesPage() {
       });
       if (!result.ok) {
         if ("limitReached" in result && result.limitReached) setLimitMsg(result.error);
+        else if (("setupRequired" in result && result.setupRequired) || isAiSetupIssue(result.error))
+          toast.info(result.error);
         else toast.error(result.error);
         return;
       }
@@ -109,9 +112,31 @@ function QuizzesPage() {
       // saved here is the server-computed one, never a client-supplied value.
       const result = await record({ data: { quizId: quiz.id, answers } });
       if (result.ok && result.attempt) applyAttempt(result.attempt);
-      else toast.error(result.error ?? "Couldn't save your attempt. Please try again.");
+      else {
+        applyLocalAttempt({
+          id: uid(),
+          user_id: user.id,
+          quiz_id: quiz.id,
+          score,
+          total: quiz.questions.length,
+          answers,
+          taken_at: new Date().toISOString(),
+        });
+        if ("setupRequired" in result && result.setupRequired)
+          toast.info("Attempt saved in this browser only. Apply the quiz migration to sync it.");
+        else toast.error(`${result.error ?? "Couldn't save your attempt."} Kept locally in this browser.`);
+      }
     } catch {
-      toast.error("Couldn't save your attempt. Please try again.");
+      applyLocalAttempt({
+        id: uid(),
+        user_id: user.id,
+        quiz_id: quiz.id,
+        score,
+        total: quiz.questions.length,
+        answers,
+        taken_at: new Date().toISOString(),
+      });
+      toast.error("Couldn't sync your attempt. It was kept in this browser only.");
     }
   };
 
@@ -190,7 +215,9 @@ function QuizzesPage() {
                   const q = quizzes.find((x) => x.id === a.quiz_id);
                   return (
                     <li key={a.id} className="flex justify-between text-sm">
-                      <span className="truncate text-muted-foreground">{q?.subject ?? "Quiz"}</span>
+                      <span className="truncate text-muted-foreground">
+                        {q?.subject ?? "Quiz"}{a.local_only ? " · this browser" : ""}
+                      </span>
                       <span className="font-medium">
                         {a.score}/{a.total}
                       </span>

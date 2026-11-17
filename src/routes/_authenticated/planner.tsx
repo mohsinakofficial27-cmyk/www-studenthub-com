@@ -11,14 +11,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth, useDb } from "@/lib/auth";
 import { createTask, deleteTask, scopedRows, updateTask } from "@/lib/data";
-import { todayISO } from "@/lib/store";
+import { localDateKey, todayISO } from "@/lib/store";
+import { formatDateKey, formatTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/planner")({
   head: () => ({
     meta: [
       { title: "Study Planner — Student Hub" },
-      { name: "description", content: "Schedule subjects, topics, tasks and exams by day, week or month." },
+      {
+        name: "description",
+        content: "Schedule subjects, topics, tasks and exams by day, week or month.",
+      },
       { property: "og:title", content: "Study Planner — Student Hub" },
       { property: "og:description", content: "Plan your study week." },
       { property: "og:type", content: "website" },
@@ -49,15 +53,34 @@ function PlannerPage() {
   });
 
   if (!user) return null;
+  const settings = db.user_settings.find((row) => row.user_id === user.id);
+  const locale =
+    settings?.language === "ur"
+      ? "ur-PK"
+      : settings?.language === "es"
+        ? "es-ES"
+        : settings?.language === "fr"
+          ? "fr-FR"
+          : settings?.language === "de"
+            ? "de-DE"
+            : settings?.language === "ar"
+              ? "ar"
+              : "en-US";
   const tasks = scopedRows(db.study_tasks, user.id);
 
   const today = todayISO();
-  const end = new Date();
-  end.setDate(end.getDate() + (view === "week" ? 6 : 29));
-  const endKey = end.toISOString().slice(0, 10);
+  const periodStart = new Date();
+  if (view === "week") {
+    const startOfWeek = settings?.week_starts_on ?? 0;
+    periodStart.setDate(periodStart.getDate() - ((periodStart.getDay() - startOfWeek + 7) % 7));
+  }
+  const startKey = view === "today" ? today : localDateKey(periodStart);
+  const periodEnd = new Date(periodStart);
+  periodEnd.setDate(periodEnd.getDate() + (view === "month" ? 29 : view === "week" ? 6 : 0));
+  const endKey = localDateKey(periodEnd);
 
   const visible = tasks
-    .filter((t) => (view === "today" ? t.date === today : t.date >= today && t.date <= endKey))
+    .filter((t) => (view === "today" ? t.date === today : t.date >= startKey && t.date <= endKey))
     .sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`));
 
   const done = visible.filter((t) => t.done).length;
@@ -113,7 +136,10 @@ function PlannerPage() {
 
           {visible.length ? (
             <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-secondary">
-              <div className="h-full rounded-full bg-brand transition-all" style={{ width: `${percent}%` }} />
+              <div
+                className="h-full rounded-full bg-brand transition-all"
+                style={{ width: `${percent}%` }}
+              />
             </div>
           ) : null}
 
@@ -140,20 +166,34 @@ function PlannerPage() {
                     aria-label={`Mark ${t.title} complete`}
                   />
                   <div className="min-w-0 flex-1">
-                    <p className={cn("text-sm font-medium", t.done && "line-through text-muted-foreground")}>
+                    <p
+                      className={cn(
+                        "text-sm font-medium",
+                        t.done && "line-through text-muted-foreground",
+                      )}
+                    >
                       {t.is_exam ? "Exam: " : ""}
                       {t.title}
                     </p>
                     <p className="truncate text-xs text-muted-foreground">
                       {t.subject}
-                      {t.topic ? ` · ${t.topic}` : ""} · {t.date}
-                      {t.time ? ` ${t.time}` : ""} · {t.minutes} min
+                      {t.topic ? ` · ${t.topic}` : ""} ·{" "}
+                      {formatDateKey(t.date, locale, settings?.date_format ?? "locale")}
+                      {t.time
+                        ? ` ${formatTime(t.time, locale, settings?.time_format ?? "12h")}`
+                        : ""}{" "}
+                      · {t.minutes} min
                     </p>
                   </div>
                   <span className="shrink-0 rounded-full bg-secondary px-2.5 py-1 text-[11px] capitalize text-muted-foreground">
                     {t.priority}
                   </span>
-                  <Button variant="ghost" size="icon" aria-label="Delete task" onClick={() => deleteTask(t.id)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Delete task"
+                    onClick={() => deleteTask(t.id)}
+                  >
                     <Trash2 className="size-4" />
                   </Button>
                 </li>
@@ -225,7 +265,9 @@ function PlannerPage() {
                 id="tpriority"
                 className={selectClass}
                 value={form.priority}
-                onChange={(e) => setForm((f) => ({ ...f, priority: e.target.value as "low" | "medium" | "high" }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, priority: e.target.value as "low" | "medium" | "high" }))
+                }
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>

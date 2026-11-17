@@ -77,7 +77,6 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-
 :root {
   --radius: 0.875rem;
   --background: oklch(0.978 0.008 250);
@@ -132,6 +131,11 @@
     border-color: var(--color-border);
   }
 
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -147,11 +151,83 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.reduced-motion *,
+.reduced-motion *::before,
+.reduced-motion *::after {
+  scroll-behavior: auto !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+.high-contrast {
+  --muted-foreground: oklch(0.35 0.018 258);
+  --border: oklch(0.72 0.008 255);
+  --input: oklch(0.72 0.008 255);
+}
+
 @utility panel {
   border-radius: var(--radius-2xl);
   background-color: var(--color-card);
   box-shadow: 0 1px 2px oklch(0.22 0.02 260 / 0.06);
   border: 1px solid var(--color-border);
+}
+
+@property --ai-glow-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes ai-glow-border-shift {
+  to {
+    --ai-glow-angle: 360deg;
+  }
+}
+
+.ai-glow-border {
+  position: relative;
+  isolation: isolate;
+  border-color: transparent;
+}
+
+.ai-glow-border::before {
+  position: absolute;
+  z-index: 1;
+  inset: -1px;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--ai-glow-angle),
+    #3b82f6,
+    #93c5fd 24%,
+    #ec4899 52%,
+    #f9a8d4 72%,
+    #3b82f6
+  );
+  content: "";
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  filter: drop-shadow(0 0 4px #3b82f680) drop-shadow(0 0 8px #ec489950);
+  animation: ai-glow-border-shift 5s linear infinite;
 }
 
 @keyframes sh-rise {
@@ -175,7 +251,11 @@
     radial-gradient(50% 50% at 10% 80%, oklch(0.9 0.06 255 / 0.4), transparent 70%),
     linear-gradient(oklch(0.58 0.21 258 / 0.07) 1px, transparent 1px),
     linear-gradient(90deg, oklch(0.58 0.21 258 / 0.07) 1px, transparent 1px);
-  background-size: auto, auto, 40px 40px, 40px 40px;
+  background-size:
+    auto,
+    auto,
+    40px 40px,
+    40px 40px;
 }
 
 @keyframes sh-marquee {
@@ -200,5 +280,7 @@
   background-color: var(--color-card);
   border: 1px solid var(--color-border);
   box-shadow: 0 12px 32px -16px oklch(0.2 0.045 265 / 0.18);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }

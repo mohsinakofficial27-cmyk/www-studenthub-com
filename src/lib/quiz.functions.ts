@@ -12,7 +12,7 @@ type RpcClient = {
   rpc: (
     fn: string,
     args: Record<string, unknown>,
-  ) => Promise<{ data: unknown; error: { message: string } | null }>;
+  ) => Promise<{ data: unknown; error: { message: string; code?: string } | null }>;
 };
 
 /**
@@ -29,6 +29,13 @@ export const recordQuizAttempt = createServerFn({ method: "POST" })
       { _quiz_id: data.quizId, _answers: data.answers },
     );
     if (error || !raw || typeof raw !== "object") {
+      if (error && ["PGRST202", "PGRST205", "42P01", "42883"].includes(error.code ?? "")) {
+        return {
+          ok: false as const,
+          setupRequired: true as const,
+          error: "Quiz history is not configured in Supabase; your current score remains local and was not saved.",
+        };
+      }
       return { ok: false as const, error: "Couldn't save your attempt. Please try again." };
     }
     const row = raw as Partial<{

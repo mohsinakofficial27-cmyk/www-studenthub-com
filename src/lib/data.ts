@@ -10,8 +10,8 @@ import {
   type NoteRow,
   type QuizAttemptRow,
   type QuizRow,
-  type SubscriptionRow,
   type TaskRow,
+  localDateKey,
 } from "./store";
 
 /* ---------------- courses ---------------- */
@@ -50,24 +50,81 @@ export function deleteCourse(id: string) {
 /* ---------------- GPA maths (estimates from the student's own entries) ------- */
 
 const GRADE_POINTS: Record<string, number> = {
-  "A+": 4.0, A: 4.0, "A-": 3.7,
-  "B+": 3.3, B: 3.0, "B-": 2.7,
-  "C+": 2.3, C: 2.0, "C-": 1.7,
-  "D+": 1.3, D: 1.0, F: 0,
+  "A+": 4.0,
+  A: 4.0,
+  "A-": 3.7,
+  "B+": 3.3,
+  B: 3.0,
+  "B-": 2.7,
+  "C+": 2.3,
+  C: 2.0,
+  "C-": 1.7,
+  "D+": 1.3,
+  D: 1.0,
+  F: 0,
 };
 
 export const GRADE_OPTIONS = Object.keys(GRADE_POINTS);
+export type GradingSystem = "gpa4" | "gpa5" | "percentage" | "letter" | "uk";
 
-export function gradePoints(grade: string): number | null {
-  return grade in GRADE_POINTS ? (GRADE_POINTS[grade] ?? 0) : null;
+const GPA5_POINTS: Record<string, number> = {
+  "A+": 5,
+  A: 4.7,
+  "A-": 4.5,
+  "B+": 4.3,
+  B: 4,
+  "B-": 3.7,
+  "C+": 3.3,
+  C: 3,
+  "C-": 2.7,
+  "D+": 2.3,
+  D: 2,
+  "D-": 1.7,
+  F: 0,
+};
+
+const UK_POINTS: Record<string, number> = {
+  "First class": 4,
+  "Upper second (2:1)": 3.3,
+  "Lower second (2:2)": 2.7,
+  "Third class": 2,
+  Fail: 0,
+};
+
+export function gradeOptionsForSystem(system: GradingSystem): string[] {
+  if (system === "percentage")
+    return Array.from({ length: 21 }, (_, index) => String(100 - index * 5));
+  if (system === "uk") return Object.keys(UK_POINTS);
+  return GRADE_OPTIONS;
+}
+
+export function maximumGradePoints(system: GradingSystem): number {
+  if (system === "gpa5") return 5;
+  if (system === "percentage") return 100;
+  return 4;
+}
+
+export function gradePoints(grade: string, system: GradingSystem = "gpa4"): number | null {
+  if (system === "gpa5") return GPA5_POINTS[grade] ?? null;
+  if (system === "percentage") {
+    const percentage = Number(grade);
+    return grade.trim() !== "" &&
+      Number.isFinite(percentage) &&
+      percentage >= 0 &&
+      percentage <= 100
+      ? percentage
+      : null;
+  }
+  if (system === "uk") return UK_POINTS[grade] ?? null;
+  return GRADE_POINTS[grade] ?? null;
 }
 
 /** Weighted GPA across graded courses. Returns null when nothing is graded. */
-export function computeGpa(courses: CourseRow[]): number | null {
+export function computeGpa(courses: CourseRow[], system: GradingSystem = "gpa4"): number | null {
   let points = 0;
   let credits = 0;
   for (const c of courses) {
-    const p = gradePoints(c.grade);
+    const p = gradePoints(c.grade, system);
     if (p === null) continue;
     points += p * c.credits;
     credits += c.credits;
@@ -83,7 +140,6 @@ export function finalExamNeeded(current: number, weight: number, target: number)
   const needed = (target - (1 - weight) * current) / weight;
   return Math.round(needed * 10) / 10;
 }
-
 
 /* ---------------- notes ---------------- */
 
@@ -186,6 +242,12 @@ export function createCard(userId: string, deckId: string, front: string, back: 
       front,
       back,
       confidence: "unrated",
+      due_date: todayISO(),
+      interval_days: 0,
+      ease_factor: 2.5,
+      repetitions: 0,
+      review_count: 0,
+      last_reviewed_at: null,
     });
   });
 }
@@ -195,6 +257,50 @@ export function updateCard(id: string, patch: Partial<CardRow>) {
     const c = d.flashcards.find((x) => x.id === id);
     if (c) Object.assign(c, patch);
   });
+}
+
+export type ReviewRating = "again" | "hard" | "good" | "easy";
+
+export function reviewCard(id: string, rating: ReviewRating, now = new Date()) {
+  const date = localDateKey(now);
+  mutate((d) => {
+    const card = d.flashcards.find((item) => item.id === id);
+    if (!card) return;
+
+    const quality = { again: 0, hard: 3, good: 4, easy: 5 }[rating];
+    let interval = card.interval_days ?? 0;
+    let repetitions = card.repetitions ?? 0;
+    const ease = card.ease_factor ?? 2.5;
+    const nextEase = Math.max(1.3, ease + 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+
+    if (quality < 3) {
+      repetitions = 0;
+      interval = 1;
+    } else {
+      interval =
+        repetitions === 0 ? 1 : repetitions === 1 ? 6 : Math.max(1, Math.round(interval * ease));
+      if (rating === "hard") interval = Math.max(1, Math.round(interval * 1.2));
+      if (rating === "easy") interval = Math.max(1, Math.round(interval * 1.3));
+      repetitions += 1;
+    }
+
+    const due = new Date(`${date}T12:00:00`);
+    due.setDate(due.getDate() + interval);
+    Object.assign(card, {
+      confidence:
+        rating === "again" || rating === "hard" ? "hard" : rating === "easy" ? "easy" : "medium",
+      due_date: localDateKey(due),
+      interval_days: interval,
+      ease_factor: Math.round(nextEase * 100) / 100,
+      repetitions,
+      review_count: (card.review_count ?? 0) + 1,
+      last_reviewed_at: now.toISOString(),
+    });
+  });
+}
+
+export function dueCards(cards: CardRow[], date = todayISO()) {
+  return cards.filter((card) => !card.due_date || card.due_date <= date);
 }
 
 export function deleteCard(id: string) {
@@ -239,6 +345,12 @@ export function applyAttempt(row: QuizAttemptRow) {
   });
 }
 
+export function applyLocalAttempt(row: QuizAttemptRow) {
+  mutate((d) => {
+    d.quiz_attempts.unshift({ ...row, local_only: true });
+  });
+}
+
 /* ---------------- study sessions ---------------- */
 
 export function logSession(userId: string, minutes: number, kind: "focus" | "break") {
@@ -253,42 +365,12 @@ export function logSession(userId: string, minutes: number, kind: "focus" | "bre
   });
 }
 
-/* ---------------- subscription ---------------- */
-
-/**
- * Plan entitlement is decided on the server (src/lib/subscription.functions.ts)
- * and the database blocks client writes to `subscriptions`. These helpers only
- * mirror a server-returned row into the in-memory store for display.
- */
-export function applySubscription(userId: string, row: SubscriptionRow) {
-  mutate((d) => {
-    const idx = d.subscriptions.findIndex((s) => s.user_id === userId);
-    if (idx === -1) d.subscriptions.push(row);
-    else d.subscriptions[idx] = row;
-  });
-}
-
-export function recordBillingNotice(userId: string, title: string, body: string) {
-  mutate((d) => {
-    d.notifications.unshift({
-      id: uid(),
-      user_id: userId,
-      kind: "billing",
-      title,
-      body,
-      created_at: new Date().toISOString(),
-      read: false,
-    });
-  });
-}
-
-
 /* ---------------- deadline protection & week schedule ---------------- */
 
 function dateKey(offsetDays: number) {
   const d = new Date();
   d.setDate(d.getDate() + offsetDays);
-  return d.toISOString().slice(0, 10);
+  return localDateKey(d);
 }
 
 export interface DeadlineSummary {
@@ -314,7 +396,10 @@ export function deadlineSummary(db: Database, userId: string): DeadlineSummary {
 }
 
 /** Minutes of planned (not done) study per day for the next 7 days. */
-export function weekSchedule(db: Database, userId: string): { day: string; minutes: number; date: string }[] {
+export function weekSchedule(
+  db: Database,
+  userId: string,
+): { day: string; minutes: number; date: string }[] {
   const tasks = db.study_tasks.filter((t) => t.user_id === userId && !t.done);
   const out: { day: string; minutes: number; date: string }[] = [];
   for (let i = 0; i < 7; i += 1) {
@@ -323,7 +408,9 @@ export function weekSchedule(db: Database, userId: string): { day: string; minut
     d.setDate(d.getDate() + i);
     out.push({
       day: d.toLocaleDateString(undefined, { weekday: "short" }),
-      minutes: tasks.filter((t) => t.date === key && !t.is_exam).reduce((sum, t) => sum + t.minutes, 0),
+      minutes: tasks
+        .filter((t) => t.date === key && !t.is_exam)
+        .reduce((sum, t) => sum + t.minutes, 0),
       date: key,
     });
   }
@@ -348,7 +435,12 @@ export interface Stats {
 }
 
 function dayKey(iso: string) {
-  return iso.slice(0, 10);
+  return localDateKey(new Date(iso));
+}
+
+function dateOrdinal(key: string) {
+  const [year, month, day] = key.split("-").map(Number);
+  return Date.UTC(year ?? 0, (month ?? 1) - 1, day ?? 1);
 }
 
 export function computeStats(db: Database, userId: string): Stats {
@@ -362,7 +454,7 @@ export function computeStats(db: Database, userId: string): Stats {
   const cursor = new Date();
   if (!studiedDays.has(today)) cursor.setDate(cursor.getDate() - 1);
   for (;;) {
-    const key = cursor.toISOString().slice(0, 10);
+    const key = localDateKey(cursor);
     if (!studiedDays.has(key)) break;
     streak += 1;
     cursor.setDate(cursor.getDate() - 1);
@@ -371,13 +463,12 @@ export function computeStats(db: Database, userId: string): Stats {
   const sorted = [...studiedDays].sort();
   let bestStreak = 0;
   let run = 0;
-  let prev: Date | null = null;
+  let prevDay: string | null = null;
   for (const key of sorted) {
-    const d = new Date(`${key}T00:00:00`);
-    if (prev && (d.getTime() - prev.getTime()) / 86400000 === 1) run += 1;
+    if (prevDay && (dateOrdinal(key) - dateOrdinal(prevDay)) / 86400000 === 1) run += 1;
     else run = 1;
     bestStreak = Math.max(bestStreak, run);
-    prev = d;
+    prevDay = key;
   }
 
   const todayTasks = tasks.filter((t) => t.date === today && !t.is_exam);
@@ -399,7 +490,9 @@ export function computeStats(db: Database, userId: string): Stats {
     const key = d.toISOString().slice(0, 10);
     weekly.push({
       day: d.toLocaleDateString(undefined, { weekday: "short" }),
-      minutes: sessions.filter((s) => dayKey(s.ended_at) === key).reduce((sum, s) => sum + s.minutes, 0),
+      minutes: sessions
+        .filter((s) => dayKey(s.ended_at) === key)
+        .reduce((sum, s) => sum + s.minutes, 0),
     });
   }
 
@@ -422,7 +515,11 @@ export function computeStats(db: Database, userId: string): Stats {
     .sort((a, b) => a.date.localeCompare(b.date));
   const nextExam = exams[0] ?? null;
   const daysToExam = nextExam
-    ? Math.round((new Date(`${nextExam.date}T00:00:00`).getTime() - new Date(`${today}T00:00:00`).getTime()) / 86400000)
+    ? Math.round(
+        (new Date(`${nextExam.date}T00:00:00`).getTime() -
+          new Date(`${today}T00:00:00`).getTime()) /
+          86400000,
+      )
     : null;
 
   return {

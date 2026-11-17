@@ -29,8 +29,8 @@ const schema = z.object({
   likes: z.string().trim().max(2000),
   issues: z.string().trim().max(2000),
   wanted_feature: z.string().trim().max(2000),
-  would_pay: z.boolean(),
-  fair_price: z.string().trim().max(100),
+  would_pay: z.boolean().default(false),
+  fair_price: z.string().trim().max(100).default(""),
 });
 
 function FeedbackPage() {
@@ -39,8 +39,6 @@ function FeedbackPage() {
   const [likes, setLikes] = useState("");
   const [issues, setIssues] = useState("");
   const [wanted, setWanted] = useState("");
-  const [wouldPay, setWouldPay] = useState(false);
-  const [price, setPrice] = useState("");
   const [status, setStatus] = useState<"idle" | "saving" | "done">("idle");
   const [error, setError] = useState("");
 
@@ -51,8 +49,6 @@ function FeedbackPage() {
       likes,
       issues,
       wanted_feature: wanted,
-      would_pay: wouldPay,
-      fair_price: wouldPay ? price : "",
     });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? "Please check the form.");
@@ -115,21 +111,6 @@ function FeedbackPage() {
             <Field label="What do you like most?" value={likes} onChange={setLikes} />
             <Field label="What is not working or confusing?" value={issues} onChange={setIssues} />
             <Field label="What feature would you want next?" value={wanted} onChange={setWanted} />
-            <label className="flex items-center gap-3 text-sm font-medium">
-              <input
-                type="checkbox"
-                checked={wouldPay}
-                onChange={(e) => setWouldPay(e.target.checked)}
-                className="size-4 accent-[var(--brand)]"
-              />
-              I would pay for a premium version
-            </label>
-            {wouldPay ? (
-              <label className="block text-sm font-semibold">
-                How much per month would feel fair? <span className="font-normal text-muted-foreground">(optional)</span>
-                <Input className="mt-2" value={price} maxLength={100} onChange={(e) => setPrice(e.target.value)} placeholder="e.g. $5" />
-              </label>
-            ) : null}
             {error ? (
               <p className="text-sm text-destructive" role="alert">
                 {error}

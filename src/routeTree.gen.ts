@@ -20,27 +20,45 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SharedProgressRouteImport } from './routes/shared-progress'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as StudyToolsRouteImport } from './routes/study-tools'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as AuthenticatedAcademicToolsRouteImport } from './routes/_authenticated/academic-tools'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
 import { Route as AuthenticatedCoachRouteImport } from './routes/_authenticated/coach'
+import { Route as AuthenticatedCommunityRouteImport } from './routes/_authenticated/community'
+import { Route as AuthenticatedConceptChallengerRouteImport } from './routes/_authenticated/concept-challenger'
 import { Route as AuthenticatedCoursesRouteImport } from './routes/_authenticated/courses'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedExamCalmRouteImport } from './routes/_authenticated/exam-calm'
+import { Route as AuthenticatedExamCrammerRouteImport } from './routes/_authenticated/exam-crammer'
 import { Route as AuthenticatedFlashcardsRouteImport } from './routes/_authenticated/flashcards'
 import { Route as AuthenticatedGpaRouteImport } from './routes/_authenticated/gpa'
+import { Route as AuthenticatedHandwritingScannerRouteImport } from './routes/_authenticated/handwriting-scanner'
+import { Route as AuthenticatedMistakeAnalyzerRouteImport } from './routes/_authenticated/mistake-analyzer'
+import { Route as AuthenticatedMockVivaRouteImport } from './routes/_authenticated/mock-viva'
+import { Route as AuthenticatedNoteExchangeRouteImport } from './routes/_authenticated/note-exchange'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedParentReportRouteImport } from './routes/_authenticated/parent-report'
+import { Route as AuthenticatedPdfReaderRouteImport } from './routes/_authenticated/pdf-reader'
 import { Route as AuthenticatedPlannerRouteImport } from './routes/_authenticated/planner'
 import { Route as AuthenticatedPomodoroRouteImport } from './routes/_authenticated/pomodoro'
+import { Route as AuthenticatedPresentationsRouteImport } from './routes/_authenticated/presentations'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedProgressRouteImport } from './routes/_authenticated/progress'
 import { Route as AuthenticatedQuizzesRouteImport } from './routes/_authenticated/quizzes'
 import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated/search'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedSleepOptimizerRouteImport } from './routes/_authenticated/sleep-optimizer'
+import { Route as AuthenticatedStudyLockRouteImport } from './routes/_authenticated/study-lock'
 import { Route as AuthenticatedStudyModeRouteImport } from './routes/_authenticated/study-mode'
-import { Route as AuthenticatedSubscriptionRouteImport } from './routes/_authenticated/subscription'
+import { Route as AuthenticatedStudyRoomRouteImport } from './routes/_authenticated/study-room'
 import { Route as AuthenticatedSyllabusRouteImport } from './routes/_authenticated/syllabus'
+import { Route as AuthenticatedVoiceTutorRouteImport } from './routes/_authenticated/voice-tutor'
+import { Route as IntegrationsCallbackRouteImport } from './routes/integrations.callback'
 import { Route as AuthenticatedAdminFeedbackRouteImport } from './routes/_authenticated/admin_.feedback'
 
 const IndexRoute = IndexRouteImport.update({
@@ -97,6 +115,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SharedProgressRoute = SharedProgressRouteImport.update({
+  id: '/shared-progress',
+  path: '/shared-progress',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -112,6 +135,12 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAcademicToolsRoute =
+  AuthenticatedAcademicToolsRouteImport.update({
+    id: '/academic-tools',
+    path: '/academic-tools',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -127,6 +156,17 @@ const AuthenticatedCoachRoute = AuthenticatedCoachRouteImport.update({
   path: '/coach',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCommunityRoute = AuthenticatedCommunityRouteImport.update({
+  id: '/community',
+  path: '/community',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedConceptChallengerRoute =
+  AuthenticatedConceptChallengerRouteImport.update({
+    id: '/concept-challenger',
+    path: '/concept-challenger',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCoursesRoute = AuthenticatedCoursesRouteImport.update({
   id: '/courses',
   path: '/courses',
@@ -137,6 +177,17 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedExamCalmRoute = AuthenticatedExamCalmRouteImport.update({
+  id: '/exam-calm',
+  path: '/exam-calm',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedExamCrammerRoute =
+  AuthenticatedExamCrammerRouteImport.update({
+    id: '/exam-crammer',
+    path: '/exam-crammer',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedFlashcardsRoute = AuthenticatedFlashcardsRouteImport.update({
   id: '/flashcards',
   path: '/flashcards',
@@ -147,6 +198,29 @@ const AuthenticatedGpaRoute = AuthenticatedGpaRouteImport.update({
   path: '/gpa',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedHandwritingScannerRoute =
+  AuthenticatedHandwritingScannerRouteImport.update({
+    id: '/handwriting-scanner',
+    path: '/handwriting-scanner',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMistakeAnalyzerRoute =
+  AuthenticatedMistakeAnalyzerRouteImport.update({
+    id: '/mistake-analyzer',
+    path: '/mistake-analyzer',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMockVivaRoute = AuthenticatedMockVivaRouteImport.update({
+  id: '/mock-viva',
+  path: '/mock-viva',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedNoteExchangeRoute =
+  AuthenticatedNoteExchangeRouteImport.update({
+    id: '/note-exchange',
+    path: '/note-exchange',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedNotesRoute = AuthenticatedNotesRouteImport.update({
   id: '/notes',
   path: '/notes',
@@ -155,6 +229,17 @@ const AuthenticatedNotesRoute = AuthenticatedNotesRouteImport.update({
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedParentReportRoute =
+  AuthenticatedParentReportRouteImport.update({
+    id: '/parent-report',
+    path: '/parent-report',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPdfReaderRoute = AuthenticatedPdfReaderRouteImport.update({
+  id: '/pdf-reader',
+  path: '/pdf-reader',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPlannerRoute = AuthenticatedPlannerRouteImport.update({
@@ -167,6 +252,12 @@ const AuthenticatedPomodoroRoute = AuthenticatedPomodoroRouteImport.update({
   path: '/pomodoro',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPresentationsRoute =
+  AuthenticatedPresentationsRouteImport.update({
+    id: '/presentations',
+    path: '/presentations',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -187,21 +278,46 @@ const AuthenticatedSearchRoute = AuthenticatedSearchRouteImport.update({
   path: '/search',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSleepOptimizerRoute =
+  AuthenticatedSleepOptimizerRouteImport.update({
+    id: '/sleep-optimizer',
+    path: '/sleep-optimizer',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedStudyLockRoute = AuthenticatedStudyLockRouteImport.update({
+  id: '/study-lock',
+  path: '/study-lock',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedStudyModeRoute = AuthenticatedStudyModeRouteImport.update({
   id: '/study-mode',
   path: '/study-mode',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedSubscriptionRoute =
-  AuthenticatedSubscriptionRouteImport.update({
-    id: '/subscription',
-    path: '/subscription',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
+const AuthenticatedStudyRoomRoute = AuthenticatedStudyRoomRouteImport.update({
+  id: '/study-room',
+  path: '/study-room',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSyllabusRoute = AuthenticatedSyllabusRouteImport.update({
   id: '/syllabus',
   path: '/syllabus',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedVoiceTutorRoute = AuthenticatedVoiceTutorRouteImport.update({
+  id: '/voice-tutor',
+  path: '/voice-tutor',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const IntegrationsCallbackRoute = IntegrationsCallbackRouteImport.update({
+  id: '/integrations/callback',
+  path: '/integrations/callback',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminFeedbackRoute =
   AuthenticatedAdminFeedbackRouteImport.update({
@@ -221,27 +337,45 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/shared-progress': typeof SharedProgressRoute
   '/signup': typeof SignupRoute
   '/study-tools': typeof StudyToolsRoute
   '/terms': typeof TermsRoute
+  '/academic-tools': typeof AuthenticatedAcademicToolsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/assistant': typeof AuthenticatedAssistantRoute
   '/coach': typeof AuthenticatedCoachRoute
+  '/community': typeof AuthenticatedCommunityRoute
+  '/concept-challenger': typeof AuthenticatedConceptChallengerRoute
   '/courses': typeof AuthenticatedCoursesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/exam-calm': typeof AuthenticatedExamCalmRoute
+  '/exam-crammer': typeof AuthenticatedExamCrammerRoute
   '/flashcards': typeof AuthenticatedFlashcardsRoute
   '/gpa': typeof AuthenticatedGpaRoute
+  '/handwriting-scanner': typeof AuthenticatedHandwritingScannerRoute
+  '/mistake-analyzer': typeof AuthenticatedMistakeAnalyzerRoute
+  '/mock-viva': typeof AuthenticatedMockVivaRoute
+  '/note-exchange': typeof AuthenticatedNoteExchangeRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/parent-report': typeof AuthenticatedParentReportRoute
+  '/pdf-reader': typeof AuthenticatedPdfReaderRoute
   '/planner': typeof AuthenticatedPlannerRoute
   '/pomodoro': typeof AuthenticatedPomodoroRoute
+  '/presentations': typeof AuthenticatedPresentationsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/progress': typeof AuthenticatedProgressRoute
   '/quizzes': typeof AuthenticatedQuizzesRoute
   '/search': typeof AuthenticatedSearchRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/sleep-optimizer': typeof AuthenticatedSleepOptimizerRoute
+  '/study-lock': typeof AuthenticatedStudyLockRoute
   '/study-mode': typeof AuthenticatedStudyModeRoute
-  '/subscription': typeof AuthenticatedSubscriptionRoute
+  '/study-room': typeof AuthenticatedStudyRoomRoute
   '/syllabus': typeof AuthenticatedSyllabusRoute
+  '/voice-tutor': typeof AuthenticatedVoiceTutorRoute
+  '/integrations/callback': typeof IntegrationsCallbackRoute
   '/admin/feedback': typeof AuthenticatedAdminFeedbackRoute
 }
 export interface FileRoutesByTo {
@@ -255,27 +389,45 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/shared-progress': typeof SharedProgressRoute
   '/signup': typeof SignupRoute
   '/study-tools': typeof StudyToolsRoute
   '/terms': typeof TermsRoute
+  '/academic-tools': typeof AuthenticatedAcademicToolsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/assistant': typeof AuthenticatedAssistantRoute
   '/coach': typeof AuthenticatedCoachRoute
+  '/community': typeof AuthenticatedCommunityRoute
+  '/concept-challenger': typeof AuthenticatedConceptChallengerRoute
   '/courses': typeof AuthenticatedCoursesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/exam-calm': typeof AuthenticatedExamCalmRoute
+  '/exam-crammer': typeof AuthenticatedExamCrammerRoute
   '/flashcards': typeof AuthenticatedFlashcardsRoute
   '/gpa': typeof AuthenticatedGpaRoute
+  '/handwriting-scanner': typeof AuthenticatedHandwritingScannerRoute
+  '/mistake-analyzer': typeof AuthenticatedMistakeAnalyzerRoute
+  '/mock-viva': typeof AuthenticatedMockVivaRoute
+  '/note-exchange': typeof AuthenticatedNoteExchangeRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/parent-report': typeof AuthenticatedParentReportRoute
+  '/pdf-reader': typeof AuthenticatedPdfReaderRoute
   '/planner': typeof AuthenticatedPlannerRoute
   '/pomodoro': typeof AuthenticatedPomodoroRoute
+  '/presentations': typeof AuthenticatedPresentationsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/progress': typeof AuthenticatedProgressRoute
   '/quizzes': typeof AuthenticatedQuizzesRoute
   '/search': typeof AuthenticatedSearchRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/sleep-optimizer': typeof AuthenticatedSleepOptimizerRoute
+  '/study-lock': typeof AuthenticatedStudyLockRoute
   '/study-mode': typeof AuthenticatedStudyModeRoute
-  '/subscription': typeof AuthenticatedSubscriptionRoute
+  '/study-room': typeof AuthenticatedStudyRoomRoute
   '/syllabus': typeof AuthenticatedSyllabusRoute
+  '/voice-tutor': typeof AuthenticatedVoiceTutorRoute
+  '/integrations/callback': typeof IntegrationsCallbackRoute
   '/admin/feedback': typeof AuthenticatedAdminFeedbackRoute
 }
 export interface FileRoutesById {
@@ -291,27 +443,45 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/shared-progress': typeof SharedProgressRoute
   '/signup': typeof SignupRoute
   '/study-tools': typeof StudyToolsRoute
   '/terms': typeof TermsRoute
+  '/_authenticated/academic-tools': typeof AuthenticatedAcademicToolsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
   '/_authenticated/coach': typeof AuthenticatedCoachRoute
+  '/_authenticated/community': typeof AuthenticatedCommunityRoute
+  '/_authenticated/concept-challenger': typeof AuthenticatedConceptChallengerRoute
   '/_authenticated/courses': typeof AuthenticatedCoursesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/exam-calm': typeof AuthenticatedExamCalmRoute
+  '/_authenticated/exam-crammer': typeof AuthenticatedExamCrammerRoute
   '/_authenticated/flashcards': typeof AuthenticatedFlashcardsRoute
   '/_authenticated/gpa': typeof AuthenticatedGpaRoute
+  '/_authenticated/handwriting-scanner': typeof AuthenticatedHandwritingScannerRoute
+  '/_authenticated/mistake-analyzer': typeof AuthenticatedMistakeAnalyzerRoute
+  '/_authenticated/mock-viva': typeof AuthenticatedMockVivaRoute
+  '/_authenticated/note-exchange': typeof AuthenticatedNoteExchangeRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/_authenticated/parent-report': typeof AuthenticatedParentReportRoute
+  '/_authenticated/pdf-reader': typeof AuthenticatedPdfReaderRoute
   '/_authenticated/planner': typeof AuthenticatedPlannerRoute
   '/_authenticated/pomodoro': typeof AuthenticatedPomodoroRoute
+  '/_authenticated/presentations': typeof AuthenticatedPresentationsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/progress': typeof AuthenticatedProgressRoute
   '/_authenticated/quizzes': typeof AuthenticatedQuizzesRoute
   '/_authenticated/search': typeof AuthenticatedSearchRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/sleep-optimizer': typeof AuthenticatedSleepOptimizerRoute
+  '/_authenticated/study-lock': typeof AuthenticatedStudyLockRoute
   '/_authenticated/study-mode': typeof AuthenticatedStudyModeRoute
-  '/_authenticated/subscription': typeof AuthenticatedSubscriptionRoute
+  '/_authenticated/study-room': typeof AuthenticatedStudyRoomRoute
   '/_authenticated/syllabus': typeof AuthenticatedSyllabusRoute
+  '/_authenticated/voice-tutor': typeof AuthenticatedVoiceTutorRoute
+  '/integrations/callback': typeof IntegrationsCallbackRoute
   '/_authenticated/admin_/feedback': typeof AuthenticatedAdminFeedbackRoute
 }
 export interface FileRouteTypes {
@@ -327,27 +497,45 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/reset-password'
+    | '/shared-progress'
     | '/signup'
     | '/study-tools'
     | '/terms'
+    | '/academic-tools'
     | '/admin'
     | '/assistant'
     | '/coach'
+    | '/community'
+    | '/concept-challenger'
     | '/courses'
     | '/dashboard'
+    | '/exam-calm'
+    | '/exam-crammer'
     | '/flashcards'
     | '/gpa'
+    | '/handwriting-scanner'
+    | '/mistake-analyzer'
+    | '/mock-viva'
+    | '/note-exchange'
     | '/notes'
     | '/onboarding'
+    | '/parent-report'
+    | '/pdf-reader'
     | '/planner'
     | '/pomodoro'
+    | '/presentations'
     | '/profile'
     | '/progress'
     | '/quizzes'
     | '/search'
+    | '/settings'
+    | '/sleep-optimizer'
+    | '/study-lock'
     | '/study-mode'
-    | '/subscription'
+    | '/study-room'
     | '/syllabus'
+    | '/voice-tutor'
+    | '/integrations/callback'
     | '/admin/feedback'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -361,27 +549,45 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/reset-password'
+    | '/shared-progress'
     | '/signup'
     | '/study-tools'
     | '/terms'
+    | '/academic-tools'
     | '/admin'
     | '/assistant'
     | '/coach'
+    | '/community'
+    | '/concept-challenger'
     | '/courses'
     | '/dashboard'
+    | '/exam-calm'
+    | '/exam-crammer'
     | '/flashcards'
     | '/gpa'
+    | '/handwriting-scanner'
+    | '/mistake-analyzer'
+    | '/mock-viva'
+    | '/note-exchange'
     | '/notes'
     | '/onboarding'
+    | '/parent-report'
+    | '/pdf-reader'
     | '/planner'
     | '/pomodoro'
+    | '/presentations'
     | '/profile'
     | '/progress'
     | '/quizzes'
     | '/search'
+    | '/settings'
+    | '/sleep-optimizer'
+    | '/study-lock'
     | '/study-mode'
-    | '/subscription'
+    | '/study-room'
     | '/syllabus'
+    | '/voice-tutor'
+    | '/integrations/callback'
     | '/admin/feedback'
   id:
     | '__root__'
@@ -396,27 +602,45 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/reset-password'
+    | '/shared-progress'
     | '/signup'
     | '/study-tools'
     | '/terms'
+    | '/_authenticated/academic-tools'
     | '/_authenticated/admin'
     | '/_authenticated/assistant'
     | '/_authenticated/coach'
+    | '/_authenticated/community'
+    | '/_authenticated/concept-challenger'
     | '/_authenticated/courses'
     | '/_authenticated/dashboard'
+    | '/_authenticated/exam-calm'
+    | '/_authenticated/exam-crammer'
     | '/_authenticated/flashcards'
     | '/_authenticated/gpa'
+    | '/_authenticated/handwriting-scanner'
+    | '/_authenticated/mistake-analyzer'
+    | '/_authenticated/mock-viva'
+    | '/_authenticated/note-exchange'
     | '/_authenticated/notes'
     | '/_authenticated/onboarding'
+    | '/_authenticated/parent-report'
+    | '/_authenticated/pdf-reader'
     | '/_authenticated/planner'
     | '/_authenticated/pomodoro'
+    | '/_authenticated/presentations'
     | '/_authenticated/profile'
     | '/_authenticated/progress'
     | '/_authenticated/quizzes'
     | '/_authenticated/search'
+    | '/_authenticated/settings'
+    | '/_authenticated/sleep-optimizer'
+    | '/_authenticated/study-lock'
     | '/_authenticated/study-mode'
-    | '/_authenticated/subscription'
+    | '/_authenticated/study-room'
     | '/_authenticated/syllabus'
+    | '/_authenticated/voice-tutor'
+    | '/integrations/callback'
     | '/_authenticated/admin_/feedback'
   fileRoutesById: FileRoutesById
 }
@@ -432,9 +656,11 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SharedProgressRoute: typeof SharedProgressRoute
   SignupRoute: typeof SignupRoute
   StudyToolsRoute: typeof StudyToolsRoute
   TermsRoute: typeof TermsRoute
+  IntegrationsCallbackRoute: typeof IntegrationsCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -516,6 +742,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/shared-progress': {
+      id: '/shared-progress'
+      path: '/shared-progress'
+      fullPath: '/shared-progress'
+      preLoaderRoute: typeof SharedProgressRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -536,6 +769,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/academic-tools': {
+      id: '/_authenticated/academic-tools'
+      path: '/academic-tools'
+      fullPath: '/academic-tools'
+      preLoaderRoute: typeof AuthenticatedAcademicToolsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
@@ -558,6 +798,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCoachRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/community': {
+      id: '/_authenticated/community'
+      path: '/community'
+      fullPath: '/community'
+      preLoaderRoute: typeof AuthenticatedCommunityRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/concept-challenger': {
+      id: '/_authenticated/concept-challenger'
+      path: '/concept-challenger'
+      fullPath: '/concept-challenger'
+      preLoaderRoute: typeof AuthenticatedConceptChallengerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/courses': {
       id: '/_authenticated/courses'
       path: '/courses'
@@ -570,6 +824,20 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/exam-calm': {
+      id: '/_authenticated/exam-calm'
+      path: '/exam-calm'
+      fullPath: '/exam-calm'
+      preLoaderRoute: typeof AuthenticatedExamCalmRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/exam-crammer': {
+      id: '/_authenticated/exam-crammer'
+      path: '/exam-crammer'
+      fullPath: '/exam-crammer'
+      preLoaderRoute: typeof AuthenticatedExamCrammerRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/flashcards': {
@@ -586,6 +854,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGpaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/handwriting-scanner': {
+      id: '/_authenticated/handwriting-scanner'
+      path: '/handwriting-scanner'
+      fullPath: '/handwriting-scanner'
+      preLoaderRoute: typeof AuthenticatedHandwritingScannerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/mistake-analyzer': {
+      id: '/_authenticated/mistake-analyzer'
+      path: '/mistake-analyzer'
+      fullPath: '/mistake-analyzer'
+      preLoaderRoute: typeof AuthenticatedMistakeAnalyzerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/mock-viva': {
+      id: '/_authenticated/mock-viva'
+      path: '/mock-viva'
+      fullPath: '/mock-viva'
+      preLoaderRoute: typeof AuthenticatedMockVivaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/note-exchange': {
+      id: '/_authenticated/note-exchange'
+      path: '/note-exchange'
+      fullPath: '/note-exchange'
+      preLoaderRoute: typeof AuthenticatedNoteExchangeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/notes': {
       id: '/_authenticated/notes'
       path: '/notes'
@@ -600,6 +896,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/parent-report': {
+      id: '/_authenticated/parent-report'
+      path: '/parent-report'
+      fullPath: '/parent-report'
+      preLoaderRoute: typeof AuthenticatedParentReportRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pdf-reader': {
+      id: '/_authenticated/pdf-reader'
+      path: '/pdf-reader'
+      fullPath: '/pdf-reader'
+      preLoaderRoute: typeof AuthenticatedPdfReaderRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/planner': {
       id: '/_authenticated/planner'
       path: '/planner'
@@ -612,6 +922,13 @@ declare module '@tanstack/react-router' {
       path: '/pomodoro'
       fullPath: '/pomodoro'
       preLoaderRoute: typeof AuthenticatedPomodoroRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/presentations': {
+      id: '/_authenticated/presentations'
+      path: '/presentations'
+      fullPath: '/presentations'
+      preLoaderRoute: typeof AuthenticatedPresentationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/profile': {
@@ -642,6 +959,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSearchRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/sleep-optimizer': {
+      id: '/_authenticated/sleep-optimizer'
+      path: '/sleep-optimizer'
+      fullPath: '/sleep-optimizer'
+      preLoaderRoute: typeof AuthenticatedSleepOptimizerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/study-lock': {
+      id: '/_authenticated/study-lock'
+      path: '/study-lock'
+      fullPath: '/study-lock'
+      preLoaderRoute: typeof AuthenticatedStudyLockRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/study-mode': {
       id: '/_authenticated/study-mode'
       path: '/study-mode'
@@ -649,11 +987,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudyModeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/subscription': {
-      id: '/_authenticated/subscription'
-      path: '/subscription'
-      fullPath: '/subscription'
-      preLoaderRoute: typeof AuthenticatedSubscriptionRouteImport
+    '/_authenticated/study-room': {
+      id: '/_authenticated/study-room'
+      path: '/study-room'
+      fullPath: '/study-room'
+      preLoaderRoute: typeof AuthenticatedStudyRoomRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/syllabus': {
@@ -662,6 +1000,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/syllabus'
       preLoaderRoute: typeof AuthenticatedSyllabusRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/voice-tutor': {
+      id: '/_authenticated/voice-tutor'
+      path: '/voice-tutor'
+      fullPath: '/voice-tutor'
+      preLoaderRoute: typeof AuthenticatedVoiceTutorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/integrations/callback': {
+      id: '/integrations/callback'
+      path: '/integrations/callback'
+      fullPath: '/integrations/callback'
+      preLoaderRoute: typeof IntegrationsCallbackRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin_/feedback': {
       id: '/_authenticated/admin_/feedback'
@@ -674,46 +1026,78 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAcademicToolsRoute: typeof AuthenticatedAcademicToolsRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
   AuthenticatedCoachRoute: typeof AuthenticatedCoachRoute
+  AuthenticatedCommunityRoute: typeof AuthenticatedCommunityRoute
+  AuthenticatedConceptChallengerRoute: typeof AuthenticatedConceptChallengerRoute
   AuthenticatedCoursesRoute: typeof AuthenticatedCoursesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedExamCalmRoute: typeof AuthenticatedExamCalmRoute
+  AuthenticatedExamCrammerRoute: typeof AuthenticatedExamCrammerRoute
   AuthenticatedFlashcardsRoute: typeof AuthenticatedFlashcardsRoute
   AuthenticatedGpaRoute: typeof AuthenticatedGpaRoute
+  AuthenticatedHandwritingScannerRoute: typeof AuthenticatedHandwritingScannerRoute
+  AuthenticatedMistakeAnalyzerRoute: typeof AuthenticatedMistakeAnalyzerRoute
+  AuthenticatedMockVivaRoute: typeof AuthenticatedMockVivaRoute
+  AuthenticatedNoteExchangeRoute: typeof AuthenticatedNoteExchangeRoute
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
+  AuthenticatedParentReportRoute: typeof AuthenticatedParentReportRoute
+  AuthenticatedPdfReaderRoute: typeof AuthenticatedPdfReaderRoute
   AuthenticatedPlannerRoute: typeof AuthenticatedPlannerRoute
   AuthenticatedPomodoroRoute: typeof AuthenticatedPomodoroRoute
+  AuthenticatedPresentationsRoute: typeof AuthenticatedPresentationsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedProgressRoute: typeof AuthenticatedProgressRoute
   AuthenticatedQuizzesRoute: typeof AuthenticatedQuizzesRoute
   AuthenticatedSearchRoute: typeof AuthenticatedSearchRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedSleepOptimizerRoute: typeof AuthenticatedSleepOptimizerRoute
+  AuthenticatedStudyLockRoute: typeof AuthenticatedStudyLockRoute
   AuthenticatedStudyModeRoute: typeof AuthenticatedStudyModeRoute
-  AuthenticatedSubscriptionRoute: typeof AuthenticatedSubscriptionRoute
+  AuthenticatedStudyRoomRoute: typeof AuthenticatedStudyRoomRoute
   AuthenticatedSyllabusRoute: typeof AuthenticatedSyllabusRoute
+  AuthenticatedVoiceTutorRoute: typeof AuthenticatedVoiceTutorRoute
   AuthenticatedAdminFeedbackRoute: typeof AuthenticatedAdminFeedbackRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAcademicToolsRoute: AuthenticatedAcademicToolsRoute,
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
   AuthenticatedCoachRoute: AuthenticatedCoachRoute,
+  AuthenticatedCommunityRoute: AuthenticatedCommunityRoute,
+  AuthenticatedConceptChallengerRoute: AuthenticatedConceptChallengerRoute,
   AuthenticatedCoursesRoute: AuthenticatedCoursesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedExamCalmRoute: AuthenticatedExamCalmRoute,
+  AuthenticatedExamCrammerRoute: AuthenticatedExamCrammerRoute,
   AuthenticatedFlashcardsRoute: AuthenticatedFlashcardsRoute,
   AuthenticatedGpaRoute: AuthenticatedGpaRoute,
+  AuthenticatedHandwritingScannerRoute: AuthenticatedHandwritingScannerRoute,
+  AuthenticatedMistakeAnalyzerRoute: AuthenticatedMistakeAnalyzerRoute,
+  AuthenticatedMockVivaRoute: AuthenticatedMockVivaRoute,
+  AuthenticatedNoteExchangeRoute: AuthenticatedNoteExchangeRoute,
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
+  AuthenticatedParentReportRoute: AuthenticatedParentReportRoute,
+  AuthenticatedPdfReaderRoute: AuthenticatedPdfReaderRoute,
   AuthenticatedPlannerRoute: AuthenticatedPlannerRoute,
   AuthenticatedPomodoroRoute: AuthenticatedPomodoroRoute,
+  AuthenticatedPresentationsRoute: AuthenticatedPresentationsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedProgressRoute: AuthenticatedProgressRoute,
   AuthenticatedQuizzesRoute: AuthenticatedQuizzesRoute,
   AuthenticatedSearchRoute: AuthenticatedSearchRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedSleepOptimizerRoute: AuthenticatedSleepOptimizerRoute,
+  AuthenticatedStudyLockRoute: AuthenticatedStudyLockRoute,
   AuthenticatedStudyModeRoute: AuthenticatedStudyModeRoute,
-  AuthenticatedSubscriptionRoute: AuthenticatedSubscriptionRoute,
+  AuthenticatedStudyRoomRoute: AuthenticatedStudyRoomRoute,
   AuthenticatedSyllabusRoute: AuthenticatedSyllabusRoute,
+  AuthenticatedVoiceTutorRoute: AuthenticatedVoiceTutorRoute,
   AuthenticatedAdminFeedbackRoute: AuthenticatedAdminFeedbackRoute,
 }
 
@@ -732,9 +1116,11 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SharedProgressRoute: SharedProgressRoute,
   SignupRoute: SignupRoute,
   StudyToolsRoute: StudyToolsRoute,
   TermsRoute: TermsRoute,
+  IntegrationsCallbackRoute: IntegrationsCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

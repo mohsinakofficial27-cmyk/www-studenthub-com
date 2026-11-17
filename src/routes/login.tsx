@@ -26,7 +26,7 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
-  const { signIn, user, profile } = useAuth();
+  const { signIn, user } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,8 +34,8 @@ function LoginPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (user) void navigate({ to: profile?.onboarded ? "/dashboard" : "/onboarding", replace: true });
-  }, [user, profile, navigate]);
+    if (user) void navigate({ to: "/dashboard", replace: true });
+  }, [user, navigate]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,7 +84,10 @@ function LoginPage() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="password">Password</Label>
-            <Link to="/forgot-password" className="text-xs text-muted-foreground hover:text-foreground">
+            <Link
+              to="/forgot-password"
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
               Forgot password?
             </Link>
           </div>
@@ -95,7 +98,11 @@ function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
-        <Button type="submit" disabled={busy} className="w-full bg-brand text-brand-foreground hover:bg-brand/90">
+        <Button
+          type="submit"
+          disabled={busy}
+          className="w-full bg-brand text-brand-foreground hover:bg-brand/90"
+        >
           {busy ? "Signing in…" : "Login"}
         </Button>
       </form>

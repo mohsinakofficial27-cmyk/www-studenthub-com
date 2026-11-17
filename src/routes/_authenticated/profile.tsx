@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -30,9 +30,8 @@ export const Route = createFileRoute("/_authenticated/profile")({
 const AVATAR_COLORS = ["#0e7c66", "#2563eb", "#b45309", "#7c3aed", "#be123c"];
 
 function ProfilePage() {
-  const { user, profile, changePassword, deleteAccount } = useAuth();
+  const { user, profile, changePassword } = useAuth();
   const db = useDb();
-  const navigate = useNavigate();
   const settings = db.user_settings.find((s) => s.user_id === user?.id);
 
   const [name, setName] = useState(profile?.name ?? "");
@@ -42,7 +41,6 @@ function ProfilePage() {
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
   const [pwError, setPwError] = useState("");
-  const [confirmDelete, setConfirmDelete] = useState(false);
 
   if (!user) return null;
 
@@ -78,7 +76,7 @@ function ProfilePage() {
     }
   };
 
-  const toggle = (key: "notify_tasks" | "notify_exams" | "notify_streak" | "notify_billing", value: boolean) =>
+  const toggle = (key: "notify_tasks" | "notify_exams" | "notify_streak", value: boolean) =>
     mutate((d) => {
       const s = d.user_settings.find((x) => x.user_id === user.id);
       if (s) s[key] = value;
@@ -167,7 +165,6 @@ function ProfilePage() {
                 ["notify_tasks", "Upcoming study tasks"],
                 ["notify_exams", "Upcoming exams"],
                 ["notify_streak", "Study streak reminders"],
-                ["notify_billing", "Subscription and account"],
               ] as const
             ).map(([key, label]) => (
               <div key={key} className="flex items-center justify-between">
@@ -182,29 +179,11 @@ function ProfilePage() {
           <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-5">
             <h2 className="text-lg font-semibold text-destructive">Delete account</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              This permanently removes your notes, quizzes, decks, planner and study history.
+              Account deletion now requires password confirmation in Privacy &amp; Data settings.
             </p>
-            {confirmDelete ? (
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Button
-                  variant="destructive"
-                  onClick={() => {
-                    deleteAccount();
-                    toast.success("Your account has been deleted.");
-                    void navigate({ to: "/", replace: true });
-                  }}
-                >
-                  Yes, delete everything
-                </Button>
-                <Button variant="ghost" onClick={() => setConfirmDelete(false)}>
-                  Cancel
-                </Button>
-              </div>
-            ) : (
-              <Button variant="outline" className="mt-4" onClick={() => setConfirmDelete(true)}>
-                Delete my account
-              </Button>
-            )}
+            <Button asChild variant="outline" className="mt-4">
+              <Link to="/settings">Open privacy settings</Link>
+            </Button>
           </div>
         </div>
       </div>

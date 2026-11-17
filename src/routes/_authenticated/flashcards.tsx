@@ -9,14 +9,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth, useDb } from "@/lib/auth";
-import { createCard, createDeck, deleteCard, deleteDeck, scopedRows, updateCard } from "@/lib/data";
+import {
+  createCard,
+  createDeck,
+  deleteCard,
+  deleteDeck,
+  dueCards,
+  reviewCard,
+  scopedRows,
+} from "@/lib/data";
+import { todayISO } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/flashcards")({
   head: () => ({
     meta: [
       { title: "Flashcards — Student Hub" },
-      { name: "description", content: "Build decks, practise with flip cards and rate how well you knew each one." },
+      {
+        name: "description",
+        content: "Build decks, practise with flip cards and rate how well you knew each one.",
+      },
       { property: "og:title", content: "Flashcards — Student Hub" },
       { property: "og:description", content: "Decks and practice mode." },
       { property: "og:type", content: "website" },
@@ -35,6 +47,7 @@ function FlashcardsPage() {
   const [front, setFront] = useState("");
   const [back, setBack] = useState("");
   const [practice, setPractice] = useState(false);
+  const [reviewOnlyDue, setReviewOnlyDue] = useState(true);
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
 
@@ -42,16 +55,21 @@ function FlashcardsPage() {
   const decks = scopedRows(db.flashcard_decks, user.id);
   const deck = decks.find((d) => d.id === activeDeck) ?? decks[0] ?? null;
   const cards = deck ? scopedRows(db.flashcards, user.id).filter((c) => c.deck_id === deck.id) : [];
-  const card = cards[index] ?? null;
+  const due = dueCards(cards);
+  const practiceCards = reviewOnlyDue ? due : cards;
+  const card = practiceCards[index] ?? null;
 
-  const rate = (confidence: "easy" | "medium" | "hard") => {
-    if (card) updateCard(card.id, { confidence });
+  const rate = (rating: "again" | "hard" | "good" | "easy") => {
+    if (card) reviewCard(card.id, rating);
     setFlipped(false);
-    setIndex((i) => (i + 1) % Math.max(cards.length, 1));
+    setIndex((i) => (reviewOnlyDue ? 0 : (i + 1) % Math.max(practiceCards.length, 1)));
   };
 
   return (
-    <AppShell title="Flashcards" description="Make decks from your subjects and drill them until they stick.">
+    <AppShell
+      title="Flashcards"
+      description="Make decks from your subjects and drill them until they stick."
+    >
       <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
         <div className="panel h-fit p-5">
           <h2 className="text-lg font-semibold">Decks</h2>
@@ -76,7 +94,11 @@ function FlashcardsPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="dsubject">Subject</Label>
-              <Input id="dsubject" value={deckSubject} onChange={(e) => setDeckSubject(e.target.value)} />
+              <Input
+                id="dsubject"
+                value={deckSubject}
+                onChange={(e) => setDeckSubject(e.target.value)}
+              />
             </div>
             <Button type="submit" variant="outline" className="w-full">
               Create deck
@@ -103,7 +125,12 @@ function FlashcardsPage() {
                   >
                     {d.name} <span className="text-xs text-muted-foreground">({count})</span>
                   </button>
-                  <Button variant="ghost" size="icon" aria-label="Delete deck" onClick={() => deleteDeck(d.id)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Delete deck"
+                    onClick={() => deleteDeck(d.id)}
+                  >
                     <Trash2 className="size-4" />
                   </Button>
                 </li>
@@ -123,25 +150,38 @@ function FlashcardsPage() {
           ) : practice ? (
             <div className="flex flex-col items-center py-6">
               <p className="text-sm text-muted-foreground">
-                Card {cards.length ? index + 1 : 0} of {cards.length}
+                {reviewOnlyDue ? "Due review" : "Full deck"} · Card{" "}
+                {practiceCards.length ? index + 1 : 0} of {practiceCards.length}
               </p>
               <button
                 type="button"
                 onClick={() => setFlipped((f) => !f)}
                 className="mt-5 flex min-h-56 w-full max-w-xl items-center justify-center rounded-3xl border border-border bg-surface p-8 text-center text-lg"
               >
-                {card ? (flipped ? card.back : card.front) : "This deck has no cards yet."}
+                {card
+                  ? flipped
+                    ? card.back
+                    : card.front
+                  : reviewOnlyDue
+                    ? "You're all caught up. No cards are due today."
+                    : "This deck has no cards yet."}
               </button>
               <p className="mt-3 text-xs text-muted-foreground">Tap the card to flip it.</p>
               {card ? (
                 <div className="mt-6 flex flex-wrap justify-center gap-2">
+                  <Button variant="outline" onClick={() => rate("again")}>
+                    Again
+                  </Button>
                   <Button variant="outline" onClick={() => rate("hard")}>
                     Hard
                   </Button>
-                  <Button variant="outline" onClick={() => rate("medium")}>
-                    Medium
+                  <Button variant="outline" onClick={() => rate("good")}>
+                    Good
                   </Button>
-                  <Button className="bg-brand text-brand-foreground hover:bg-brand/90" onClick={() => rate("easy")}>
+                  <Button
+                    className="bg-brand text-brand-foreground hover:bg-brand/90"
+                    onClick={() => rate("easy")}
+                  >
                     Easy
                   </Button>
                 </div>
@@ -160,15 +200,28 @@ function FlashcardsPage() {
                   </p>
                 </div>
                 <Button
-                  disabled={!cards.length}
+                  disabled={!due.length}
                   className="bg-brand text-brand-foreground hover:bg-brand/90"
                   onClick={() => {
                     setPractice(true);
+                    setReviewOnlyDue(true);
                     setIndex(0);
                     setFlipped(false);
                   }}
                 >
-                  Practise deck
+                  Review due ({due.length})
+                </Button>
+                <Button
+                  disabled={!cards.length}
+                  variant="outline"
+                  onClick={() => {
+                    setPractice(true);
+                    setReviewOnlyDue(false);
+                    setIndex(0);
+                    setFlipped(false);
+                  }}
+                >
+                  Practise all
                 </Button>
               </div>
 
@@ -185,8 +238,16 @@ function FlashcardsPage() {
                   setBack("");
                 }}
               >
-                <Input value={front} onChange={(e) => setFront(e.target.value)} placeholder="Front (term/question)" />
-                <Input value={back} onChange={(e) => setBack(e.target.value)} placeholder="Back (definition/answer)" />
+                <Input
+                  value={front}
+                  onChange={(e) => setFront(e.target.value)}
+                  placeholder="Front (term/question)"
+                />
+                <Input
+                  value={back}
+                  onChange={(e) => setBack(e.target.value)}
+                  placeholder="Back (definition/answer)"
+                />
                 <Button type="submit" variant="outline">
                   Add card
                 </Button>
@@ -202,15 +263,23 @@ function FlashcardsPage() {
               ) : (
                 <ul className="mt-5 space-y-2">
                   {cards.map((c) => (
-                    <li key={c.id} className="flex items-start gap-3 rounded-xl border border-border px-3.5 py-3">
+                    <li
+                      key={c.id}
+                      className="flex items-start gap-3 rounded-xl border border-border px-3.5 py-3"
+                    >
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium">{c.front}</p>
                         <p className="mt-0.5 text-sm text-muted-foreground">{c.back}</p>
                       </div>
                       <span className="shrink-0 rounded-full bg-secondary px-2.5 py-1 text-[11px] capitalize text-muted-foreground">
-                        {c.confidence}
+                        {c.due_date && c.due_date > todayISO() ? `Due ${c.due_date}` : "Due now"}
                       </span>
-                      <Button variant="ghost" size="icon" aria-label="Delete card" onClick={() => deleteCard(c.id)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Delete card"
+                        onClick={() => deleteCard(c.id)}
+                      >
                         <Trash2 className="size-4" />
                       </Button>
                     </li>

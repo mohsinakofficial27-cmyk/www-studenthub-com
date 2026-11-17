@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "Student Hub",
+  "short_name": "Student Hub",
+  "description": "Your student life, organized by AI.",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f8f9fc",
+  "theme_color": "#315ce5",
+  "icons": [
+    {
+      "src": "/icons/student-hub.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

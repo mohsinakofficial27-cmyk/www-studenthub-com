@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { parseSyllabusAI } from "@/lib/ai.functions";
+import { isAiSetupIssue } from "@/lib/ai";
 import { useAuth, useDb } from "@/lib/auth";
 import { createCourse, createTask, scopedRows } from "@/lib/data";
 import { todayISO } from "@/lib/store";
@@ -110,6 +111,8 @@ function SyllabusPage() {
       const res = await parseSyllabusAI({ data: { text: text.slice(0, 40000), image: imageRef.current || undefined } });
       if (!res.ok) {
         if ("limitReached" in res && res.limitReached) toast.error(res.error);
+        else if (("setupRequired" in res && res.setupRequired) || isAiSetupIssue(res.error))
+          toast.info(res.error);
         else toast.error(res.error);
         return;
       }

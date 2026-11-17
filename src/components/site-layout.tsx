@@ -11,7 +11,7 @@ const NAV = [
   { to: "/", label: "Home" },
   { to: "/features", label: "Features" },
   { to: "/study-tools", label: "Study Tools" },
-  { to: "/pricing", label: "Free Plan" },
+  { to: "/pricing", label: "Free Features" },
   { to: "/about", label: "About" },
 ] as const;
 
@@ -128,7 +128,7 @@ const FOOTER_COLS = [
     links: [
       { to: "/features", label: "Features" },
       { to: "/study-tools", label: "Study Tools" },
-      { to: "/pricing", label: "Free Plan" },
+      { to: "/pricing", label: "Free Features" },
       { to: "/feedback", label: "Feedback" },
       { to: "/about", label: "About Student Hub" },
       { to: "/contact", label: "Contact" },

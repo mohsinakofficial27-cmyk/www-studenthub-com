@@ -5,20 +5,30 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState, InfoNote } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { askCoachAI } from "@/lib/ai.functions";
 import { useAuth, useDb } from "@/lib/auth";
 import { computeStats, scopedRows } from "@/lib/data";
 import { todayISO } from "@/lib/store";
+import {
+  AI_SETUP_MESSAGE,
+  AI_USAGE_SETUP_MESSAGE,
+  buildOfflineCoachReply,
+  isAiSetupIssue,
+} from "@/lib/ai";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/coach")({
   head: () => ({
     meta: [
       { title: "AI Student Coach — Student Hub" },
-      { name: "description", content: "Your AI coach turns your real schedule into a day-by-day study plan, prioritizes deadlines and preps you for exams." },
+      {
+        name: "description",
+        content:
+          "Your AI coach turns your real schedule into a day-by-day study plan, prioritizes deadlines and preps you for exams.",
+      },
       { property: "og:title", content: "AI Student Coach — Student Hub" },
       { property: "og:description", content: "A study plan built around your real schedule." },
       { property: "og:type", content: "website" },
@@ -48,6 +58,7 @@ function CoachPage() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [limitMsg, setLimitMsg] = useState("");
+  const [offlineReason, setOfflineReason] = useState("");
 
   if (!user) return null;
 
@@ -61,7 +72,10 @@ function CoachPage() {
     tasks.length
       ? `Scheduled tasks (date | time | subject | title | priority | done?): ${tasks
           .slice(0, 40)
-          .map((t) => `${t.date} ${t.time} | ${t.subject} | ${t.title} | ${t.priority}${t.is_exam ? " | EXAM" : ""} | ${t.done ? "done" : "open"}`)
+          .map(
+            (t) =>
+              `${t.date} ${t.time} | ${t.subject} | ${t.title} | ${t.priority}${t.is_exam ? " | EXAM" : ""} | ${t.done ? "done" : "open"}`,
+          )
           .join(" ;; ")}`
       : "No tasks scheduled yet.",
     `Study time so far: ${stats.totalHours}h total, ${stats.weekHours}h in the last 7 days. Quiz average: ${stats.quizAverage ? `${stats.quizAverage}%` : "no attempts"}.`,
@@ -71,22 +85,52 @@ function CoachPage() {
     const text = question.trim();
     if (!text || busy) return;
     setBusy(true);
-    const history = replaceLastAnswer ? messages.slice(0, -1) : [...messages, { role: "user" as const, content: text }];
+    const history = replaceLastAnswer
+      ? messages.slice(0, -1)
+      : [...messages, { role: "user" as const, content: text }];
     if (!replaceLastAnswer) setMessages(history);
     try {
       const result = await ask({
-        data: { context, messages: history.slice(-20).map((m) => ({ role: m.role, content: m.content.slice(0, 4000) })) },
+        data: {
+          context,
+          messages: history
+            .slice(-20)
+            .map((m) => ({ role: m.role, content: m.content.slice(0, 4000) })),
+        },
       });
       if (!result.ok) {
-        if ("limitReached" in result && result.limitReached) setLimitMsg(result.error);
-        else toast.error(result.error);
-        if (replaceLastAnswer) setMessages(history);
+        if ("limitReached" in result && result.limitReached) {
+          setLimitMsg(result.error);
+        } else if (
+          ("setupRequired" in result && result.setupRequired) ||
+          isAiSetupIssue(result.error)
+        ) {
+          setOfflineReason(isAiSetupIssue(result.error) ? AI_SETUP_MESSAGE : AI_USAGE_SETUP_MESSAGE);
+          setMessages([
+            ...history,
+            { role: "assistant", content: buildOfflineCoachReply(text, context) },
+          ]);
+          setInput("");
+        } else {
+          toast.error(result.error);
+          if (replaceLastAnswer) setMessages(history);
+        }
         return;
       }
+      setOfflineReason("");
       setMessages([...history, { role: "assistant", content: result.content }]);
       setInput("");
-    } catch {
-      toast.error("The AI coach is unavailable right now. Try again in a moment.");
+    } catch (error) {
+      if (error instanceof Error && isAiSetupIssue(error.message)) {
+        setOfflineReason(AI_SETUP_MESSAGE);
+        setMessages([
+          ...history,
+          { role: "assistant", content: buildOfflineCoachReply(text, context) },
+        ]);
+        setInput("");
+      } else {
+        toast.error("The AI coach is unavailable right now. Try again in a moment.");
+      }
     } finally {
       setBusy(false);
     }
@@ -100,10 +144,20 @@ function CoachPage() {
       description="The coach reads your real schedule — tasks, deadlines, exams — and builds the plan with you."
     >
       {limitMsg ? (
-        <p className="rounded-xl border border-border bg-surface p-3 text-sm text-muted-foreground">{limitMsg}</p>
+        <p className="rounded-xl border border-border bg-surface p-3 text-sm text-muted-foreground">
+          {limitMsg}
+        </p>
+      ) : null}
+      {offlineReason ? (
+        <div className="mb-4">
+          <InfoNote
+            title="Offline coach guide"
+            description={`${offlineReason} The local guide uses your saved schedule but is not generated by an AI model.`}
+          />
+        </div>
       ) : null}
 
-      <div className="panel flex min-h-[32rem] flex-col p-4 sm:p-5">
+      <div className="panel ai-glow-border flex min-h-[32rem] flex-col p-4 sm:p-5">
         <div className="flex items-center gap-2">
           <Sparkles className="size-4 text-brand" />
           <p className="text-sm font-medium">Coach session</p>
@@ -203,7 +257,7 @@ function CoachPage() {
             }}
             rows={2}
             placeholder="e.g. I have a Biology exam Friday and two assignments due Thursday."
-            className="flex-1 resize-none"
+            className="ai-glow-border flex-1 resize-none"
           />
           <Button
             type="submit"

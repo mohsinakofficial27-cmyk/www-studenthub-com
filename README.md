@@ -6,9 +6,9 @@ IMPORTANT:
 
 Do NOT create just a landing page or a visual mockup.
 
-Build a fully functional web application with working navigation, authentication, dashboard, study tools, pricing, subscription flow, user profiles, and database-ready architecture.
+Build a fully functional web application with working navigation, authentication, dashboard, study tools, user profiles, and database-ready architecture.
 
-The website should feel like a modern premium SaaS product designed specifically for students.
+The website should feel like a polished SaaS product designed specifically for students.
 
 ====================================
 
@@ -28,7 +28,7 @@ Design style:
 
 - Modern
 
-- Premium
+- Polished
 
 - Clean
 
@@ -64,7 +64,7 @@ Main navigation:
 
 - Study Tools
 
-- Pricing
+- Free Features
 
 - About
 
@@ -93,8 +93,6 @@ After login:
 - Progress
 
 - Profile
-
-- Subscription
 
 - Logout
 
@@ -542,145 +540,27 @@ Save study session history.
 
 ====================================
 
-12. PRICING
+12. FREE FEATURES
 
 ====================================
 
-Create a professional pricing page.
-
-Plans:
-
-FREE
-
-$0/month
-
-Features:
-
-- Basic study tools
-
-- Limited AI questions
-
-- Basic notes
-
-- Limited quizzes
-
-- Pomodoro
-
-- Study planner
-
-Button:
-
-"Start Free"
-
-STUDENT
-
-$10/month
-
-Features:
-
-- Everything in Free
-
-- More AI usage
-
-- Unlimited notes
-
-- More quiz generation
-
-- AI summaries
-
-- Flashcards
-
-- Advanced study planner
-
-- Progress tracking
-
-- Priority access to new features
-
-Button:
-
-"Upgrade to Student"
-
-PRO
-
-$20/month
-
-Features:
-
-- Everything in Student
-
-- Highest AI usage limits
-
-- Advanced AI Study Assistant
-
-- PDF/document study tools
-
-- AI-generated study plans
-
-- Advanced quiz generation
-
-- Unlimited flashcards
-
-- Advanced progress analytics
-
-- Exam preparation tools
-
-- Priority support
-
-- Early access to new features
-
-Button:
-
-"Upgrade to Pro"
-
-IMPORTANT:
-
-Make the $10 plan visually attractive and the $20 plan clearly positioned as the premium option.
-
-Do NOT claim "unlimited AI" unless the backend actually supports unlimited usage.
-
-====================================
-
-13. SUBSCRIPTION SYSTEM
-
-====================================
-
-Create a proper subscription architecture.
-
-Users should have:
-
-- Current plan
-
-- Subscription status
-
-- Subscription start date
-
-- Subscription renewal date
-
-- Upgrade button
-
-- Cancel subscription button
-
-- Billing history
-
-Create secure server-side payment integration architecture.
-
-IMPORTANT:
-
-Do not put payment secret keys in frontend code.
-
-Use environment variables/server-side functions.
-
-If a real payment provider is not connected yet:
-
-- Create the complete UI and backend-ready structure
-
-- Use a test/demo subscription state
-
-- Clearly separate test mode from production mode
-
-- Do not pretend real payments are working
-
-Make it easy to connect Stripe or another supported payment provider later.
+All Student Hub features are available to every registered user at no charge.
+There are no paid plans, subscriptions, or feature paywalls.
+
+AI features use an external service and a shared fair-use allowance. Do not
+describe this provider usage as cost-free to Student Hub or promise unlimited
+AI usage. Users are not charged through the app.
+
+The AI gateway credential is `LOVABLE_API_KEY`. Set it only as a server-side
+environment secret (for local development, in the uncommitted server `.env`);
+never use a `VITE_` prefix or include the key in browser code. Without it, Ask
+AI and AI Coach provide clearly labeled local study guides, while other AI-only
+actions show this setup instruction without an error banner.
+
+The browser cache keeps study data locally when a known Supabase application
+table is not installed; synchronization resumes after the table is available
+and data is refreshed. This is not a replacement for applying the migrations
+before production use.
 
 ====================================
 
@@ -754,8 +634,6 @@ users
 
 profiles
 
-subscriptions
-
 notes
 
 quizzes
@@ -779,6 +657,9 @@ user_settings
 Each user's private data must only be accessible by that authenticated user.
 
 Implement proper authorization/security rules.
+
+Legacy subscription records, if present, are retained for data preservation and
+must not be used to grant or restrict feature access.
 
 ====================================
 
@@ -811,8 +692,6 @@ Create notification system for:
 - Upcoming exam
 
 - Study streak
-
-- Subscription status
 
 - Important account notifications
 
@@ -888,8 +767,6 @@ Security is extremely important.
 
 - Never expose API keys
 
-- Never expose payment secret keys
-
 - Validate user input
 
 - Protect authenticated routes
@@ -958,9 +835,9 @@ Check:
 
 ✓ Profile
 
-✓ Pricing
+✓ Free features information
 
-✓ Subscription UI
+✓ No subscription or feature paywalls
 
 ✓ Mobile navigation
 
@@ -972,13 +849,223 @@ Check:
 
 Do not leave placeholder buttons that do nothing.
 
-If a feature requires an external API or payment provider that has not been configured, build the complete integration-ready architecture and clearly indicate what configuration/environment variable is required.
+If a feature requires an external API that has not been configured, clearly
+indicate what configuration/environment variable is required.
 
-The final result should look and feel like a real premium SaaS product that could eventually be launched publicly.
+The final result should look and feel like a polished SaaS product that could eventually be launched publicly.
 
 Prioritize FUNCTIONALITY over decorative visuals.
 
 This project was built with [Lovable](https://lovable.dev).
+
+## Settings, offline access, and account privacy
+
+The authenticated `/settings` page stores language, country/grading, time-zone,
+date/time, week-start, and accessibility preferences in `user_settings`.
+English is the default; the interface currently includes English, Urdu,
+Spanish, French, German, and Arabic. User-created notes and other content are
+not translated.
+
+The app manifest and service worker cache the public app shell and static
+assets only. Previously loaded account data is stored in IndexedDB under the
+authenticated user ID and cleared on sign-out. Offline edits are queued; if
+the server copy changed since it was loaded, synchronization is stopped and
+the app asks the user to reload rather than overwrite newer data. Device
+storage is browser-managed and is not encrypted by the app.
+When a signed-in tab regains focus, Student Hub refreshes cloud data if that
+tab has no pending local edits; concurrent local edits are preserved and synced
+through the existing conflict check.
+
+JSON and CSV exports are generated in the browser from the signed-in user's
+data. Account deletion re-authenticates with the current password and uses
+Supabase Admin Auth server-side; configure `SUPABASE_SERVICE_ROLE_KEY` only
+in the server environment (never as a `VITE_` variable). If that server secret
+is missing, deletion fails explicitly and no success is reported. Apply
+`supabase/migrations/20261116120000_user_preferences.sql` before deploying
+these settings to an existing Supabase project.
+
+The configured grading conversions are generic planning estimates, not
+institution-certified conversions. Calendar sync converts planner wall times
+using the saved IANA time zone and handles daylight-saving transitions; it
+does not change planner data when the time-zone preference changes.
+
+## Community and learning integrations
+
+The authenticated `/community` page provides study groups, expiring and
+revocable group invitation tokens, membership roles, group study sessions,
+opt-in tutoring listings and private tutoring requests, email-bound progress
+sharing, and group-shared note/flashcard snapshots. Shared material is copied
+into the group; edits do not change the original. Imported materials are
+independent copies and remain with the importer if the original share is later
+revoked. Progress sharing exposes only the displayed progress summary, and an
+invitation must be delivered to the specified email recipient separately.
+
+Community records use server-authorized database functions and are
+intentionally excluded from the broad browser-cache synchronization. Apply
+`supabase/migrations/20261116130000_community.sql` to each Supabase project
+before using the community page. The migration has not been applied or
+permission-tested against a live Supabase project as part of this change;
+verify cross-account access denial, invitation expiry/revocation, member
+removal, share revocation, and duplicate imports in a test project before
+production rollout.
+
+If the community snapshot RPC is unavailable because that migration is missing,
+the page displays a clearly labeled temporary local sample feed instead.
+Community actions are not saved or shared in that mode.
+
+The Settings page now offers optional server-side OAuth connections for Google
+Classroom, Canvas, Moodle, Google Calendar, and Outlook Calendar. LMS imports
+are manual and import courses plus assignment due dates without overwriting
+existing Student Hub records. Calendar sync is manual, supports task, exam,
+and completed study-session selections, and updates/deletes only events in its
+private Student Hub mapping. Disconnect removes Student Hub's stored tokens;
+it does not delete already-synced calendar events or revoke the provider grant.
+For full revocation, remove Student Hub from the connected-apps/security page
+for that provider. Automatic/background synchronization is not implemented.
+
+## Group Study Room
+
+The authenticated `/study-room` page lets students create a room or join with a
+32-character random room code. It uses the public Jitsi Meet iframe API
+(`meet.jit.si`) for live video/audio and screen sharing, with a live side chat
+for messages and study notes. Invite links can be copied or opened in an email
+client. Room codes and chat are held only in the browser and are not saved to
+Student Hub's database.
+
+No Jitsi API key or separate paid account is configured by Student Hub. The
+feature does require an internet connection and the public Jitsi service; its
+availability, service policies, and any access requirements are controlled by
+Jitsi and may change. Anyone with a room link can join, so share it privately
+and do not discuss sensitive information. Participants need to grant browser
+camera and microphone permissions; screen sharing depends on browser/device
+support.
+
+### Provider setup (server only)
+
+Apply `supabase/migrations/20261117140000_provider_integrations.sql` to each
+Supabase environment first. The credential and OAuth-state tables have RLS
+enabled and deny `anon`/`authenticated` table access; only server-side
+`service_role` operations should use them. Do not include these tables in
+browser-cache synchronization. The migration and RLS still need verification
+against the deployment's own Supabase project before production use.
+
+Configure these variables only in the private server environment. Never use
+`VITE_` prefixes, commit real values, or share secrets in chat. Existing
+Supabase server variables are also required: `SUPABASE_URL`,
+`SUPABASE_PUBLISHABLE_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`.
+
+| Variable                                                     | Purpose                                                                                                                                   |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `INTEGRATION_TOKEN_ENCRYPTION_KEY`                           | Required 32-byte AES-GCM key, encoded as 64 hex characters or Base64; generate a strong random key and keep it stable across deploys.     |
+| `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`       | Google OAuth web application client shared by the separate Classroom and Calendar grants.                                                 |
+| `GOOGLE_CLASSROOM_REDIRECT_URI`                              | Exact deployed callback URL ending in `/integrations/callback` for Classroom.                                                             |
+| `GOOGLE_CALENDAR_REDIRECT_URI`                               | Exact deployed callback URL ending in `/integrations/callback` for Calendar.                                                              |
+| `MICROSOFT_OAUTH_CLIENT_ID`, `MICROSOFT_OAUTH_CLIENT_SECRET` | Microsoft Entra application credentials.                                                                                                  |
+| `MICROSOFT_OAUTH_TENANT_ID`                                  | Optional tenant ID; defaults to `common`.                                                                                                 |
+| `MICROSOFT_CALENDAR_REDIRECT_URI`                            | Exact deployed callback URL ending in `/integrations/callback`.                                                                           |
+| `CANVAS_CLIENT_ID`, `CANVAS_CLIENT_SECRET`                   | Institution-provisioned Canvas developer key.                                                                                             |
+| `CANVAS_REDIRECT_URI`                                        | Exact deployed callback URL ending in `/integrations/callback`.                                                                           |
+| `CANVAS_ALLOWED_HOSTS`                                       | Comma-separated exact institution hostnames (no wildcard or URL path).                                                                    |
+| `MOODLE_CLIENT_ID`, `MOODLE_CLIENT_SECRET`                   | Institution-specific Moodle OAuth client credentials.                                                                                     |
+| `MOODLE_REDIRECT_URI`                                        | Exact deployed callback URL ending in `/integrations/callback`.                                                                           |
+| `MOODLE_ALLOWED_HOSTS`                                       | Comma-separated exact Moodle hostnames.                                                                                                   |
+| `MOODLE_AUTHORIZATION_URL`, `MOODLE_TOKEN_URL`               | Institution-specific OAuth endpoints; both must use the allowlisted instance origin.                                                      |
+| `MOODLE_OAUTH_SCOPES`                                        | Space-separated scopes configured by the Moodle administrator.                                                                            |
+| `MOODLE_COURSES_API_URL`                                     | Same-origin endpoint returning a JSON array with course `id` and `name` (optional `teacher`).                                             |
+| `MOODLE_ASSIGNMENTS_API_URL`                                 | Same-origin endpoint template containing `{courseId}` and returning a JSON array with assignment `id`, `name`, and `duedate` or `due_at`. |
+
+Generate `INTEGRATION_TOKEN_ENCRYPTION_KEY` with a secure random generator, for
+example `openssl rand -hex 32`. Store it in the server's secret manager and
+keep the same key across deployments.
+
+#### Google Classroom
+
+1. In Google Cloud Console, enable the Google Classroom API and configure the
+   OAuth consent screen and a Web application OAuth client.
+2. Register the exact `GOOGLE_CLASSROOM_REDIRECT_URI` as an authorized
+   redirect URI. The app requests
+   `https://www.googleapis.com/auth/classroom.courses.readonly` and
+   `https://www.googleapis.com/auth/classroom.coursework.me.readonly` for the
+   signed-in student's courses and coursework. Google may require consent-screen
+   verification for external users.
+3. Configure the shared Google client ID/secret and this callback URI on the
+   Student Hub server.
+
+#### Google Calendar
+
+Enable the Google Calendar API, register `GOOGLE_CALENDAR_REDIRECT_URI` on the
+same OAuth client, and configure the Google Calendar environment variables.
+The app requests `https://www.googleapis.com/auth/calendar.events.owned`, which
+permits event access on calendars owned by the user. Users choose event types
+and initiate sync from Settings.
+
+#### Microsoft Outlook Calendar
+
+Register a Microsoft Entra application with delegated `Calendars.ReadWrite`
+permission and the exact `MICROSOFT_CALENDAR_REDIRECT_URI` as a Web redirect
+URI. The app requests delegated `Calendars.ReadWrite` and `offline_access`.
+Configure the client ID/secret and, for a single-tenant app, the tenant ID.
+The app uses authorization-code flow with PKCE and stores tokens encrypted on
+the server.
+
+#### Canvas
+
+Ask the institution's Canvas administrator to create a developer key using
+`CANVAS_REDIRECT_URI` and the read-only scopes
+`url:GET|/api/v1/courses` and
+`url:GET|/api/v1/courses/:course_id/assignments`. Set `CANVAS_ALLOWED_HOSTS` to
+exact hosts such as `canvas.school.example` (hostnames only). A user-provided
+URL is accepted only when its HTTPS origin matches this server allowlist.
+
+#### Moodle
+
+Moodle OAuth and web-service APIs differ by institution and installed plugins.
+Have the Moodle administrator provision the client, scopes, endpoints, and
+course/assignment services; set all `MOODLE_*` variables and allowlist the
+exact host. Configure the courses endpoint to return a JSON array of records
+with `id`/`name`, and the assignment URL template to accept the literal
+`{courseId}` placeholder and return records with an ID, name, and due date.
+Endpoints must be HTTPS and on the same origin as the selected allowlisted
+instance. Configure the endpoints to return all rows needed for import; the
+generic adapter does not infer Moodle-specific pagination. This adapter does
+not claim compatibility with every Moodle setup; verify its response format
+against that institution before enabling it.
+
+The callback clears OAuth query parameters from browser history and exchanges
+the authorization code on the server. Tokens are AES-GCM encrypted with
+`INTEGRATION_TOKEN_ENCRYPTION_KEY`; losing or changing the key makes existing
+tokens unreadable, so rotate only with a migration/reconnect plan. Missing
+configuration is shown as **Not configured** and does not enable Connect.
+No live provider credentials were available during implementation, so OAuth
+and provider API behavior must be tested with each institution's test account
+before production rollout.
+
+## Academic toolkit and review scheduling
+
+The authenticated `/academic-tools` page includes user-owned exam roadmaps,
+weighted assignment rubrics, a research-source organizer with basic APA/MLA
+formatting from entered metadata, university/scholarship application checklists,
+and a private monthly budget and expense tracker. Citation formatting is not
+AI-generated and should be checked against the institution's required style.
+Flashcards now use spaced-review dates and Again/Hard/Good/Easy ratings; the
+dashboard reports cards due for review.
+
+Apply `supabase/migrations/20261120120000_student_toolkit.sql` to each
+Supabase environment before deploying these features. It adds flashcard review
+fields and user-scoped tables protected with row-level security. New toolkit
+records are included in account JSON/CSV exports and are removed through the
+existing auth-user cascade on account deletion.
+
+If Supabase reports that `public.budget_profiles` is missing from its schema
+cache, apply `supabase/migrations/20261121150000_budget_profiles_schema_cache.sql`
+through the Supabase migration workflow. It creates the per-user budget table
+if needed, applies owner-only RLS and grants, then requests a PostgREST schema
+reload. The application cannot apply this migration to a hosted Supabase
+project automatically.
+
+See [Community and learning integrations](#community-and-learning-integrations)
+for the current LMS implementation status and community deployment requirements.
+Unauthenticated public note/deck links are not part of this phase.
 
 ## Build with Lovable
 
@@ -998,3 +1085,25 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+## Local study toolkit
+
+The authenticated dashboard includes five study utilities that work without new database tables:
+
+- **Concept Challenger** uses local reflection prompts; it is not presented as an AI response.
+- **Midnight Exam Crammer** summarizes saved notes and offers a small general formula reference. It does not invent missing course content.
+- **Sleep & Study Cycle Optimizer** creates an editable study rhythm from an exam date and sleep window. It is a planning aid, not medical advice.
+- **Mistake Analyzer** groups submitted quiz mistakes by saved subject and topic. If quiz history cannot be saved remotely, submitted attempts are marked and retained in this browser only.
+- **Parent Progress Report** creates an informational metrics snapshot encrypted in a URL fragment. Anyone with the complete link can view it. Its 30-day expiry is checked client-side and can be bypassed; links cannot be revoked. It is not authenticated or tamper-proof: a recipient can alter a link copy and change its displayed numbers, so it must not be treated as verified evidence.
+
+The parent report only contains study-time, quiz-average/count, streak, and task-completion totals. Its URL fragment is not sent in normal HTTP requests, but users should share the link only with people they trust. A server-backed signing and revocation service is required for an authoritative report.
+
+## Extra practice tools
+
+- **Handwriting Scanner** uses Tesseract.js in the browser. The first OCR run downloads its worker and selected English, Urdu, or Hindi language model from the public Tesseract CDN; image recognition itself runs locally. OCR output is editable and should be checked, especially for handwriting and formulas. If OCR cannot load, users can type notes and still save them locally.
+- **Exam Calm** includes a two-minute breathing timer, motivational reminders, and a private three-question confidence check.
+- **Mock Viva** uses local question prompts and transparent heuristic feedback; it is not an AI examiner. Browser speech-to-text availability and privacy depend on the browser and its speech service.
+- **Distraction Blocker** uses voluntary browser fullscreen and pauses when the tab becomes hidden. Browsers cannot prevent leaving a tab or provide an unbreakable lock.
+- **Peer Note Exchange & Doubt Bounties** uses server-side coin transactions and peer-visible records when the migration below is applied. Without it, note shares and bounty drafts are stored in the signed-in account's browser cache only and are not visible to other students; peer answers and awards are unavailable.
+
+For cross-student note exchange, apply [`supabase/migrations/20261122100000_peer_note_marketplace.sql`](./supabase/migrations/20261122100000_peer_note_marketplace.sql) to Supabase. It creates private tables with direct client grants revoked and authenticated RPCs for marketplace reads, note sharing, escrowed bounty posting, answers, and one-time answer awards. The browser does not write coin balances directly. Until the migration is applied, all other tools above continue to work without it.

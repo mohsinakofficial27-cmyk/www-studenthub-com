@@ -40,8 +40,9 @@ function AboutPage() {
           </p>
           <h3 className="pt-2 text-xl font-semibold text-foreground">Current status</h3>
           <p>
-            This build runs with a local data layer and a clearly-labelled test billing mode, ready to be pointed at a
-            hosted database, an AI provider and a payment provider without changing the screens you use.
+            All Student Hub features are available to every registered user at no charge. AI features use an external
+            AI service and are subject to its availability and the app's fair-use limits; operating that service may
+            incur costs for Student Hub.
           </p>
         </div>
         <div className="mt-9 flex flex-wrap gap-3">
@@ -49,7 +50,7 @@ function AboutPage() {
             <Link to="/signup">Start for Free</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link to="/pricing">See the free plan</Link>
+            <Link to="/pricing">See free features</Link>
           </Button>
         </div>
       </section>

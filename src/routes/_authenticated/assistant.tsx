@@ -9,7 +9,14 @@ import { EmptyState, InfoNote } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { AI_MODES, type AiMode } from "@/lib/ai";
+import {
+  AI_MODES,
+  AI_SETUP_MESSAGE,
+  AI_USAGE_SETUP_MESSAGE,
+  askAssistant,
+  isAiSetupIssue,
+  type AiMode,
+} from "@/lib/ai";
 import { DAILY_AI_LIMIT, askAssistantAI } from "@/lib/ai.functions";
 import { useAuth, useDb } from "@/lib/auth";
 import { scopedRows } from "@/lib/data";
@@ -20,7 +27,10 @@ export const Route = createFileRoute("/_authenticated/assistant")({
   head: () => ({
     meta: [
       { title: "AI Study Assistant — Student Hub" },
-      { name: "description", content: "Ask study questions and get explanations, steps, summaries and self-tests." },
+      {
+        name: "description",
+        content: "Ask study questions and get explanations, steps, summaries and self-tests.",
+      },
       { property: "og:title", content: "AI Study Assistant — Student Hub" },
       { property: "og:description", content: "Your study questions, answered." },
       { property: "og:type", content: "website" },
@@ -40,12 +50,18 @@ function AssistantPage() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
   const [limitMsg, setLimitMsg] = useState("");
+  const [offlineReason, setOfflineReason] = useState("");
 
   useEffect(() => {
     if (!user) return;
     void (async () => {
       const today = new Date().toISOString().slice(0, 10);
-      const { data } = await supabase.from("ai_usage").select("count").eq("user_id", user.id).eq("day", today).maybeSingle();
+      const { data } = await supabase
+        .from("ai_usage")
+        .select("count")
+        .eq("user_id", user.id)
+        .eq("day", today)
+        .maybeSingle();
       setRemaining(Math.max(0, DAILY_AI_LIMIT - (data?.count ?? 0)));
     })();
   }, [user]);
@@ -53,7 +69,9 @@ function AssistantPage() {
   if (!user) return null;
   const conversations = scopedRows(db.ai_conversations, user.id);
   const current = conversations.find((c) => c.id === activeId) ?? conversations[0] ?? null;
-  const messages = current ? scopedRows(db.ai_messages, user.id).filter((m) => m.conversation_id === current.id) : [];
+  const messages = current
+    ? scopedRows(db.ai_messages, user.id).filter((m) => m.conversation_id === current.id)
+    : [];
 
   const send = async (question: string, replaceLastAnswer = false) => {
     const text = question.trim();
@@ -87,20 +105,43 @@ function AssistantPage() {
     }
     try {
       const history = (current ? messages : [])
-        .map((m) => ({ role: m.role === "assistant" ? ("assistant" as const) : ("user" as const), content: m.content.slice(0, 8000) }))
+        .map((m) => ({
+          role: m.role === "assistant" ? ("assistant" as const) : ("user" as const),
+          content: m.content.slice(0, 8000),
+        }))
         .filter((m) => m.content.trim());
-      if (replaceLastAnswer && history.length && history[history.length - 1]!.role === "assistant") history.pop();
+      if (replaceLastAnswer && history.length && history[history.length - 1]!.role === "assistant")
+        history.pop();
       if (!replaceLastAnswer) history.push({ role: "user", content: text.slice(0, 8000) });
       const result = await ask({ data: { mode, messages: history.slice(-40) } });
-      if ("remaining" in result && typeof result.remaining === "number") setRemaining(result.remaining);
+      if ("remaining" in result && typeof result.remaining === "number")
+        setRemaining(result.remaining);
       if (!result.ok) {
         if ("limitReached" in result && result.limitReached) setLimitMsg(result.error);
-        else toast.error(result.error);
+        else if (("setupRequired" in result && result.setupRequired) || isAiSetupIssue(result.error)) {
+          setOfflineReason(isAiSetupIssue(result.error) ? AI_SETUP_MESSAGE : AI_USAGE_SETUP_MESSAGE);
+          const fallback = await askAssistant(text, mode);
+          mutate((d) => {
+            d.ai_messages.push({
+              id: uid(),
+              user_id: user.id,
+              conversation_id: convoId,
+              role: "assistant",
+              content: fallback.content,
+              mode,
+              created_at: new Date().toISOString(),
+            });
+          });
+          setInput("");
+        } else toast.error(result.error);
         return;
       }
+      setOfflineReason("");
       mutate((d) => {
         if (replaceLastAnswer) {
-          const list = d.ai_messages.filter((m) => m.conversation_id === convoId && m.role === "assistant");
+          const list = d.ai_messages.filter(
+            (m) => m.conversation_id === convoId && m.role === "assistant",
+          );
           const last = list[list.length - 1];
           if (last) {
             last.content = result.content;
@@ -146,14 +187,27 @@ function AssistantPage() {
         <div className="mt-3">
           <InfoNote
             title="Daily limit reached"
-            description={limitMsg || `You've used all ${DAILY_AI_LIMIT} AI questions for today. Your limit resets tomorrow.`}
+            description={
+              limitMsg ||
+              `You've used all ${DAILY_AI_LIMIT} AI questions for today. Your limit resets tomorrow.`
+            }
+          />
+        </div>
+      ) : null}
+      {offlineReason ? (
+        <div className="mt-3">
+          <InfoNote
+            title="Offline study guide"
+            description={`${offlineReason} Your questions still work with local study prompts; responses are not generated by an AI model.`}
           />
         </div>
       ) : null}
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[260px_1fr]">
         <div className="panel hidden p-3 lg:block">
-          <p className="px-2 py-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">History</p>
+          <p className="px-2 py-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            History
+          </p>
           {conversations.length === 0 ? (
             <p className="px-2 py-3 text-sm text-muted-foreground">No conversations yet.</p>
           ) : (
@@ -176,7 +230,7 @@ function AssistantPage() {
           )}
         </div>
 
-        <div className="panel flex min-h-[28rem] flex-col p-4 sm:p-5">
+        <div className="panel ai-glow-border flex min-h-[28rem] flex-col p-4 sm:p-5">
           <div className="flex flex-wrap items-center gap-2">
             {AI_MODES.map((m) => (
               <button
@@ -274,7 +328,7 @@ function AssistantPage() {
               }}
               rows={2}
               placeholder="Ask anything about your subjects…"
-              className="flex-1 resize-none"
+              className="ai-glow-border flex-1 resize-none"
             />
             <Button
               type="submit"

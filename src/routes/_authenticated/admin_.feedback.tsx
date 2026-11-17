@@ -68,11 +68,6 @@ function AdminFeedbackPage() {
                   <Item label="Not working / confusing" value={r.issues} />
                   <Item label="Wants next" value={r.wanted_feature} />
                 </dl>
-                {r.would_pay ? (
-                  <p className="mt-3 text-xs font-medium text-success">
-                    Would pay for premium{r.fair_price ? ` · fair price: ${r.fair_price}` : ""}
-                  </p>
-                ) : null}
               </li>
             ))}
           </ul>
