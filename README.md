@@ -1112,9 +1112,13 @@ The parent report only contains study-time, quiz-average/count, streak, and task
 
 For cross-student note exchange, apply [`supabase/migrations/20261122100000_peer_note_marketplace.sql`](./supabase/migrations/20261122100000_peer_note_marketplace.sql) to Supabase. It creates private tables with direct client grants revoked and authenticated RPCs for marketplace reads, note sharing, escrowed bounty posting, answers, and one-time answer awards. The browser does not write coin balances directly. Until the migration is applied, all other tools above continue to work without it.
 
-On Vercel, the existing Supabase integration needs `VITE_SUPABASE_URL` and
-`VITE_SUPABASE_PUBLISHABLE_KEY` for the browser, plus `SUPABASE_URL` and
-`SUPABASE_PUBLISHABLE_KEY` for authenticated server functions. Configure
+On Vercel, configure `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`
+for the browser. Authenticated server functions prefer `SUPABASE_URL` and
+`SUPABASE_PUBLISHABLE_KEY`, and can fall back to those same `VITE_` values if
+the unprefixed server variables are not set. Apply the peer marketplace
+migration to the Supabase project used by the deployment (for example, with
+`supabase db push` or the Supabase SQL editor) before enabling cross-student
+sharing. Configure
 `LOVABLE_API_KEY` as a server-only variable to enable Coach and Mock Viva AI.
 AI calls also use the existing `consume_ai_question` Supabase RPC; apply the
 project's AI-usage Drizzle migrations if that RPC is not installed. Without

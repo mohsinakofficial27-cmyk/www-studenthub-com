@@ -26,10 +26,26 @@ const actionSchema = z.discriminatedUnion("action", [
 ]);
 
 function missingMarketplaceMigration(error: { code?: string; message: string }) {
-  return ["PGRST202", "PGRST205", "42P01", "42883"].includes(error.code ?? "") ||
+  return (
+    ["PGRST202", "PGRST205", "42P01", "42883"].includes(error.code ?? "") ||
     /study_marketplace_(snapshot|action)|study_coin_wallets|study_market_notes|study_doubt_bounties/i.test(
       error.message,
-    );
+    )
+  );
+}
+
+function marketplaceUnavailable(error: { code?: string; message: string }) {
+  return (
+    ["PGRST000", "PGRST001"].includes(error.code ?? "") ||
+    /fetch failed|failed to fetch|network error|connection refused|timed out/i.test(error.message)
+  );
+}
+
+function marketplaceError(error: { code?: string; message: string }, fallback: string) {
+  console.error(fallback, error.message);
+  return new Error(
+    marketplaceUnavailable(error) ? "MARKETPLACE_UNREACHABLE" : "MARKETPLACE_SETUP_REQUIRED",
+  );
 }
 
 export const getMarketplaceSnapshot = createServerFn({ method: "GET" })
@@ -38,8 +54,7 @@ export const getMarketplaceSnapshot = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase.rpc("study_marketplace_snapshot");
     if (error) {
       if (missingMarketplaceMigration(error)) return { configured: false as const };
-      console.error("Could not load peer note exchange", error.message);
-      throw new Error("Could not load the peer marketplace. Please try again.");
+      throw marketplaceError(error, "Could not load peer note exchange");
     }
     return { configured: true as const, data };
   });
@@ -55,8 +70,7 @@ export const runMarketplaceAction = createServerFn({ method: "POST" })
     });
     if (error) {
       if (missingMarketplaceMigration(error)) return { configured: false as const };
-      console.error(`Peer marketplace action ${action} failed`, error.message);
-      throw new Error("That marketplace action could not be completed. Please try again.");
+      throw marketplaceError(error, `Peer marketplace action ${action} failed`);
     }
     return { configured: true as const, data: result };
   });

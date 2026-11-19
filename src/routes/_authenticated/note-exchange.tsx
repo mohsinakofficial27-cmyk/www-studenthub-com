@@ -56,6 +56,13 @@ const ActionResultSchema = z.object({
 });
 type MarketSnapshot = z.infer<typeof SnapshotSchema>;
 
+function isMarketplaceUnavailable(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return /MARKETPLACE_UNREACHABLE|failed to fetch|fetch failed|network error|connection refused|timed out/i.test(
+    message,
+  );
+}
+
 function NoteExchangePage() {
   const { user } = useAuth();
   const db = useDb();
@@ -66,6 +73,7 @@ function NoteExchangePage() {
   const [loading, setLoading] = useState(true);
   const [migrationMissing, setMigrationMissing] = useState(false);
   const [connectionFailed, setConnectionFailed] = useState(false);
+  const [setupRequired, setSetupRequired] = useState(false);
   const [shareNoteId, setShareNoteId] = useState("");
   const [subject, setSubject] = useState("");
   const [question, setQuestion] = useState("");
@@ -89,19 +97,27 @@ function NoteExchangePage() {
         setOnlineMarketplace(true);
         setMigrationMissing(false);
         setConnectionFailed(false);
+        setSetupRequired(false);
       } else {
         setSnapshot(null);
         setOnlineMarketplace(false);
         setMigrationMissing(true);
         setConnectionFailed(false);
+        setSetupRequired(false);
       }
     } catch (error) {
       console.error("Could not load note exchange", error);
       setSnapshot(null);
       setOnlineMarketplace(false);
       setMigrationMissing(false);
-      setConnectionFailed(true);
-      toast.info("Peer marketplace is unavailable; your private browser-only exchange is still available.");
+      const unavailable = isMarketplaceUnavailable(error);
+      setConnectionFailed(unavailable);
+      setSetupRequired(!unavailable);
+      if (unavailable) {
+        toast.info(
+          "Peer marketplace is unavailable; your private browser-only exchange is still available.",
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -141,12 +157,15 @@ function NoteExchangePage() {
       setOnlineMarketplace(false);
       setMigrationMissing(true);
       setConnectionFailed(false);
+      setSetupRequired(false);
     } catch (error) {
       console.error("Peer marketplace operation failed", error);
       setSnapshot(null);
       setOnlineMarketplace(false);
       setMigrationMissing(false);
-      setConnectionFailed(true);
+      const unavailable = isMarketplaceUnavailable(error);
+      setConnectionFailed(unavailable);
+      setSetupRequired(!unavailable);
     }
 
     if (payload.action === "share-note") {
@@ -217,11 +236,17 @@ function NoteExchangePage() {
         <InfoNote
           title="Private browser-only mode"
           description={
-            <span className="flex flex-wrap items-center justify-between gap-3">
-              <span>The peer marketplace migration is not installed. You can save note shares and bounty drafts locally, but they are not visible to other students; peer answers and awards need the Supabase marketplace migration.</span>
-              <Button size="sm" variant="outline" onClick={() => void refresh()} disabled={loading}><RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} /> Retry Connection</Button>
+            <span>
+              The peer marketplace migration is not installed. You can save note shares and bounty
+              drafts locally, but they are not visible to other students; peer answers and awards
+              need the Supabase marketplace migration.
             </span>
           }
+        />
+      ) : setupRequired ? (
+        <InfoNote
+          title="Peer marketplace setup required"
+          description="The marketplace could not be initialized. Check the Supabase environment variables, apply the peer marketplace migration, and verify its RPC grants."
         />
       ) : (
         <InfoNote title="Loading peer marketplace" description="Your notes and bounty board will appear when the marketplace responds. Browser-only drafts remain private." />
