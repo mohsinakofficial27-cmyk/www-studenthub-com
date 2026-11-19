@@ -924,6 +924,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      consume_authenticated_request: { Args: Record<PropertyKey, never>; Returns: boolean };
       consume_ai_question: { Args: { _limit: number }; Returns: number };
       has_role: {
         Args: {

@@ -1124,3 +1124,11 @@ AI calls also use the existing `consume_ai_question` Supabase RPC; apply the
 project's AI-usage Drizzle migrations if that RPC is not installed. Without
 these settings or the quota RPC, the local study-plan and viva feedback remain
 available. No service-role key is needed for these new features.
+
+Authenticated server functions also use a database-backed limit of 120 requests
+per signed-in user per minute. Apply
+[`supabase/migrations/20261123190000_authenticated_request_rate_limit.sql`](./supabase/migrations/20261123190000_authenticated_request_rate_limit.sql)
+to each Supabase project before deploying this middleware change. The rate-limit
+table is private and can only be updated through its authenticated RPC. This
+does not replace Supabase Auth protections or rate limits for unauthenticated
+sign-in and sign-up requests; configure those in Supabase Auth and Vercel.

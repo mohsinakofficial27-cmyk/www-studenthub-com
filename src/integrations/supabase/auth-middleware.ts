@@ -101,6 +101,22 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
       throw new Error('Unauthorized: No user ID found in token');
     }
 
+    const { data: withinRateLimit, error: rateLimitError } = await supabase.rpc(
+      "consume_authenticated_request",
+    );
+    if (rateLimitError) {
+      console.error("[Supabase] Could not enforce authenticated request rate limit", {
+        code: rateLimitError.code,
+        message: rateLimitError.message,
+      });
+      throw new Error("Could not verify request limits. Please try again later.");
+    }
+    if (!withinRateLimit) {
+      const error = new Error("Too many requests. Please wait a moment and try again.");
+      Object.assign(error, { statusCode: 429 });
+      throw error;
+    }
+
     return next({
       context: {
         supabase,
