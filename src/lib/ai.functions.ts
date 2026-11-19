@@ -56,6 +56,10 @@ async function consumeQuota(context: {
     _limit: DAILY_AI_LIMIT,
   });
   if (quotaError) {
+    console.error("AI usage quota check failed", {
+      code: quotaError.code,
+      reason: quotaError.message,
+    });
     if (
       ["PGRST202", "PGRST205", "42P01", "42883"].includes(
         quotaError.code ?? "",
@@ -90,6 +94,7 @@ async function readStream(res: Response): Promise<StreamOutcome> {
   let buf = "";
   let text = "";
   let failed = false;
+  let streamError: unknown = null;
   for (;;) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -101,15 +106,27 @@ async function readStream(res: Response): Promise<StreamOutcome> {
       const payload = line.slice(5).trim();
       if (!payload || payload === "[DONE]") continue;
       try {
-        const evt = JSON.parse(payload) as { type?: string; delta?: string };
+        const evt = JSON.parse(payload) as {
+          type?: string;
+          delta?: string;
+          error?: unknown;
+          message?: unknown;
+          response?: { error?: unknown };
+        };
         if (evt.type === "response.output_text.delta" && evt.delta) text += evt.delta;
-        if (evt.type === "response.failed" || evt.type === "error") failed = true;
+        if (evt.type === "response.failed" || evt.type === "error") {
+          failed = true;
+          streamError = evt.error ?? evt.response?.error ?? evt.message ?? payload;
+        }
       } catch {
         /* ignore partial */
       }
     }
   }
-  if (failed || !text.trim()) return { ok: false, error: "The AI couldn't produce an answer. Try rephrasing your question." };
+  if (failed || !text.trim()) {
+    console.error("AI gateway stream failed", streamError ?? "The provider returned no output.");
+    return { ok: false, error: "The AI couldn't produce an answer. Try rephrasing your question." };
+  }
   return { ok: true, text: text.trim() };
 }
 
@@ -162,11 +179,18 @@ export const askAssistantAI = createServerFn({ method: "POST" })
     let res: Response;
     try {
       res = await openStream(apiKey, { model: MODEL, input, stream: true, store: false, reasoning: { effort: "low" } });
-    } catch {
+    } catch (error) {
+      console.error("AI assistant provider request failed", error);
       return { ok: false as const, error: "Couldn't reach the AI service. Check your connection and try again." };
     }
 
-    const outcome = await readStream(res);
+    let outcome: StreamOutcome;
+    try {
+      outcome = await readStream(res);
+    } catch (error) {
+      console.error("AI assistant response stream failed", error);
+      return { ok: false as const, error: "The study assistant stopped responding. Please retry." };
+    }
     if (!outcome.ok) return { ok: false as const, error: outcome.error };
     return { ok: true as const, content: outcome.text, remaining: quota.remaining };
   });
@@ -204,13 +228,105 @@ export const askCoachAI = createServerFn({ method: "POST" })
     let res: Response;
     try {
       res = await openStream(apiKey, { model: MODEL, input, stream: true, store: false, reasoning: { effort: "low" } });
-    } catch {
+    } catch (error) {
+      console.error("AI Coach provider request failed", error);
       return { ok: false as const, error: "Couldn't reach the AI service. Check your connection and try again." };
     }
 
-    const outcome = await readStream(res);
+    let outcome: StreamOutcome;
+    try {
+      outcome = await readStream(res);
+    } catch (error) {
+      console.error("AI Coach response stream failed", error);
+      return { ok: false as const, error: "The AI service stopped responding. Please retry." };
+    }
     if (!outcome.ok) return { ok: false as const, error: outcome.error };
     return { ok: true as const, content: outcome.text, remaining: quota.remaining };
+  });
+
+const vivaGradeSchema = z.object({
+  subject: z.string().trim().min(1).max(120),
+  topic: z.string().trim().max(120),
+  question: z.string().trim().min(1).max(1000),
+  answer: z.string().trim().min(1).max(4000),
+});
+
+const vivaGradeFormat = {
+  type: "json_schema" as const,
+  name: "viva_practice_feedback",
+  strict: true,
+  schema: {
+    type: "object",
+    additionalProperties: false,
+    required: ["score", "feedback"],
+    properties: {
+      score: { type: "integer", minimum: 1, maximum: 10 },
+      feedback: { type: "string", description: "One constructive, concise paragraph; do not claim certainty where the answer is ambiguous." },
+    },
+  },
+};
+
+export const gradeVivaAnswer = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((data) => vivaGradeSchema.parse(data))
+  .handler(async ({ data, context }) => {
+    const apiKey = process.env["LOVABLE_API_KEY"];
+    if (!apiKey) return { ok: false as const, setupRequired: true as const, error: AI_SETUP_MESSAGE };
+
+    const quota = await consumeQuota(context);
+    if (!quota.ok) return quota;
+
+    let response: Response;
+    try {
+      response = await openStream(apiKey, {
+        model: MODEL,
+        stream: true,
+        store: false,
+        reasoning: { effort: "low" },
+        text: { format: vivaGradeFormat },
+        input: [
+          {
+            role: "system",
+            content:
+              "Give brief oral-exam practice feedback. Score 1-10 for clarity, relevance, reasoning, and use of examples; do not present this as an official grade. You do not have a verified answer key, so flag uncertainty and never invent facts. Give one specific strength or improvement in plain language.",
+          },
+          {
+            role: "user",
+            content: `Subject: ${data.subject}\nTopic: ${data.topic || "not specified"}\nQuestion: ${data.question}\nStudent answer: ${data.answer}`,
+          },
+        ],
+      });
+    } catch (error) {
+      console.error("AI Viva grading provider request failed", error);
+      return { ok: false as const, error: "AI feedback is unavailable right now." };
+    }
+
+    let outcome: StreamOutcome;
+    try {
+      outcome = await readStream(response);
+    } catch (error) {
+      console.error("AI Viva grading response stream failed", error);
+      return { ok: false as const, error: "AI feedback stopped responding." };
+    }
+    if (!outcome.ok) return { ok: false as const, error: outcome.error };
+    const result = parseJson<{ score: number; feedback: string }>(outcome.text);
+    if (
+      !result ||
+      !Number.isInteger(result.score) ||
+      result.score < 1 ||
+      result.score > 10 ||
+      typeof result.feedback !== "string" ||
+      !result.feedback.trim()
+    ) {
+      console.error("AI Viva grading returned an invalid response", outcome.text.slice(0, 1000));
+      return { ok: false as const, error: "AI feedback could not be formatted. Use the local practice feedback instead." };
+    }
+    return {
+      ok: true as const,
+      score: result.score,
+      feedback: result.feedback.slice(0, 1000),
+      remaining: quota.remaining,
+    };
   });
 
 /* ---------------- AI Notes -> Study System ---------------- */

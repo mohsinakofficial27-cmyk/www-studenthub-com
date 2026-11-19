@@ -554,8 +554,12 @@ AI usage. Users are not charged through the app.
 The AI gateway credential is `LOVABLE_API_KEY`. Set it only as a server-side
 environment secret (for local development, in the uncommitted server `.env`);
 never use a `VITE_` prefix or include the key in browser code. Without it, Ask
-AI and AI Coach provide clearly labeled local study guides, while other AI-only
-actions show this setup instruction without an error banner.
+AI and AI Coach use clearly labeled local study guides. The Coach also falls
+back to a dated plan built from saved tasks, exams, priorities, and the daily
+study target when the AI request fails, and offers a retry. The Mock Viva uses
+the same server-side AI gateway for optional feedback and falls back to local
+structure-only feedback if AI is unavailable. AI feedback sends the supplied
+answer to the configured provider through the server.
 
 The browser cache keeps study data locally when a known Supabase application
 table is not installed; synchronization resumes after the table is available
@@ -1102,8 +1106,17 @@ The parent report only contains study-time, quiz-average/count, streak, and task
 
 - **Handwriting Scanner** uses Tesseract.js in the browser. The first OCR run downloads its worker and selected English, Urdu, or Hindi language model from the public Tesseract CDN; image recognition itself runs locally. OCR output is editable and should be checked, especially for handwriting and formulas. If OCR cannot load, users can type notes and still save them locally.
 - **Exam Calm** includes a two-minute breathing timer, motivational reminders, and a private three-question confidence check.
-- **Mock Viva** uses local question prompts and transparent heuristic feedback; it is not an AI examiner. Browser speech-to-text availability and privacy depend on the browser and its speech service.
+- **Mock Viva** uses local question prompts, optional AI feedback through `LOVABLE_API_KEY`, and transparent heuristic feedback when AI is unavailable; it is not an official examiner or grade. Browser speech-to-text availability and privacy depend on the browser and its speech service.
 - **Distraction Blocker** uses voluntary browser fullscreen and pauses when the tab becomes hidden. Browsers cannot prevent leaving a tab or provide an unbreakable lock.
 - **Peer Note Exchange & Doubt Bounties** uses server-side coin transactions and peer-visible records when the migration below is applied. Without it, note shares and bounty drafts are stored in the signed-in account's browser cache only and are not visible to other students; peer answers and awards are unavailable.
 
 For cross-student note exchange, apply [`supabase/migrations/20261122100000_peer_note_marketplace.sql`](./supabase/migrations/20261122100000_peer_note_marketplace.sql) to Supabase. It creates private tables with direct client grants revoked and authenticated RPCs for marketplace reads, note sharing, escrowed bounty posting, answers, and one-time answer awards. The browser does not write coin balances directly. Until the migration is applied, all other tools above continue to work without it.
+
+On Vercel, the existing Supabase integration needs `VITE_SUPABASE_URL` and
+`VITE_SUPABASE_PUBLISHABLE_KEY` for the browser, plus `SUPABASE_URL` and
+`SUPABASE_PUBLISHABLE_KEY` for authenticated server functions. Configure
+`LOVABLE_API_KEY` as a server-only variable to enable Coach and Mock Viva AI.
+AI calls also use the existing `consume_ai_question` Supabase RPC; apply the
+project's AI-usage Drizzle migrations if that RPC is not installed. Without
+these settings or the quota RPC, the local study-plan and viva feedback remain
+available. No service-role key is needed for these new features.

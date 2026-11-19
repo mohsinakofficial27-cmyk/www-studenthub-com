@@ -72,28 +72,6 @@ export async function askAssistant(question: string, mode: AiMode): Promise<AskR
   return { content: FRAMES[mode](question.trim()), offline: !AI_CONNECTED };
 }
 
-export function buildOfflineCoachReply(question: string, scheduleContext: string) {
-  const today = scheduleContext.match(/Today is ([0-9]{4}-[0-9]{2}-[0-9]{2})\./)?.[1];
-  const taskList = scheduleContext.match(/Scheduled tasks .*?: ([^\n]*)/)?.[1] ?? "";
-  const openTasks = taskList
-    .split(" ;; ")
-    .filter((task) => task && task.endsWith("| open"))
-    .sort((left, right) => {
-      const leftDate = left.slice(0, 10);
-      const rightDate = right.slice(0, 10);
-      const leftOverdue = Boolean(today && leftDate < today);
-      const rightOverdue = Boolean(today && rightDate < today);
-      if (leftOverdue !== rightOverdue) return leftOverdue ? -1 : 1;
-      return leftDate.localeCompare(rightDate);
-    })
-    .slice(0, 3);
-  const schedule = openTasks.length
-    ? `Your open schedule items${today ? " (overdue first)" : ""}:\n${openTasks.map((task, index) => `${index + 1}. ${task}`).join("\n")}`
-    : "Your saved schedule has no open tasks listed right now.";
-
-  return `Offline coach guide (not AI-generated)\n\nYou asked: "${question.trim()}"\n\n${schedule}\n\nTry this next: choose one item above, work on it for 25 minutes, then update its status in your planner.`;
-}
-
 /* ---------------- quiz generation ---------------- */
 
 export interface GeneratedQuestion {

@@ -2,7 +2,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { Json } from "@/integrations/supabase/types";
 
 const uuid = z.string().uuid();
 const actionSchema = z.discriminatedUnion("action", [
@@ -26,13 +25,6 @@ const actionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("accept-answer"), bountyId: uuid, answerId: uuid }),
 ]);
 
-type MarketplaceRpc = {
-  rpc: (
-    fn: string,
-    args?: Record<string, unknown>,
-  ) => Promise<{ data: Json; error: { code?: string; message: string } | null }>;
-};
-
 function missingMarketplaceMigration(error: { code?: string; message: string }) {
   return ["PGRST202", "PGRST205", "42P01", "42883"].includes(error.code ?? "") ||
     /study_marketplace_(snapshot|action)|study_coin_wallets|study_market_notes|study_doubt_bounties/i.test(
@@ -43,9 +35,7 @@ function missingMarketplaceMigration(error: { code?: string; message: string }) 
 export const getMarketplaceSnapshot = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await (context.supabase as unknown as MarketplaceRpc).rpc(
-      "study_marketplace_snapshot",
-    );
+    const { data, error } = await context.supabase.rpc("study_marketplace_snapshot");
     if (error) {
       if (missingMarketplaceMigration(error)) return { configured: false as const };
       console.error("Could not load peer note exchange", error.message);
@@ -59,10 +49,10 @@ export const runMarketplaceAction = createServerFn({ method: "POST" })
   .validator((input) => actionSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { action, ...payload } = data;
-    const { data: result, error } = await (context.supabase as unknown as MarketplaceRpc).rpc(
-      "study_marketplace_action",
-      { _action: action, _payload: payload },
-    );
+    const { data: result, error } = await context.supabase.rpc("study_marketplace_action", {
+      _action: action,
+      _payload: payload,
+    });
     if (error) {
       if (missingMarketplaceMigration(error)) return { configured: false as const };
       console.error(`Peer marketplace action ${action} failed`, error.message);

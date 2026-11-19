@@ -936,6 +936,11 @@ export type Database = {
         Args: { _answers: Json; _quiz_id: string };
         Returns: Json;
       };
+      study_marketplace_snapshot: { Args: Record<PropertyKey, never>; Returns: Json };
+      study_marketplace_action: {
+        Args: { _action: string; _payload?: Json };
+        Returns: Json;
+      };
     };
     Enums: {
       app_role: "admin" | "user";

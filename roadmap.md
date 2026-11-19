@@ -69,7 +69,7 @@ Remaining:
 ## Practice, wellness, and peer exchange
 
 - [x] Add browser-based handwriting OCR with editable, locally saved study notes
-- [x] Add a breathing reset, confidence check, local mock viva, and voluntary tab-aware focus lock
+- [x] Add a breathing reset, confidence check, optional server-AI/local-fallback mock viva, and voluntary tab-aware focus lock
 - [x] Add local-only note/bounty fallback plus server-validated coin escrow and peer marketplace RPCs
 - [ ] Apply `supabase/migrations/20261122100000_peer_note_marketplace.sql` and validate authorization, duplicate note rewards, bounty escrow, and answer payout against Supabase
 - [ ] Verify handwriting OCR with representative handwriting; OCR requires the public Tesseract worker/language model on first use

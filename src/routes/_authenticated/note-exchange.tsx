@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth, useDb } from "@/lib/auth";
 import { getMarketplaceSnapshot, runMarketplaceAction } from "@/lib/marketplace.functions";
-import { mutate, uid } from "@/lib/store";
+import { saveOfflineMarketplaceDraft } from "@/lib/marketplace-local";
 
 export const Route = createFileRoute("/_authenticated/note-exchange")({
   component: NoteExchangePage,
@@ -119,6 +119,10 @@ function NoteExchangePage() {
       | { action: "accept-answer"; bountyId: string; answerId: string },
   ) => {
     if (!user) return false;
+    if (payload.action === "post-bounty" && (payload.reward < 3 || payload.reward > 100)) {
+      toast.error("Choose a bounty reward between 3 and 100 study coins.");
+      return false;
+    }
     try {
       const result = await runAction({ data: payload });
       if (result.configured) {
@@ -133,48 +137,29 @@ function NoteExchangePage() {
         await refresh();
         return true;
       }
+      setSnapshot(null);
+      setOnlineMarketplace(false);
+      setMigrationMissing(true);
+      setConnectionFailed(false);
     } catch (error) {
       console.error("Peer marketplace operation failed", error);
-      toast.error("The marketplace action failed. Your content was not published.");
-      return false;
+      setSnapshot(null);
+      setOnlineMarketplace(false);
+      setMigrationMissing(false);
+      setConnectionFailed(true);
     }
 
     if (payload.action === "share-note") {
-      const duplicate = localNotes.some((note) => note.content.trim() === payload.content.trim());
-      if (duplicate) {
-        toast.info("You have already shared this note in this browser.");
-        return false;
-      }
-      mutate((store) => {
-        store.offline_market_notes.unshift({ ...payload, id: uid(), user_id: user.id, created_at: new Date().toISOString() });
-        const wallet = store.offline_market_wallets.find((item) => item.user_id === user.id);
-        if (wallet) wallet.coins += 5;
-        else store.offline_market_wallets.push({ user_id: user.id, coins: 5 });
-      });
-      toast.success("Saved in this browser. You earned 5 local study coins.");
-      return true;
+      const outcome = saveOfflineMarketplaceDraft(user.id, payload);
+      if (outcome.ok) toast.success(outcome.message);
+      else toast.info(outcome.error);
+      return outcome.ok;
     }
     if (payload.action === "post-bounty") {
-      if (localWallet < payload.reward) {
-        toast.error("Not enough local study coins. Share one of your notes to earn 5.");
-        return false;
-      }
-      mutate((store) => {
-        store.offline_market_bounties.unshift({
-          id: uid(),
-          user_id: user.id,
-          subject: payload.subject,
-          question: payload.question,
-          reward: payload.reward,
-          status: "open",
-          accepted_answer_id: null,
-          created_at: new Date().toISOString(),
-        });
-        const wallet = store.offline_market_wallets.find((item) => item.user_id === user.id);
-        if (wallet) wallet.coins -= payload.reward;
-      });
-      toast.success("Bounty saved privately in this browser.");
-      return true;
+      const outcome = saveOfflineMarketplaceDraft(user.id, payload);
+      if (outcome.ok) toast.success(outcome.message);
+      else toast.info(outcome.error);
+      return outcome.ok;
     }
     toast.info("Peer answers and coin awards need the Supabase marketplace migration. Your local exchange is private to this browser.");
     return false;
@@ -219,9 +204,25 @@ function NoteExchangePage() {
       {onlineMarketplace ? (
         <InfoNote title="Peer marketplace connected" description="Notes, questions, and virtual coin transactions are saved by the protected Supabase marketplace functions." />
       ) : connectionFailed ? (
-        <InfoNote title="Peer marketplace connection unavailable" description="The marketplace could not be reached. You can save private browser-only notes and bounty drafts; they are not published or visible to other students." />
+        <InfoNote
+          title="Peer marketplace connection unavailable"
+          description={
+            <span className="flex flex-wrap items-center justify-between gap-3">
+              <span>The marketplace could not be reached. You can save private browser-only notes and bounty drafts; they are not published or visible to other students.</span>
+              <Button size="sm" variant="outline" onClick={() => void refresh()} disabled={loading}><RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} /> Retry Connection</Button>
+            </span>
+          }
+        />
       ) : migrationMissing ? (
-        <InfoNote title="Private browser-only mode" description="The peer marketplace migration is not installed. You can save note shares and bounty drafts locally, but they are not visible to other students; peer answers and awards need the Supabase marketplace migration." />
+        <InfoNote
+          title="Private browser-only mode"
+          description={
+            <span className="flex flex-wrap items-center justify-between gap-3">
+              <span>The peer marketplace migration is not installed. You can save note shares and bounty drafts locally, but they are not visible to other students; peer answers and awards need the Supabase marketplace migration.</span>
+              <Button size="sm" variant="outline" onClick={() => void refresh()} disabled={loading}><RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} /> Retry Connection</Button>
+            </span>
+          }
+        />
       ) : (
         <InfoNote title="Loading peer marketplace" description="Your notes and bounty board will appear when the marketplace responds. Browser-only drafts remain private." />
       )}
@@ -247,7 +248,7 @@ function NoteExchangePage() {
           <Input value={subject} onChange={(event) => setSubject(event.target.value)} required maxLength={80} placeholder="Subject" aria-label="Bounty subject" />
           <Textarea value={question} onChange={(event) => setQuestion(event.target.value)} required minLength={10} maxLength={3000} placeholder="Describe the question you need help with…" aria-label="Bounty question" />
           <div className="flex items-center gap-3"><label htmlFor="bounty-reward" className="text-sm font-medium">Reward (3–100)</label><Input id="bounty-reward" type="number" min={3} max={100} value={reward} onChange={(event) => setReward(Number(event.target.value))} className="max-w-28" /></div>
-          <Button type="submit" disabled={loading || !subject.trim() || question.trim().length < 10} className="bg-brand text-brand-foreground hover:bg-brand/90"><Coins className="size-4" /> Escrow {reward} coins</Button>
+          <Button type="submit" disabled={loading || !subject.trim() || question.trim().length < 10 || reward < 3 || reward > 100} className="bg-brand text-brand-foreground hover:bg-brand/90"><Coins className="size-4" /> Escrow {reward} coins</Button>
         </form>
       </div>
 

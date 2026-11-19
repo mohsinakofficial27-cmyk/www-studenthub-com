@@ -89,8 +89,8 @@ function HandwritingScannerPage() {
   return (
     <AppShell title="Handwriting-to-Digital Notes" description="Scan a notebook photo, review the OCR result, then save an editable note.">
       <InfoNote
-        title="Private, in-browser OCR"
-        description="Text recognition runs in your browser using Tesseract.js; the first scan downloads its OCR language model. Handwriting recognition is imperfect—review names, formulas, and numbers before saving."
+        title="Private photo-to-notes scanning"
+        description="Runs privately in your browser. First scan may take a moment to load language data—please review names, formulas, and numbers before saving."
       />
       <div className="mt-4 grid gap-4 lg:grid-cols-[320px_1fr]">
         <section className="panel space-y-4 p-5">

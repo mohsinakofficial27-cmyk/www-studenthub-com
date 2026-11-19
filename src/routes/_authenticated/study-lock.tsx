@@ -94,6 +94,7 @@ function StudyLockPage() {
       try {
         await document.exitFullscreen();
       } catch {
+        intentionalExit.current = false;
         toast.info("Use your browser's fullscreen control to exit fullscreen.");
       }
     }
@@ -111,8 +112,8 @@ function StudyLockPage() {
   return (
     <AppShell title="Distraction Blocker & Study Lock" description="A voluntary fullscreen focus timer that pauses when this tab loses visibility.">
       <InfoNote
-        title="Browser focus aid—not an unbreakable lock"
-        description="Browsers cannot stop you switching tabs or leaving the page. Student Hub detects that change, pauses the timer, and alerts you when you return. Fullscreen requires your permission and can always be exited."
+        title="A browser focus aid"
+        description="Your browser cannot prevent tab switching or leaving this page. When this tab becomes hidden, the timer pauses and an alert appears when you return. Fullscreen is permission-based and can always be exited."
       />
       {locked ? (
         <main className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background px-5 text-center">

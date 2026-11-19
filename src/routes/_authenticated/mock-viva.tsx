@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { Mic, MicOff, RotateCcw, Send, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { toast } from "sonner";
@@ -7,6 +8,7 @@ import { AppShell } from "@/components/app-shell";
 import { InfoNote } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { gradeVivaAnswer } from "@/lib/ai.functions";
 import { scoreVivaAnswer } from "@/lib/study-tools";
 
 export const Route = createFileRoute("/_authenticated/mock-viva")({
@@ -43,10 +45,13 @@ function MockVivaPage() {
   const [topic, setTopic] = useState("");
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
-  const [result, setResult] = useState<{ score: number; feedback: string } | null>(null);
+  const [result, setResult] = useState<{ score: number; feedback: string; source: "AI" | "Local" } | null>(null);
   const [listening, setListening] = useState(false);
+  const [grading, setGrading] = useState(false);
+  const [gradingNotice, setGradingNotice] = useState("");
   const recognition = useRef<SpeechRecognitionLike | null>(null);
   const dictationBase = useRef("");
+  const grade = useServerFn(gradeVivaAnswer);
 
   useEffect(() => () => recognition.current?.stop(), []);
 
@@ -60,6 +65,7 @@ function MockVivaPage() {
     setQuestion(bank[Math.floor(Math.random() * bank.length)] ?? bank[0] ?? "Explain one important idea from your subject.");
     setAnswer("");
     setResult(null);
+    setGradingNotice("");
   };
 
   const dictate = () => {
@@ -96,17 +102,60 @@ function MockVivaPage() {
     }
   };
 
-  const submit = (event: FormEvent) => {
-    event.preventDefault();
-    if (!answer.trim()) return;
+  const evaluateAnswer = async () => {
+    if (!answer.trim() || !question || grading) return;
     recognition.current?.stop();
     setListening(false);
-    setResult(scoreVivaAnswer(answer));
+    setGrading(true);
+    let usedAiFeedback = false;
+    try {
+      const response = await grade({
+        data: { subject: subject.trim(), topic: topic.trim(), question, answer: answer.trim() },
+      });
+      if (response.ok) {
+        setResult({ score: response.score, feedback: response.feedback, source: "AI" });
+        setGradingNotice("");
+        usedAiFeedback = true;
+        return;
+      }
+      console.warn("AI Viva grading unavailable; using local feedback", response.error);
+      setGradingNotice(
+        "AI grading is unavailable, so this is local structure-only feedback—not a check of subject accuracy.",
+      );
+    } catch (error) {
+      console.error("AI Viva grading request failed", error);
+      setGradingNotice(
+        "AI grading could not be reached, so this is local structure-only feedback—not a check of subject accuracy.",
+      );
+    } finally {
+      if (!usedAiFeedback) setResult({ ...scoreVivaAnswer(answer), source: "Local" });
+      setGrading(false);
+    }
+  };
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    void evaluateAnswer();
   };
 
   return (
     <AppShell title="Mock Viva Simulator" description="Practise oral answers with local subject prompts and transparent feedback.">
-      <InfoNote title="Practice simulator—not an AI examiner" description="Questions come from a small local prompt bank. Scores are simple length-and-structure heuristics, not an assessment of subject accuracy. Speech recognition, when available, is provided by your browser and may use its own service." />
+      <InfoNote title="Practice mode" description="Questions come from a local prompt bank. If configured, your answer is sent to the AI provider through the server for feedback; otherwise, local structure-only feedback is used. Neither is an official grade. Browser speech recognition may use a browser-provided service." />
+      {gradingNotice ? (
+        <div className="mt-3">
+          <InfoNote
+            title="Local feedback shown"
+            description={
+              <span className="flex flex-wrap items-center justify-between gap-3">
+                <span>{gradingNotice}</span>
+                <Button size="sm" variant="outline" disabled={grading} onClick={() => void evaluateAnswer()}>
+                  {grading ? "Checking…" : "Retry AI feedback"}
+                </Button>
+              </span>
+            }
+          />
+        </div>
+      ) : null}
       <section className="panel mx-auto max-w-3xl space-y-4 p-5">
         <div className="grid gap-3 sm:grid-cols-2">
           <Input value={subject} onChange={(event) => setSubject(event.target.value)} placeholder="Subject (e.g. Biology)" aria-label="Subject" />
@@ -131,13 +180,13 @@ function MockVivaPage() {
             <textarea id="viva-answer" value={answer} onChange={(event) => setAnswer(event.target.value)} className="min-h-36 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Answer in your own words…" />
             <div className="flex flex-wrap gap-2">
               <Button type="button" variant="outline" onClick={dictate}>{listening ? <><MicOff className="size-4" /> Stop dictation</> : <><Mic className="size-4" /> Dictate answer</>}</Button>
-              <Button type="submit" disabled={!answer.trim()} className="bg-brand text-brand-foreground hover:bg-brand/90"><Send className="size-4" /> Get practice feedback</Button>
+              <Button type="submit" disabled={!answer.trim() || grading} className="bg-brand text-brand-foreground hover:bg-brand/90"><Send className="size-4" /> {grading ? "Reviewing…" : "Get practice feedback"}</Button>
             </div>
           </form>
         ) : null}
         {result ? (
           <div className="rounded-xl border border-border p-4" aria-live="polite">
-            <p className="text-lg font-semibold">Practice structure score: {result.score}/10</p>
+            <p className="text-lg font-semibold">{result.source === "AI" ? "AI practice score" : "Local structure score"}: {result.score}/10</p>
             <p className="mt-2 text-sm text-muted-foreground">{result.feedback}</p>
           </div>
         ) : null}
