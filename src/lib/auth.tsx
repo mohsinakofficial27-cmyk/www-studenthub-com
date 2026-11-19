@@ -8,7 +8,7 @@ import {
 } from "react";
 import type { ReactNode } from "react";
 
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabaseConfigurationError, supabase } from "@/integrations/supabase/client";
 import { permanentlyDeleteAccount } from "@/lib/account.functions";
 
 import {
@@ -118,6 +118,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Restore the cloud session on page load and keep the local cache in sync.
   useEffect(() => {
+    if (getSupabaseConfigurationError()) return;
+
     void (async () => {
       const { data } = await supabase.auth.getSession();
       const su = data.session?.user;

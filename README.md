@@ -1112,18 +1112,46 @@ The parent report only contains study-time, quiz-average/count, streak, and task
 
 For cross-student note exchange, apply [`supabase/migrations/20261122100000_peer_note_marketplace.sql`](./supabase/migrations/20261122100000_peer_note_marketplace.sql) to Supabase. It creates private tables with direct client grants revoked and authenticated RPCs for marketplace reads, note sharing, escrowed bounty posting, answers, and one-time answer awards. The browser does not write coin balances directly. Until the migration is applied, all other tools above continue to work without it.
 
-On Vercel, configure `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`
-for the browser. Authenticated server functions prefer `SUPABASE_URL` and
-`SUPABASE_PUBLISHABLE_KEY`, and can fall back to those same `VITE_` values if
-the unprefixed server variables are not set. Apply the peer marketplace
-migration to the Supabase project used by the deployment (for example, with
-`supabase db push` or the Supabase SQL editor) before enabling cross-student
-sharing. Configure
+The ignored root `.env` can hold local values for `SUPABASE_PROJECT_ID`,
+`SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_URL`, `VITE_SUPABASE_PROJECT_ID`,
+`VITE_SUPABASE_PUBLISHABLE_KEY`, and `VITE_SUPABASE_URL`. The project-ID
+variables are informational; the app initializes Supabase from the URL and
+publishable-key variables. Keep `.env` out of Git.
+
+On Vercel, add those same six names to the `www-studenthub-com` project's
+Environment Variables and select Production, Preview, and Development as
+needed. The two `VITE_` URL/key variables are required in the browser bundle.
+Authenticated server functions prefer the unprefixed URL/key variables and can
+fall back to the `VITE_` values. A missing browser variable displays a setup
+message in the app rather than triggering an uncaught Supabase initialization.
+The Vite/Nitro config auto-detects Vercel when building there; no `vercel.json`
+is currently required. To locally verify Vercel-target output explicitly, run
+`NITRO_PRESET=vercel npm run build`.
+
+Apply the peer marketplace migration to the Supabase project used by the
+deployment (for example, with `supabase db push` or the Supabase SQL editor)
+before enabling cross-student sharing. Configure
 `LOVABLE_API_KEY` as a server-only variable to enable Coach and Mock Viva AI.
 AI calls also use the existing `consume_ai_question` Supabase RPC; apply the
 project's AI-usage Drizzle migrations if that RPC is not installed. Without
 these settings or the quota RPC, the local study-plan and viva feedback remain
 available. No service-role key is needed for these new features.
+
+To test and deploy from a local Git checkout:
+
+```sh
+npm run build
+NITRO_PRESET=vercel npm run build
+git add -A
+git commit -m "Fix Supabase environment setup"
+git push origin main
+```
+
+After pushing, confirm the Vercel project is linked to the pushed branch, set
+the six variables for the target deployment environment, and trigger a new
+deployment. Never put a Supabase service-role key in a `VITE_` variable; some
+separate server-side account/integration features may require it as a private
+Vercel variable.
 
 Authenticated server functions also use a database-backed limit of 120 requests
 per signed-in user per minute. Apply

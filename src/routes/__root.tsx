@@ -9,7 +9,7 @@ import {
   type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-
+import { getSupabaseConfigurationError } from "@/integrations/supabase/client";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "../lib/auth";
@@ -127,6 +127,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const supabaseConfigurationError = getSupabaseConfigurationError();
 
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
@@ -138,6 +139,14 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        {supabaseConfigurationError ? (
+          <div
+            role="alert"
+            className="border-b border-warning/40 bg-warning/10 px-4 py-3 text-center text-sm text-foreground"
+          >
+            {supabaseConfigurationError}
+          </div>
+        ) : null}
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
         <Toaster position="top-right" richColors />
