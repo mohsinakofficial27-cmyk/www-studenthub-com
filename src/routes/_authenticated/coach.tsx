@@ -106,7 +106,7 @@ function CoachPage() {
           limitReached: "limitReached" in result && result.limitReached,
         });
         const reason =
-          ("setupRequired" in result && result.setupRequired)
+          "setupRequired" in result && result.setupRequired
             ? isAiSetupIssue(result.error)
               ? AI_SETUP_MESSAGE
               : AI_USAGE_SETUP_MESSAGE
@@ -161,9 +161,17 @@ function CoachPage() {
             title="Your local study plan is ready"
             description={
               <span className="flex flex-wrap items-center justify-between gap-3">
-                <span>{offlineReason} Your plan uses saved tasks, due dates, exams, and daily study target. It is not AI-generated.</span>
+                <span>
+                  {offlineReason} Your plan uses saved tasks, due dates, exams, and daily study
+                  target. It is not AI-generated.
+                </span>
                 {failedQuestion ? (
-                  <Button size="sm" variant="outline" disabled={busy} onClick={() => void send(failedQuestion, true)}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={busy}
+                    onClick={() => void send(failedQuestion, true)}
+                  >
                     <RefreshCw className="size-4" /> Retry AI
                   </Button>
                 ) : null}

@@ -7,9 +7,7 @@ export function formatOcrText(value: string) {
     .map((line) => line.replace(/[ \t]+/gu, " ").trim())
     .filter(Boolean)
     .map((line) =>
-      /^[A-Z0-9][A-Z0-9 \-:]{2,50}$/u.test(line) && line.length < 52
-        ? `## ${line}`
-        : line,
+      /^[A-Z0-9][A-Z0-9 \-:]{2,50}$/u.test(line) && line.length < 52 ? `## ${line}` : line,
     )
     .join("\n");
 }
@@ -49,7 +47,14 @@ export function buildLocalCoachPlan(
       const entries = sorted.map((task) => {
         const duration = Math.max(15, Math.min(120, task.minutes || (task.is_exam ? 60 : 25)));
         plannedMinutes += duration;
-        const due = task.date < today ? "OVERDUE" : task.is_exam ? "EXAM" : task.date === today ? "DUE TODAY" : `due ${task.date}`;
+        const due =
+          task.date < today
+            ? "OVERDUE"
+            : task.is_exam
+              ? "EXAM"
+              : task.date === today
+                ? "DUE TODAY"
+                : `due ${task.date}`;
         return `  • ${duration} min — ${task.subject ? `${task.subject}: ` : ""}${task.title} (${due})`;
       });
       return {

@@ -5,10 +5,22 @@ import { newId, nowIso, requireUserId, supabaseForUser } from "../supabase";
 export default defineTool({
   name: "create_flashcards",
   title: "Create flashcards",
-  description: "Add flashcards for the signed-in student, either to an existing deck or to a new deck.",
+  description:
+    "Add flashcards for the signed-in student, either to an existing deck or to a new deck.",
   inputSchema: {
-    deck_id: z.string().trim().min(1).optional().describe("Existing deck id. Omit to create a new deck."),
-    deck_name: z.string().trim().min(1).max(120).optional().describe("Name for the new deck (required when deck_id is omitted)."),
+    deck_id: z
+      .string()
+      .trim()
+      .min(1)
+      .optional()
+      .describe("Existing deck id. Omit to create a new deck."),
+    deck_name: z
+      .string()
+      .trim()
+      .min(1)
+      .max(120)
+      .optional()
+      .describe("Name for the new deck (required when deck_id is omitted)."),
     subject: z.string().trim().max(80).optional().describe("Subject for a newly created deck."),
     cards: z
       .array(z.object({ front: z.string().trim().min(1), back: z.string().trim().min(1) }))
@@ -45,7 +57,9 @@ export default defineTool({
     const { error } = await supabase.from("flashcards").insert(rows);
     if (error) throw new ToolError(error.message);
     return {
-      content: [{ type: "text" as const, text: `Added ${rows.length} card(s) to deck ${targetDeck}.` }],
+      content: [
+        { type: "text" as const, text: `Added ${rows.length} card(s) to deck ${targetDeck}.` },
+      ],
       structuredContent: { deck_id: targetDeck, added: rows.length },
     };
   },

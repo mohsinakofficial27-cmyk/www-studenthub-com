@@ -50,7 +50,8 @@ function HandwritingScannerPage() {
       const { createWorker } = await import("tesseract.js");
       const worker = await createWorker(language, 1, {
         logger: (message) => {
-          if (message.status === "recognizing text") setProgress(Math.round(message.progress * 100));
+          if (message.status === "recognizing text")
+            setProgress(Math.round(message.progress * 100));
         },
       });
       try {
@@ -67,7 +68,9 @@ function HandwritingScannerPage() {
       }
     } catch (error) {
       console.error("Handwriting OCR failed", error);
-      toast.error("OCR could not load or read this image. You can still type or edit the notes below.");
+      toast.error(
+        "OCR could not load or read this image. You can still type or edit the notes below.",
+      );
     } finally {
       setBusy(false);
     }
@@ -87,35 +90,105 @@ function HandwritingScannerPage() {
   };
 
   return (
-    <AppShell title="Handwriting-to-Digital Notes" description="Scan a notebook photo, review the OCR result, then save an editable note.">
+    <AppShell
+      title="Handwriting-to-Digital Notes"
+      description="Scan a notebook photo, review the OCR result, then save an editable note."
+    >
       <InfoNote
         title="Private photo-to-notes scanning"
         description="Runs privately in your browser. First scan may take a moment to load language data—please review names, formulas, and numbers before saving."
       />
       <div className="mt-4 grid gap-4 lg:grid-cols-[320px_1fr]">
         <section className="panel space-y-4 p-5">
-          <label htmlFor="handwriting-photo" className="flex min-h-44 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-border bg-secondary/30 p-5 text-center">
-            {previewUrl ? <img src={previewUrl} alt="Notebook page preview" className="max-h-60 rounded-lg object-contain" /> : <><FileImage className="size-8 text-brand" /><span className="mt-3 text-sm font-medium">Choose a notebook photo</span><span className="mt-1 text-xs text-muted-foreground">PNG, JPEG, or another browser-supported image · up to 12 MB</span></>}
+          <label
+            htmlFor="handwriting-photo"
+            className="flex min-h-44 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-border bg-secondary/30 p-5 text-center"
+          >
+            {previewUrl ? (
+              <img
+                src={previewUrl}
+                alt="Notebook page preview"
+                className="max-h-60 rounded-lg object-contain"
+              />
+            ) : (
+              <>
+                <FileImage className="size-8 text-brand" />
+                <span className="mt-3 text-sm font-medium">Choose a notebook photo</span>
+                <span className="mt-1 text-xs text-muted-foreground">
+                  PNG, JPEG, or another browser-supported image · up to 12 MB
+                </span>
+              </>
+            )}
           </label>
-          <input id="handwriting-photo" type="file" accept="image/*" capture="environment" className="sr-only" onChange={(event) => chooseImage(event.target.files?.[0])} />
-          <label htmlFor="ocr-language" className="text-sm font-medium">Handwriting language</label>
-          <select id="ocr-language" value={language} onChange={(event) => setLanguage(OCR_LANGUAGES.find((item) => item === event.target.value) ?? "eng")} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
+          <input
+            id="handwriting-photo"
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="sr-only"
+            onChange={(event) => chooseImage(event.target.files?.[0])}
+          />
+          <label htmlFor="ocr-language" className="text-sm font-medium">
+            Handwriting language
+          </label>
+          <select
+            id="ocr-language"
+            value={language}
+            onChange={(event) =>
+              setLanguage(OCR_LANGUAGES.find((item) => item === event.target.value) ?? "eng")
+            }
+            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+          >
             <option value="eng">English</option>
             <option value="urd">Urdu</option>
             <option value="hin">Hindi</option>
           </select>
-          <Button onClick={() => void scan()} disabled={!file || busy} className="w-full bg-brand text-brand-foreground hover:bg-brand/90">
-            {busy ? <><Loader2 className="size-4 animate-spin" /> Reading image · {progress}%</> : <><ScanText className="size-4" /> Extract text</>}
+          <Button
+            onClick={() => void scan()}
+            disabled={!file || busy}
+            className="w-full bg-brand text-brand-foreground hover:bg-brand/90"
+          >
+            {busy ? (
+              <>
+                <Loader2 className="size-4 animate-spin" /> Reading image · {progress}%
+              </>
+            ) : (
+              <>
+                <ScanText className="size-4" /> Extract text
+              </>
+            )}
           </Button>
-          <p className="text-xs text-muted-foreground">No image OCR data is uploaded to Student Hub. The Tesseract worker/language model is fetched from its public CDN when required.</p>
+          <p className="text-xs text-muted-foreground">
+            No image OCR data is uploaded to Student Hub. The Tesseract worker/language model is
+            fetched from its public CDN when required.
+          </p>
         </section>
         <section className="panel space-y-4 p-5">
           <div className="grid gap-3 sm:grid-cols-2">
-            <Input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Note title" aria-label="Note title" />
-            <Input value={subject} onChange={(event) => setSubject(event.target.value)} placeholder="Subject (optional)" aria-label="Subject" />
+            <Input
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder="Note title"
+              aria-label="Note title"
+            />
+            <Input
+              value={subject}
+              onChange={(event) => setSubject(event.target.value)}
+              placeholder="Subject (optional)"
+              aria-label="Subject"
+            />
           </div>
-          <Textarea value={content} onChange={(event) => setContent(event.target.value)} placeholder="OCR text will appear here. You can edit or type notes manually." className="min-h-72" />
-          <Button onClick={save} disabled={!content.trim()} className="bg-brand text-brand-foreground hover:bg-brand/90">
+          <Textarea
+            value={content}
+            onChange={(event) => setContent(event.target.value)}
+            placeholder="OCR text will appear here. You can edit or type notes manually."
+            className="min-h-72"
+          />
+          <Button
+            onClick={save}
+            disabled={!content.trim()}
+            className="bg-brand text-brand-foreground hover:bg-brand/90"
+          >
             <Save className="size-4" /> Save as study note
           </Button>
         </section>

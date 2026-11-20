@@ -12,7 +12,10 @@ export const Route = createFileRoute("/_authenticated/search")({
   head: () => ({
     meta: [
       { title: "Search — Student Hub" },
-      { name: "description", content: "Search across your notes, flashcards, quizzes and planner tasks." },
+      {
+        name: "description",
+        content: "Search across your notes, flashcards, quizzes and planner tasks.",
+      },
       { property: "og:title", content: "Search — Student Hub" },
       { property: "og:description", content: "Find anything in your study workspace." },
       { property: "og:type", content: "website" },
@@ -31,10 +34,14 @@ function SearchPage() {
   const q = query.trim().toLowerCase();
   const match = (text: string) => q.length > 0 && text.toLowerCase().includes(q);
 
-  const notes = scopedRows(db.notes, user.id).filter((n) => match(`${n.title} ${n.content} ${n.subject}`));
+  const notes = scopedRows(db.notes, user.id).filter((n) =>
+    match(`${n.title} ${n.content} ${n.subject}`),
+  );
   const cards = scopedRows(db.flashcards, user.id).filter((c) => match(`${c.front} ${c.back}`));
   const quizzes = scopedRows(db.quizzes, user.id).filter((z) => match(`${z.subject} ${z.topic}`));
-  const tasks = scopedRows(db.study_tasks, user.id).filter((t) => match(`${t.title} ${t.subject} ${t.topic}`));
+  const tasks = scopedRows(db.study_tasks, user.id).filter((t) =>
+    match(`${t.title} ${t.subject} ${t.topic}`),
+  );
   const total = notes.length + cards.length + quizzes.length + tasks.length;
 
   return (
@@ -65,7 +72,9 @@ function SearchPage() {
         <div className="mt-6 space-y-6">
           {notes.length ? (
             <section>
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Notes</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                Notes
+              </h2>
               <ul className="mt-3 space-y-2">
                 {notes.map((n) => (
                   <li key={n.id} className="rounded-xl border border-border px-4 py-3">
@@ -81,7 +90,9 @@ function SearchPage() {
 
           {cards.length ? (
             <section>
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Flashcards</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                Flashcards
+              </h2>
               <ul className="mt-3 space-y-2">
                 {cards.map((c) => (
                   <li key={c.id} className="rounded-xl border border-border px-4 py-3">
@@ -97,7 +108,9 @@ function SearchPage() {
 
           {quizzes.length ? (
             <section>
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Quizzes</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                Quizzes
+              </h2>
               <ul className="mt-3 space-y-2">
                 {quizzes.map((z) => (
                   <li key={z.id} className="rounded-xl border border-border px-4 py-3">
@@ -116,7 +129,9 @@ function SearchPage() {
 
           {tasks.length ? (
             <section>
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Planner tasks</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                Planner tasks
+              </h2>
               <ul className="mt-3 space-y-2">
                 {tasks.map((t) => (
                   <li key={t.id} className="rounded-xl border border-border px-4 py-3">

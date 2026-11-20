@@ -5,9 +5,16 @@ import { supabaseForUser } from "../supabase";
 export default defineTool({
   name: "get_study_summary",
   title: "Get study summary",
-  description: "Summarise the signed-in student's recent study activity: minutes studied, quiz scores and open tasks.",
+  description:
+    "Summarise the signed-in student's recent study activity: minutes studied, quiz scores and open tasks.",
   inputSchema: {
-    days: z.number().int().min(1).max(90).optional().describe("How many days back to summarise (default 7)."),
+    days: z
+      .number()
+      .int()
+      .min(1)
+      .max(90)
+      .optional()
+      .describe("How many days back to summarise (default 7)."),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ days }, ctx) => {
@@ -18,7 +25,12 @@ export default defineTool({
     const [sessions, attempts, tasks] = await Promise.all([
       supabase.from("study_sessions").select("minutes,kind,ended_at").gte("ended_at", since),
       supabase.from("quiz_attempts").select("score,total,taken_at").gte("taken_at", since),
-      supabase.from("study_tasks").select("id,title,date,is_exam").eq("done", false).order("date", { ascending: true }).limit(10),
+      supabase
+        .from("study_tasks")
+        .select("id,title,date,is_exam")
+        .eq("done", false)
+        .order("date", { ascending: true })
+        .limit(10),
     ]);
     const firstError = sessions.error ?? attempts.error ?? tasks.error;
     if (firstError) throw new ToolError(firstError.message);
@@ -35,11 +47,17 @@ export default defineTool({
       focus_minutes: focusMinutes,
       quiz_attempts: scored.length,
       average_quiz_percent: averageScore,
-      open_tasks: (tasks.data ?? []).map((t) => ({ id: t.id, title: t.title, date: t.date, is_exam: t.is_exam })),
+      open_tasks: (tasks.data ?? []).map((t) => ({
+        id: t.id,
+        title: t.title,
+        date: t.date,
+        is_exam: t.is_exam,
+      })),
     };
-    const text = focusMinutes || scored.length || summary.open_tasks.length
-      ? JSON.stringify(summary, null, 2)
-      : "No study activity yet. Complete your first study session to start building progress.";
+    const text =
+      focusMinutes || scored.length || summary.open_tasks.length
+        ? JSON.stringify(summary, null, 2)
+        : "No study activity yet. Complete your first study session to start building progress.";
     return { content: [{ type: "text" as const, text }], structuredContent: { summary } };
   },
 });

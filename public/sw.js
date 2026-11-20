@@ -13,22 +13,27 @@ self.addEventListener("install", (event) => {
           .map((match) => match[1])
           .filter(Boolean),
       );
-      await Promise.all([...assets].map(async (asset) => {
-        const response = await fetch(asset);
-        if (response.ok) await cache.put(asset, response);
-      }));
+      await Promise.all(
+        [...assets].map(async (asset) => {
+          const response = await fetch(asset);
+          if (response.ok) await cache.put(asset, response);
+        }),
+      );
     }),
   );
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys()
-    .then((keys) => Promise.all(
-      keys
-        .filter((key) => key.startsWith("student-hub-") && key !== CACHE_NAME)
-        .map((key) => caches.delete(key)),
-    )),
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((key) => key.startsWith("student-hub-") && key !== CACHE_NAME)
+            .map((key) => caches.delete(key)),
+        ),
+      ),
   );
 });
 
@@ -41,24 +46,35 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(request).catch(async () => {
         const cachedShell = await caches.match("/");
-        return cachedShell ?? new Response("Student Hub is offline.", {
-          status: 503,
-          headers: { "Content-Type": "text/plain; charset=utf-8" },
-        });
+        return (
+          cachedShell ??
+          new Response("Student Hub is offline.", {
+            status: 503,
+            headers: { "Content-Type": "text/plain; charset=utf-8" },
+          })
+        );
       }),
     );
     return;
   }
 
-  if (url.pathname.startsWith("/assets/") || url.pathname === "/manifest.webmanifest" || url.pathname.startsWith("/icons/")) {
+  if (
+    url.pathname.startsWith("/assets/") ||
+    url.pathname === "/manifest.webmanifest" ||
+    url.pathname.startsWith("/icons/")
+  ) {
     event.respondWith(
-      caches.match(request).then((cached) => cached ?? fetch(request).then((response) => {
-        if (response.ok) {
-          const copy = response.clone();
-          void caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-        }
-        return response;
-      })),
+      caches.match(request).then(
+        (cached) =>
+          cached ??
+          fetch(request).then((response) => {
+            if (response.ok) {
+              const copy = response.clone();
+              void caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+            }
+            return response;
+          }),
+      ),
     );
   }
 });

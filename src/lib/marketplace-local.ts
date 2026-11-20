@@ -1,9 +1,4 @@
-import type {
-  Database,
-  OfflineBounty,
-  OfflineMarketNote,
-  OfflineMarketWallet,
-} from "@/lib/store";
+import type { Database, OfflineBounty, OfflineMarketNote, OfflineMarketWallet } from "@/lib/store";
 import { mutate, uid } from "@/lib/store";
 
 export type MarketplaceDraftAction =
@@ -32,7 +27,8 @@ export function applyOfflineMarketplaceDraft(
     const duplicate = state.offline_market_notes.some(
       (note) => note.user_id === userId && note.content.trim() === action.content.trim(),
     );
-    if (duplicate) return { ok: false, error: "You have already shared this note in this browser." };
+    if (duplicate)
+      return { ok: false, error: "You have already shared this note in this browser." };
 
     const note: OfflineMarketNote = {
       id: uid(),
@@ -49,7 +45,10 @@ export function applyOfflineMarketplaceDraft(
       const newWallet: OfflineMarketWallet = { user_id: userId, coins: 5 };
       state.offline_market_wallets.push(newWallet);
     }
-    return { ok: true, message: "Saved privately in this browser. You earned 5 local study coins." };
+    return {
+      ok: true,
+      message: "Saved privately in this browser. You earned 5 local study coins.",
+    };
   }
 
   if (action.action === "post-bounty") {
@@ -58,7 +57,10 @@ export function applyOfflineMarketplaceDraft(
     }
     const wallet = state.offline_market_wallets.find((item) => item.user_id === userId);
     if (!wallet || wallet.coins < action.reward) {
-      return { ok: false, error: "Not enough local study coins. Share one of your notes to earn 5." };
+      return {
+        ok: false,
+        error: "Not enough local study coins. Share one of your notes to earn 5.",
+      };
     }
 
     const bounty: OfflineBounty = {
@@ -78,7 +80,8 @@ export function applyOfflineMarketplaceDraft(
 
   return {
     ok: false,
-    error: "Peer answers and coin awards need the Supabase marketplace migration. Your local exchange is private to this browser.",
+    error:
+      "Peer answers and coin awards need the Supabase marketplace migration. Your local exchange is private to this browser.",
   };
 }
 

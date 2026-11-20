@@ -36,12 +36,22 @@ const FEATURES: { icon: LucideIcon; title: string; points: string[] }[] = [
   {
     icon: MessageSquare,
     title: "AI Study Assistant",
-    points: ["Ask questions", "Get explanations", "Simplify difficult concepts", "Step-by-step learning"],
+    points: [
+      "Ask questions",
+      "Get explanations",
+      "Simplify difficult concepts",
+      "Step-by-step learning",
+    ],
   },
   {
     icon: BookOpen,
     title: "AI Notes",
-    points: ["Create notes", "Summarise content", "Organise notes", "Turn notes into study material"],
+    points: [
+      "Create notes",
+      "Summarise content",
+      "Organise notes",
+      "Turn notes into study material",
+    ],
   },
   {
     icon: ListChecks,
@@ -51,10 +61,24 @@ const FEATURES: { icon: LucideIcon; title: string; points: string[] }[] = [
   {
     icon: CalendarDays,
     title: "Study Planner",
-    points: ["Create study schedules", "Add subjects", "Add exams", "Daily tasks", "Track completion"],
+    points: [
+      "Create study schedules",
+      "Add subjects",
+      "Add exams",
+      "Daily tasks",
+      "Track completion",
+    ],
   },
-  { icon: Layers, title: "Flashcards", points: ["Create flashcards", "Generated flashcards from notes", "Practice mode"] },
-  { icon: Timer, title: "Pomodoro Timer", points: ["Focus sessions", "Break sessions", "Study tracking"] },
+  {
+    icon: Layers,
+    title: "Flashcards",
+    points: ["Create flashcards", "Generated flashcards from notes", "Practice mode"],
+  },
+  {
+    icon: Timer,
+    title: "Pomodoro Timer",
+    points: ["Focus sessions", "Break sessions", "Study tracking"],
+  },
   {
     icon: TrendingUp,
     title: "Progress Tracking",

@@ -31,16 +31,24 @@ function SharedParentReportPage() {
   return (
     <main className="min-h-screen bg-background px-4 py-8">
       <div className="mx-auto max-w-3xl">
-        <div className="mb-8"><Logo to="/" /></div>
+        <div className="mb-8">
+          <Logo to="/" />
+        </div>
         {!ready ? (
-          <div className="panel p-8 text-center text-sm text-muted-foreground">Opening the private report…</div>
+          <div className="panel p-8 text-center text-sm text-muted-foreground">
+            Opening the private report…
+          </div>
         ) : !report ? (
           <div className="panel p-6">
             <EmptyState
               icon={ShieldCheck}
               title="This report link is invalid or expired"
               description="Ask the student to create a fresh read-only snapshot from their Parent Progress Report page."
-              action={<Button asChild variant="outline"><Link to="/">Go to Student Hub</Link></Button>}
+              action={
+                <Button asChild variant="outline">
+                  <Link to="/">Go to Student Hub</Link>
+                </Button>
+              }
             />
           </div>
         ) : (
@@ -48,18 +56,27 @@ function SharedParentReportPage() {
             <p className="text-sm font-medium text-brand">Read-only progress snapshot</p>
             <h1 className="mt-2 text-3xl font-semibold">{report.displayName}'s study progress</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Shared {new Date(report.createdAt).toLocaleDateString()} · Expires {new Date(report.expiresAt).toLocaleDateString()}
+              Shared {new Date(report.createdAt).toLocaleDateString()} · Expires{" "}
+              {new Date(report.expiresAt).toLocaleDateString()}
             </p>
             <dl className="mt-6 grid gap-3 sm:grid-cols-2">
               <Metric label="Study time today" value={`${report.todayMinutes} min`} />
               <Metric label="Total focus hours" value={`${report.totalHours} h`} />
-              <Metric label="Quiz average" value={report.quizAverage === null ? "No attempts yet" : `${report.quizAverage}%`} />
+              <Metric
+                label="Quiz average"
+                value={report.quizAverage === null ? "No attempts yet" : `${report.quizAverage}%`}
+              />
               <Metric label="Quiz attempts" value={String(report.quizCount)} />
               <Metric label="Study streak" value={`${report.streak} days`} />
-              <Metric label="Tasks completed" value={`${report.tasksCompletedToday} today · ${report.tasksCompleted} total`} />
+              <Metric
+                label="Tasks completed"
+                value={`${report.tasksCompletedToday} today · ${report.tasksCompleted} total`}
+              />
             </dl>
             <p className="mt-6 rounded-xl bg-secondary/60 p-4 text-xs text-muted-foreground">
-              Informational snapshot only; it is not authenticated or tamper-proof. Anyone with the complete link can view or alter the displayed numbers, including changing the client-side expiry. Do not treat it as verified.
+              Informational snapshot only; it is not authenticated or tamper-proof. Anyone with the
+              complete link can view or alter the displayed numbers, including changing the
+              client-side expiry. Do not treat it as verified.
             </p>
           </section>
         )}

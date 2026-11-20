@@ -17,7 +17,10 @@ export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
     meta: [
       { title: "Profile — Student Hub" },
-      { name: "description", content: "Update your details, subjects, password and notification settings." },
+      {
+        name: "description",
+        content: "Update your details, subjects, password and notification settings.",
+      },
       { property: "og:title", content: "Profile — Student Hub" },
       { property: "og:description", content: "Manage your Student Hub account." },
       { property: "og:type", content: "website" },
@@ -134,7 +137,12 @@ function ProfilePage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="pgoals">Study goals</Label>
-            <Textarea id="pgoals" rows={3} value={goals} onChange={(e) => setGoals(e.target.value)} />
+            <Textarea
+              id="pgoals"
+              rows={3}
+              value={goals}
+              onChange={(e) => setGoals(e.target.value)}
+            />
           </div>
           <Button type="submit" className="bg-brand text-brand-foreground hover:bg-brand/90">
             Save profile
@@ -147,7 +155,11 @@ function ProfilePage() {
             {pwError ? <ErrorNote title="Could not update" description={pwError} /> : null}
             <div className="space-y-2">
               <Label htmlFor="cur">Current password</Label>
-              <PasswordInput id="cur" value={current} onChange={(e) => setCurrent(e.target.value)} />
+              <PasswordInput
+                id="cur"
+                value={current}
+                onChange={(e) => setCurrent(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="new">New password</Label>
@@ -171,7 +183,11 @@ function ProfilePage() {
                 <Label htmlFor={key} className="font-normal">
                   {label}
                 </Label>
-                <Switch id={key} checked={settings?.[key] ?? true} onCheckedChange={(v) => toggle(key, v)} />
+                <Switch
+                  id={key}
+                  checked={settings?.[key] ?? true}
+                  onCheckedChange={(v) => toggle(key, v)}
+                />
               </div>
             ))}
           </div>

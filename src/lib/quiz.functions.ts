@@ -33,7 +33,8 @@ export const recordQuizAttempt = createServerFn({ method: "POST" })
         return {
           ok: false as const,
           setupRequired: true as const,
-          error: "Quiz history is not configured in Supabase; your current score remains local and was not saved.",
+          error:
+            "Quiz history is not configured in Supabase; your current score remains local and was not saved.",
         };
       }
       return { ok: false as const, error: "Couldn't save your attempt. Please try again." };

@@ -21,9 +21,16 @@ export const Route = createFileRoute("/_authenticated/quizzes")({
   head: () => ({
     meta: [
       { title: "Quiz Generator — Student Hub" },
-      { name: "description", content: "Generate AI multiple-choice quizzes on any subject, topic and difficulty, and track your scores." },
+      {
+        name: "description",
+        content:
+          "Generate AI multiple-choice quizzes on any subject, topic and difficulty, and track your scores.",
+      },
       { property: "og:title", content: "Quiz Generator — Student Hub" },
-      { property: "og:description", content: "Practice quizzes on any topic, with instant marking." },
+      {
+        property: "og:description",
+        content: "Practice quizzes on any topic, with instant marking.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -71,13 +78,19 @@ function QuizzesPage() {
       });
       if (!result.ok) {
         if ("limitReached" in result && result.limitReached) setLimitMsg(result.error);
-        else if (("setupRequired" in result && result.setupRequired) || isAiSetupIssue(result.error))
+        else if (
+          ("setupRequired" in result && result.setupRequired) ||
+          isAiSetupIssue(result.error)
+        )
           toast.info(result.error);
         else toast.error(result.error);
         return;
       }
       const questions = result.questions.map(
-        (q: { prompt: string; options: string[]; answer: number; explanation: string }, i: number) => ({
+        (
+          q: { prompt: string; options: string[]; answer: number; explanation: string },
+          i: number,
+        ) => ({
           ...q,
           id: `q${i}`,
         }),
@@ -98,7 +111,9 @@ function QuizzesPage() {
     }
   };
 
-  const score = quiz ? quiz.questions.reduce((s, q, i) => s + (answers[i] === q.answer ? 1 : 0), 0) : 0;
+  const score = quiz
+    ? quiz.questions.reduce((s, q, i) => s + (answers[i] === q.answer ? 1 : 0), 0)
+    : 0;
 
   const submit = async () => {
     if (!quiz) return;
@@ -124,7 +139,10 @@ function QuizzesPage() {
         });
         if ("setupRequired" in result && result.setupRequired)
           toast.info("Attempt saved in this browser only. Apply the quiz migration to sync it.");
-        else toast.error(`${result.error ?? "Couldn't save your attempt."} Kept locally in this browser.`);
+        else
+          toast.error(
+            `${result.error ?? "Couldn't save your attempt."} Kept locally in this browser.`,
+          );
       }
     } catch {
       applyLocalAttempt({
@@ -141,7 +159,10 @@ function QuizzesPage() {
   };
 
   return (
-    <AppShell title="Quiz Generator" description="Describe your topic — the AI writes the practice quiz, you sit it.">
+    <AppShell
+      title="Quiz Generator"
+      description="Describe your topic — the AI writes the practice quiz, you sit it."
+    >
       {limitMsg ? (
         <InfoNote title="Daily limit reached" description={limitMsg} />
       ) : (
@@ -165,7 +186,12 @@ function QuizzesPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="topic">Topic (optional)</Label>
-            <Input id="topic" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="e.g. Cell division" />
+            <Input
+              id="topic"
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              placeholder="e.g. Cell division"
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="difficulty">Difficulty</Label>
@@ -216,7 +242,8 @@ function QuizzesPage() {
                   return (
                     <li key={a.id} className="flex justify-between text-sm">
                       <span className="truncate text-muted-foreground">
-                        {q?.subject ?? "Quiz"}{a.local_only ? " · this browser" : ""}
+                        {q?.subject ?? "Quiz"}
+                        {a.local_only ? " · this browser" : ""}
                       </span>
                       <span className="font-medium">
                         {a.score}/{a.total}
@@ -289,7 +316,9 @@ function QuizzesPage() {
                         );
                       })}
                     </div>
-                    {submitted ? <p className="mt-3 text-sm text-muted-foreground">{q.explanation}</p> : null}
+                    {submitted ? (
+                      <p className="mt-3 text-sm text-muted-foreground">{q.explanation}</p>
+                    ) : null}
                   </li>
                 ))}
               </ol>
@@ -311,7 +340,10 @@ function QuizzesPage() {
                     </Button>
                   </>
                 ) : (
-                  <Button onClick={() => void submit()} className="bg-brand text-brand-foreground hover:bg-brand/90">
+                  <Button
+                    onClick={() => void submit()}
+                    className="bg-brand text-brand-foreground hover:bg-brand/90"
+                  >
                     Submit answers
                   </Button>
                 )}

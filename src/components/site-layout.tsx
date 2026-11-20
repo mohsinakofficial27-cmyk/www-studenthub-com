@@ -154,9 +154,13 @@ export function SiteFooter() {
         <div className="flex flex-col gap-4 border-b border-navy-foreground/15 pb-10 sm:flex-row sm:items-end sm:justify-between lg:pb-14">
           <div>
             <Logo />
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-navy-foreground/65">Your AI-powered student workspace.</p>
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-navy-foreground/65">
+              Your AI-powered student workspace.
+            </p>
           </div>
-          <p className="max-w-xs text-sm leading-relaxed text-navy-foreground/65 sm:text-right">Your space to learn, plan and stay focused.</p>
+          <p className="max-w-xs text-sm leading-relaxed text-navy-foreground/65 sm:text-right">
+            Your space to learn, plan and stay focused.
+          </p>
         </div>
         <nav aria-label="Footer navigation" className="pt-2 lg:pt-12">
           <div className="divide-y divide-navy-foreground/15 md:hidden">
@@ -164,11 +168,18 @@ export function SiteFooter() {
               <details key={col.title} className="group">
                 <summary className="flex cursor-pointer list-none items-center justify-between py-5 text-sm font-semibold marker:content-none [&::-webkit-details-marker]:hidden">
                   {col.title}
-                  <ChevronDown className="size-4 text-navy-foreground/60 transition-transform group-open:rotate-180" aria-hidden="true" />
+                  <ChevronDown
+                    className="size-4 text-navy-foreground/60 transition-transform group-open:rotate-180"
+                    aria-hidden="true"
+                  />
                 </summary>
                 <div className="flex flex-col gap-3 pb-6 text-sm text-navy-foreground/65">
                   {col.links.map((link) => (
-                    <Link key={`${col.title}-${link.label}`} to={link.to} className="w-fit transition-colors hover:text-navy-foreground focus-visible:text-navy-foreground">
+                    <Link
+                      key={`${col.title}-${link.label}`}
+                      to={link.to}
+                      className="w-fit transition-colors hover:text-navy-foreground focus-visible:text-navy-foreground"
+                    >
                       {link.label}
                     </Link>
                   ))}
@@ -182,7 +193,11 @@ export function SiteFooter() {
                 <p className="font-display text-sm font-semibold">{col.title}</p>
                 <div className="mt-6 flex flex-col gap-3 text-sm text-navy-foreground/65">
                   {col.links.map((link) => (
-                    <Link key={`${col.title}-${link.label}`} to={link.to} className="w-fit leading-relaxed transition-colors hover:text-navy-foreground focus-visible:text-navy-foreground">
+                    <Link
+                      key={`${col.title}-${link.label}`}
+                      to={link.to}
+                      className="w-fit leading-relaxed transition-colors hover:text-navy-foreground focus-visible:text-navy-foreground"
+                    >
                       {link.label}
                     </Link>
                   ))}

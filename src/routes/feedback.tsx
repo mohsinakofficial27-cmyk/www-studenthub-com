@@ -14,7 +14,10 @@ export const Route = createFileRoute("/feedback")({
   head: () => ({
     meta: [
       { title: "Feedback — Student Hub" },
-      { name: "description", content: "Tell us what you like, what's confusing and what you want next in Student Hub." },
+      {
+        name: "description",
+        content: "Tell us what you like, what's confusing and what you want next in Student Hub.",
+      },
       { property: "og:title", content: "Feedback — Student Hub" },
       { property: "og:description", content: "Help shape Student Hub with your feedback." },
       { property: "og:type", content: "website" },
@@ -58,7 +61,9 @@ function FeedbackPage() {
     setStatus("saving");
     const { supabase } = await import("@/integrations/supabase/client");
     const { data } = await supabase.auth.getUser();
-    const { error: dbError } = await supabase.from("feedback").insert({ ...parsed.data, user_id: data.user?.id ?? null });
+    const { error: dbError } = await supabase
+      .from("feedback")
+      .insert({ ...parsed.data, user_id: data.user?.id ?? null });
     if (dbError) {
       setStatus("idle");
       setError("Couldn't send your feedback — please try again.");
@@ -101,7 +106,9 @@ function FeedbackPage() {
                     <Star
                       className={cn(
                         "size-9",
-                        star <= (hovered || rating) ? "fill-sun text-sun" : "fill-muted text-muted-foreground/40",
+                        star <= (hovered || rating)
+                          ? "fill-sun text-sun"
+                          : "fill-muted text-muted-foreground/40",
                       )}
                     />
                   </button>
@@ -116,7 +123,11 @@ function FeedbackPage() {
                 {error}
               </p>
             ) : null}
-            <Button type="submit" disabled={status === "saving"} className="w-full bg-brand text-brand-foreground hover:bg-brand/90">
+            <Button
+              type="submit"
+              disabled={status === "saving"}
+              className="w-full bg-brand text-brand-foreground hover:bg-brand/90"
+            >
               {status === "saving" ? "Sending…" : "Send feedback"}
             </Button>
           </form>
@@ -126,11 +137,25 @@ function FeedbackPage() {
   );
 }
 
-function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+function Field({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
   return (
     <label className="block text-sm font-semibold">
       {label}
-      <Textarea className="mt-2" rows={3} maxLength={2000} value={value} onChange={(e) => onChange(e.target.value)} />
+      <Textarea
+        className="mt-2"
+        rows={3}
+        maxLength={2000}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
     </label>
   );
 }

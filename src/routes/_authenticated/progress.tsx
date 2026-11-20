@@ -13,7 +13,11 @@ export const Route = createFileRoute("/_authenticated/progress")({
   head: () => ({
     meta: [
       { title: "Progress — Student Hub" },
-      { name: "description", content: "Study hours, completed tasks, focus sessions, streaks, consistency and subject performance." },
+      {
+        name: "description",
+        content:
+          "Study hours, completed tasks, focus sessions, streaks, consistency and subject performance.",
+      },
       { property: "og:title", content: "Progress — Student Hub" },
       { property: "og:description", content: "See how your studying is going." },
       { property: "og:type", content: "website" },
@@ -92,18 +96,41 @@ function ProgressPage() {
   }
 
   return (
-    <AppShell title="Study Analytics" description="Everything here comes from work you've actually logged.">
+    <AppShell
+      title="Study Analytics"
+      description="Everything here comes from work you've actually logged."
+    >
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <Stat label="Total study hours" value={`${stats.totalHours} h`} hint="All focus sessions" />
         <Stat label="This week" value={`${stats.weekHours} h`} hint="Last 7 days" />
-        <Stat label="Tasks completed" value={String(stats.tasksCompleted)} hint="Across your planner" />
-        <Stat label="Quiz average" value={stats.quizAverage ? `${stats.quizAverage}%` : "—"} hint="All attempts" />
-        <Stat label="Focus sessions" value={String(focusSessions)} hint="Completed blocks all-time" />
-        <Stat label="Current streak" value={`${stats.streak} days`} hint={`Best: ${stats.bestStreak} days`} />
+        <Stat
+          label="Tasks completed"
+          value={String(stats.tasksCompleted)}
+          hint="Across your planner"
+        />
+        <Stat
+          label="Quiz average"
+          value={stats.quizAverage ? `${stats.quizAverage}%` : "—"}
+          hint="All attempts"
+        />
+        <Stat
+          label="Focus sessions"
+          value={String(focusSessions)}
+          hint="Completed blocks all-time"
+        />
+        <Stat
+          label="Current streak"
+          value={`${stats.streak} days`}
+          hint={`Best: ${stats.bestStreak} days`}
+        />
         <Stat
           label="Most productive day"
           value={mostProductive && mostProductive.minutes > 0 ? mostProductive.day : "—"}
-          hint={mostProductive && mostProductive.minutes > 0 ? `${mostProductive.minutes} min studied` : "Last 7 days"}
+          hint={
+            mostProductive && mostProductive.minutes > 0
+              ? `${mostProductive.minutes} min studied`
+              : "Last 7 days"
+          }
         />
         <Stat
           label="Consistency"
@@ -119,8 +146,19 @@ function ProgressPage() {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={stats.weekly}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="day" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
+              <XAxis
+                dataKey="day"
+                stroke="var(--muted-foreground)"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                stroke="var(--muted-foreground)"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+              />
               <Tooltip cursor={{ fill: "var(--secondary)" }} contentStyle={chartTooltipStyle} />
               <Bar dataKey="minutes" fill="var(--brand)" radius={[6, 6, 0, 0]} />
             </BarChart>
@@ -134,8 +172,20 @@ function ProgressPage() {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={taskDaily}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="day" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis allowDecimals={false} stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
+              <XAxis
+                dataKey="day"
+                stroke="var(--muted-foreground)"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                allowDecimals={false}
+                stroke="var(--muted-foreground)"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+              />
               <Tooltip cursor={{ fill: "var(--secondary)" }} contentStyle={chartTooltipStyle} />
               <Bar dataKey="done" name="Tasks done" fill="var(--warning)" radius={[6, 6, 0, 0]} />
             </BarChart>
@@ -160,7 +210,10 @@ function ProgressPage() {
                   </span>
                 </div>
                 <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-secondary">
-                  <div className="h-full rounded-full bg-brand" style={{ width: `${s.average}%` }} />
+                  <div
+                    className="h-full rounded-full bg-brand"
+                    style={{ width: `${s.average}%` }}
+                  />
                 </div>
               </li>
             ))}
@@ -169,7 +222,8 @@ function ProgressPage() {
       </div>
 
       <p className="mt-4 text-center text-xs text-muted-foreground">
-        Analytics reflect {today ? "your logged study activity only" : "your logged activity"} — no estimates or placeholders.
+        Analytics reflect {today ? "your logged study activity only" : "your logged activity"} — no
+        estimates or placeholders.
       </p>
     </AppShell>
   );

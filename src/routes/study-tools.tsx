@@ -1,5 +1,16 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { BookOpen, CalendarDays, FileText, Layers, ListChecks, MessageSquare, Mic, Presentation, Timer, TrendingUp } from "lucide-react";
+import {
+  BookOpen,
+  CalendarDays,
+  FileText,
+  Layers,
+  ListChecks,
+  MessageSquare,
+  Mic,
+  Presentation,
+  Timer,
+  TrendingUp,
+} from "lucide-react";
 
 import { SectionHeading } from "@/components/brand";
 import { SitePage } from "@/components/site-layout";
@@ -11,7 +22,8 @@ export const Route = createFileRoute("/study-tools")({
       { title: "Study Tools — Student Hub" },
       {
         name: "description",
-        content: "Open the assistant, notes, quizzes, planner, flashcards, pomodoro timer and progress analytics.",
+        content:
+          "Open the assistant, notes, quizzes, planner, flashcards, pomodoro timer and progress analytics.",
       },
       { property: "og:title", content: "Study Tools — Student Hub" },
       { property: "og:description", content: "Seven tools, one study workspace." },
@@ -23,16 +35,66 @@ export const Route = createFileRoute("/study-tools")({
 });
 
 const TOOLS = [
-  { icon: MessageSquare, title: "AI Study Assistant", body: "Explain simply, step-by-step, exam prep, summarise or quiz me.", to: "/assistant" },
-  { icon: FileText, title: "AI PDF Reader", body: "Extract PDF text, ask questions, build summaries, highlights and quizzes.", to: "/pdf-reader" },
-  { icon: Mic, title: "AI Voice Tutor", body: "Practice spoken tutoring conversations with a text fallback.", to: "/voice-tutor" },
-  { icon: Presentation, title: "Presentation Maker", body: "Generate editable slide outlines and export a printable HTML deck.", to: "/presentations" },
-  { icon: BookOpen, title: "AI Notes", body: "Write or paste text, summarise it, pull key points, make cards or a quiz.", to: "/notes" },
-  { icon: ListChecks, title: "Quiz Generator", body: "Pick subject, topic, difficulty and length, then sit the quiz.", to: "/quizzes" },
-  { icon: CalendarDays, title: "Study Planner", body: "Day, week and month views with priorities and exam dates.", to: "/planner" },
-  { icon: Layers, title: "Flashcards", body: "Decks, practice mode and easy/medium/hard confidence rating.", to: "/flashcards" },
-  { icon: Timer, title: "Pomodoro", body: "Custom focus and break lengths, with every session logged.", to: "/pomodoro" },
-  { icon: TrendingUp, title: "Progress", body: "Hours, tasks, quiz scores, streaks and subject performance.", to: "/progress" },
+  {
+    icon: MessageSquare,
+    title: "AI Study Assistant",
+    body: "Explain simply, step-by-step, exam prep, summarise or quiz me.",
+    to: "/assistant",
+  },
+  {
+    icon: FileText,
+    title: "AI PDF Reader",
+    body: "Extract PDF text, ask questions, build summaries, highlights and quizzes.",
+    to: "/pdf-reader",
+  },
+  {
+    icon: Mic,
+    title: "AI Voice Tutor",
+    body: "Practice spoken tutoring conversations with a text fallback.",
+    to: "/voice-tutor",
+  },
+  {
+    icon: Presentation,
+    title: "Presentation Maker",
+    body: "Generate editable slide outlines and export a printable HTML deck.",
+    to: "/presentations",
+  },
+  {
+    icon: BookOpen,
+    title: "AI Notes",
+    body: "Write or paste text, summarise it, pull key points, make cards or a quiz.",
+    to: "/notes",
+  },
+  {
+    icon: ListChecks,
+    title: "Quiz Generator",
+    body: "Pick subject, topic, difficulty and length, then sit the quiz.",
+    to: "/quizzes",
+  },
+  {
+    icon: CalendarDays,
+    title: "Study Planner",
+    body: "Day, week and month views with priorities and exam dates.",
+    to: "/planner",
+  },
+  {
+    icon: Layers,
+    title: "Flashcards",
+    body: "Decks, practice mode and easy/medium/hard confidence rating.",
+    to: "/flashcards",
+  },
+  {
+    icon: Timer,
+    title: "Pomodoro",
+    body: "Custom focus and break lengths, with every session logged.",
+    to: "/pomodoro",
+  },
+  {
+    icon: TrendingUp,
+    title: "Progress",
+    body: "Hours, tasks, quiz scores, streaks and subject performance.",
+    to: "/progress",
+  },
 ] as const;
 
 function StudyToolsPage() {
@@ -51,7 +113,9 @@ function StudyToolsPage() {
               <span className="grid size-10 place-items-center rounded-xl bg-brand-soft text-accent-foreground">
                 <Icon className="size-5" />
               </span>
-              <h3 className="mt-4 text-lg font-semibold group-hover:text-accent-foreground">{title}</h3>
+              <h3 className="mt-4 text-lg font-semibold group-hover:text-accent-foreground">
+                {title}
+              </h3>
               <p className="mt-1.5 text-sm text-muted-foreground">{body}</p>
             </Link>
           ))}

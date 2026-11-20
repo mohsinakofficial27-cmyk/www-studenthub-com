@@ -11,7 +11,10 @@ export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
       { title: "Contact — Student Hub" },
-      { name: "description", content: "Get in touch with the Student Hub team with questions, ideas or problems." },
+      {
+        name: "description",
+        content: "Get in touch with the Student Hub team with questions, ideas or problems.",
+      },
       { property: "og:title", content: "Contact — Student Hub" },
       { property: "og:description", content: "Send the Student Hub team a message." },
       { property: "og:type", content: "website" },
@@ -43,7 +46,9 @@ function ContactPage() {
     setStatus("saving");
     const { supabase } = await import("@/integrations/supabase/client");
     const { data } = await supabase.auth.getUser();
-    const { error: dbError } = await supabase.from("contact_messages").insert({ ...parsed.data, user_id: data.user?.id ?? null });
+    const { error: dbError } = await supabase
+      .from("contact_messages")
+      .insert({ ...parsed.data, user_id: data.user?.id ?? null });
     if (dbError) {
       setStatus("idle");
       setError("Couldn't send your message — please try again.");
@@ -56,26 +61,56 @@ function ContactPage() {
     <LegalPage title="Contact us">
       <p>
         Questions, ideas or something not working? Send us a message below or email{" "}
-        <a className="font-medium text-foreground underline" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+        <a className="font-medium text-foreground underline" href={`mailto:${CONTACT_EMAIL}`}>
+          {CONTACT_EMAIL}
+        </a>
+        .
       </p>
       {status === "done" ? (
-        <div className="card-soft p-6 text-foreground">Thanks — your message has been sent. We'll reply by email.</div>
+        <div className="card-soft p-6 text-foreground">
+          Thanks — your message has been sent. We'll reply by email.
+        </div>
       ) : (
         <form onSubmit={submit} className="card-soft space-y-4 p-6 text-foreground">
           <label className="block text-sm font-semibold">
             Name
-            <Input className="mt-2" maxLength={100} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <Input
+              className="mt-2"
+              maxLength={100}
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+            />
           </label>
           <label className="block text-sm font-semibold">
             Email
-            <Input className="mt-2" type="email" maxLength={255} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            <Input
+              className="mt-2"
+              type="email"
+              maxLength={255}
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+            />
           </label>
           <label className="block text-sm font-semibold">
             Message
-            <Textarea className="mt-2" rows={5} maxLength={2000} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
+            <Textarea
+              className="mt-2"
+              rows={5}
+              maxLength={2000}
+              value={form.message}
+              onChange={(e) => setForm({ ...form, message: e.target.value })}
+            />
           </label>
-          {error ? <p className="text-sm text-destructive" role="alert">{error}</p> : null}
-          <Button type="submit" disabled={status === "saving"} className="bg-brand text-brand-foreground hover:bg-brand/90">
+          {error ? (
+            <p className="text-sm text-destructive" role="alert">
+              {error}
+            </p>
+          ) : null}
+          <Button
+            type="submit"
+            disabled={status === "saving"}
+            className="bg-brand text-brand-foreground hover:bg-brand/90"
+          >
             {status === "saving" ? "Sending…" : "Send message"}
           </Button>
         </form>

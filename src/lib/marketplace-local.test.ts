@@ -21,7 +21,12 @@ describe("private marketplace drafts", () => {
     const shared = applyOfflineMarketplaceDraft(
       state,
       "student",
-      { action: "share-note", title: "Cell notes", subject: "Biology", content: "A private note with enough content to share safely." },
+      {
+        action: "share-note",
+        title: "Cell notes",
+        subject: "Biology",
+        content: "A private note with enough content to share safely.",
+      },
       "2026-11-19T10:00:00.000Z",
     );
     assert.equal(shared.ok, true);
