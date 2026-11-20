@@ -828,9 +828,7 @@ export async function loadUserData(
         if (error) {
           if (isMissingKnownTable(error, spec.field)) {
             unavailableTables.add(spec.field);
-            console.warn(
-              `Table public.${spec.field} is unavailable; continuing with local data.`,
-            );
+            console.warn(`Table public.${spec.field} is unavailable; continuing with local data.`);
             return;
           }
           throw new Error(error.message);

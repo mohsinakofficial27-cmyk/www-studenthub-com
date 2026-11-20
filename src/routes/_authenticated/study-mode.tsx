@@ -13,7 +13,11 @@ export const Route = createFileRoute("/_authenticated/study-mode")({
   head: () => ({
     meta: [
       { title: "Study Mode — Student Hub" },
-      { name: "description", content: "A calm, distraction-free focus screen with a timer, your current task and saved sessions." },
+      {
+        name: "description",
+        content:
+          "A calm, distraction-free focus screen with a timer, your current task and saved sessions.",
+      },
       { property: "og:title", content: "Study Mode — Student Hub" },
       { property: "og:description", content: "One task, one timer, no distractions." },
       { property: "og:type", content: "website" },
@@ -100,15 +104,22 @@ function StudyModePage() {
     <AppShell title="Study Mode" description="One task, one timer, no distractions.">
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
         <div className="flex flex-col items-center rounded-3xl border border-border bg-brand-soft/50 px-6 py-12 text-center">
-          <span className="rounded-full bg-brand px-3 py-1 text-xs font-medium text-brand-foreground">Focus session</span>
+          <span className="rounded-full bg-brand px-3 py-1 text-xs font-medium text-brand-foreground">
+            Focus session
+          </span>
 
           {done !== null ? (
             <div className="mt-8 flex flex-col items-center">
               <CheckCircle2 className="size-12 text-brand" />
               <p className="mt-4 text-xl font-semibold">Great work. {done} minutes completed.</p>
-              <p className="mt-1 text-sm text-muted-foreground">This session is saved to your progress.</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                This session is saved to your progress.
+              </p>
               <div className="mt-6 flex flex-wrap justify-center gap-3">
-                <Button onClick={() => pick(done)} className="bg-brand text-brand-foreground hover:bg-brand/90">
+                <Button
+                  onClick={() => pick(done)}
+                  className="bg-brand text-brand-foreground hover:bg-brand/90"
+                >
                   Another {done}-minute block
                 </Button>
                 <Button variant="outline" onClick={() => pick(25)}>
@@ -122,7 +133,10 @@ function StudyModePage() {
                 {mm}:{ss}
               </p>
               <div className="mt-6 h-2 w-64 max-w-full overflow-hidden rounded-full bg-secondary">
-                <div className="h-full rounded-full bg-brand transition-all" style={{ width: `${progress}%` }} />
+                <div
+                  className="h-full rounded-full bg-brand transition-all"
+                  style={{ width: `${progress}%` }}
+                />
               </div>
               {task ? (
                 <p className="mt-5 max-w-md text-sm text-muted-foreground">
@@ -200,11 +214,15 @@ function StudyModePage() {
                       onClick={() => setTaskId(t.id)}
                       className={cn(
                         "flex w-full items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 text-left text-sm transition-colors",
-                        t.id === task?.id ? "border-brand bg-brand-soft/50" : "border-border hover:border-brand/50",
+                        t.id === task?.id
+                          ? "border-brand bg-brand-soft/50"
+                          : "border-border hover:border-brand/50",
                       )}
                     >
                       <span className="truncate">{t.title}</span>
-                      <span className="shrink-0 text-xs text-muted-foreground">{t.minutes} min</span>
+                      <span className="shrink-0 text-xs text-muted-foreground">
+                        {t.minutes} min
+                      </span>
                     </button>
                   </li>
                 ))}

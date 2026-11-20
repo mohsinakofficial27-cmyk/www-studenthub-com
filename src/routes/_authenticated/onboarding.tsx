@@ -16,9 +16,15 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({
     meta: [
       { title: "Build My Semester — Student Hub" },
-      { name: "description", content: "Answer a few questions and Student Hub builds your personalized semester plan." },
+      {
+        name: "description",
+        content: "Answer a few questions and Student Hub builds your personalized semester plan.",
+      },
       { property: "og:title", content: "Build My Semester — Student Hub" },
-      { property: "og:description", content: "Personalised onboarding for your Student Hub dashboard." },
+      {
+        property: "og:description",
+        content: "Personalised onboarding for your Student Hub dashboard.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -81,15 +87,23 @@ function OnboardingPage() {
   const toggle = (s: string) =>
     setSubjects((cur) => (cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s]));
 
-  const updateItem = (list: DatedItem[], set: (v: DatedItem[]) => void, i: number, patch: Partial<DatedItem>) =>
-    set(list.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
+  const updateItem = (
+    list: DatedItem[],
+    set: (v: DatedItem[]) => void,
+    i: number,
+    patch: Partial<DatedItem>,
+  ) => set(list.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
 
   const canNext =
-    step === 0 ? studentType !== "" :
-    step === 1 ? subjects.length > 0 :
-    step === 4 ? Number(hours) > 0 :
-    step === 5 ? goal !== "" :
-    true;
+    step === 0
+      ? studentType !== ""
+      : step === 1
+        ? subjects.length > 0
+        : step === 4
+          ? Number(hours) > 0
+          : step === 5
+            ? goal !== ""
+            : true;
 
   const finish = () => {
     if (!user) return;
@@ -135,7 +149,9 @@ function OnboardingPage() {
 
   if (done) {
     const nextExam = exams.filter((e) => e.date).sort((a, b) => a.date.localeCompare(b.date))[0];
-    const nextDeadline = deadlines.filter((d) => d.date).sort((a, b) => a.date.localeCompare(b.date))[0];
+    const nextDeadline = deadlines
+      .filter((d) => d.date)
+      .sort((a, b) => a.date.localeCompare(b.date))[0];
     return (
       <div className="min-h-screen bg-surface">
         <div className="mx-auto w-full max-w-2xl px-4 py-10 sm:py-14">
@@ -150,23 +166,37 @@ function OnboardingPage() {
             </p>
             <div className="mt-8 grid gap-3 text-left sm:grid-cols-2">
               <div className="rounded-xl border border-border p-4">
-                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Today's priority</p>
+                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                  Today's priority
+                </p>
                 <p className="mt-1.5 text-sm font-medium">
-                  {nextDeadline ? `Start "${nextDeadline.title}"` : `Study ${subjects[0] ?? "your subjects"} for ${hours}h`}
+                  {nextDeadline
+                    ? `Start "${nextDeadline.title}"`
+                    : `Study ${subjects[0] ?? "your subjects"} for ${hours}h`}
                 </p>
               </div>
               <div className="rounded-xl border border-border p-4">
-                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Exam countdown</p>
+                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                  Exam countdown
+                </p>
                 <p className="mt-1.5 text-sm font-medium">
-                  {nextExam ? `${nextExam.title} — in ${daysUntil(nextExam.date)} day${daysUntil(nextExam.date) === 1 ? "" : "s"}` : "No exams added yet"}
+                  {nextExam
+                    ? `${nextExam.title} — in ${daysUntil(nextExam.date)} day${daysUntil(nextExam.date) === 1 ? "" : "s"}`
+                    : "No exams added yet"}
                 </p>
               </div>
               <div className="rounded-xl border border-border p-4">
-                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Weekly plan</p>
-                <p className="mt-1.5 text-sm font-medium">{hours}h per day · {subjects.length} subject{subjects.length === 1 ? "" : "s"}</p>
+                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                  Weekly plan
+                </p>
+                <p className="mt-1.5 text-sm font-medium">
+                  {hours}h per day · {subjects.length} subject{subjects.length === 1 ? "" : "s"}
+                </p>
               </div>
               <div className="rounded-xl border border-border p-4">
-                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Your goal</p>
+                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                  Your goal
+                </p>
                 <p className="mt-1.5 text-sm font-medium">{goal}</p>
               </div>
             </div>
@@ -285,7 +315,9 @@ function OnboardingPage() {
                   onChange={(e) => setHours(e.target.value)}
                   className="max-w-32"
                 />
-                <p className="text-xs text-muted-foreground">Be honest — a realistic plan beats an ambitious one you can't keep.</p>
+                <p className="text-xs text-muted-foreground">
+                  Be honest — a realistic plan beats an ambitious one you can't keep.
+                </p>
               </div>
             )}
 
@@ -316,7 +348,12 @@ function OnboardingPage() {
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
             {step > 0 && (
-              <Button type="button" variant="outline" onClick={() => setStep((s) => s - 1)} className="gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setStep((s) => s - 1)}
+                className="gap-2"
+              >
                 <ArrowLeft className="size-4" /> Back
               </Button>
             )}
@@ -339,7 +376,11 @@ function OnboardingPage() {
                 Build my semester <Sparkles className="size-4" />
               </Button>
             )}
-            <Button type="button" variant="ghost" onClick={() => void navigate({ to: "/dashboard" })}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => void navigate({ to: "/dashboard" })}
+            >
               Skip for now
             </Button>
           </div>
@@ -371,7 +412,9 @@ function DatedList({
           <div key={i} className="flex items-center gap-2">
             <Input
               value={it.title}
-              onChange={(e) => setItems(items.map((x, idx) => (idx === i ? { ...x, title: e.target.value } : x)))}
+              onChange={(e) =>
+                setItems(items.map((x, idx) => (idx === i ? { ...x, title: e.target.value } : x)))
+              }
               placeholder={placeholder}
               className="flex-1"
             />
@@ -379,7 +422,9 @@ function DatedList({
               type="date"
               value={it.date}
               min={todayIso()}
-              onChange={(e) => setItems(items.map((x, idx) => (idx === i ? { ...x, date: e.target.value } : x)))}
+              onChange={(e) =>
+                setItems(items.map((x, idx) => (idx === i ? { ...x, date: e.target.value } : x)))
+              }
               className="w-40"
               aria-label="Date"
             />

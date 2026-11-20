@@ -68,16 +68,26 @@ export async function createParentReportLink(report: ParentReportData, origin: s
     key,
     new TextEncoder().encode(JSON.stringify(report)),
   );
-  const fragment = ["v1", encodeBytes(keyBytes), encodeBytes(iv), encodeBytes(new Uint8Array(ciphertext))].join(".");
+  const fragment = [
+    "v1",
+    encodeBytes(keyBytes),
+    encodeBytes(iv),
+    encodeBytes(new Uint8Array(ciphertext)),
+  ].join(".");
   return `${origin}/shared-progress#${fragment}`;
 }
 
 export async function decryptParentReport(fragment: string): Promise<ParentReportData | null> {
-  const [version, encodedKey, encodedIv, encodedCiphertext, ...extra] = fragment.replace(/^#/u, "").split(".");
-  if (version !== "v1" || !encodedKey || !encodedIv || !encodedCiphertext || extra.length) return null;
+  const [version, encodedKey, encodedIv, encodedCiphertext, ...extra] = fragment
+    .replace(/^#/u, "")
+    .split(".");
+  if (version !== "v1" || !encodedKey || !encodedIv || !encodedCiphertext || extra.length)
+    return null;
 
   try {
-    const key = await crypto.subtle.importKey("raw", decodeBytes(encodedKey), "AES-GCM", false, ["decrypt"]);
+    const key = await crypto.subtle.importKey("raw", decodeBytes(encodedKey), "AES-GCM", false, [
+      "decrypt",
+    ]);
     const plaintext = await crypto.subtle.decrypt(
       { name: "AES-GCM", iv: decodeBytes(encodedIv) },
       key,

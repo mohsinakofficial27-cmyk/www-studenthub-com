@@ -20,11 +20,25 @@ export default defineTool({
   title: "List study tasks",
   description: "List the signed-in student's planned study tasks and exams.",
   inputSchema: {
-    from_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe("Only tasks on or after this date (YYYY-MM-DD)."),
-    to_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe("Only tasks on or before this date (YYYY-MM-DD)."),
+    from_date: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional()
+      .describe("Only tasks on or after this date (YYYY-MM-DD)."),
+    to_date: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional()
+      .describe("Only tasks on or before this date (YYYY-MM-DD)."),
     include_done: z.boolean().optional().describe("Include completed tasks (default false)."),
     exams_only: z.boolean().optional().describe("Return only tasks flagged as exams."),
-    limit: z.number().int().min(1).max(100).optional().describe("Maximum tasks to return (default 30)."),
+    limit: z
+      .number()
+      .int()
+      .min(1)
+      .max(100)
+      .optional()
+      .describe("Maximum tasks to return (default 30)."),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ from_date, to_date, include_done, exams_only, limit }, ctx) => {
@@ -42,7 +56,12 @@ export default defineTool({
     if (error) throw new ToolError(error.message);
     const tasks = (data ?? []).map(toTaskJson);
     return {
-      content: [{ type: "text" as const, text: tasks.length ? JSON.stringify(tasks, null, 2) : "No matching tasks." }],
+      content: [
+        {
+          type: "text" as const,
+          text: tasks.length ? JSON.stringify(tasks, null, 2) : "No matching tasks.",
+        },
+      ],
       structuredContent: { tasks },
     };
   },

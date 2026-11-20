@@ -20,9 +20,16 @@ export const Route = createFileRoute("/_authenticated/syllabus")({
   head: () => ({
     meta: [
       { title: "Syllabus Scanner — Student Hub" },
-      { name: "description", content: "Upload your syllabus and the AI turns it into courses, assignments and exams in your planner." },
+      {
+        name: "description",
+        content:
+          "Upload your syllabus and the AI turns it into courses, assignments and exams in your planner.",
+      },
       { property: "og:title", content: "Syllabus Scanner — Student Hub" },
-      { property: "og:description", content: "Upload your syllabus — Student Hub organizes your semester." },
+      {
+        property: "og:description",
+        content: "Upload your syllabus — Student Hub organizes your semester.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -31,11 +38,20 @@ export const Route = createFileRoute("/_authenticated/syllabus")({
 });
 
 type ExtractedCourse = { name: string; instructor: string };
-type ExtractedItem = { kind: "assignment" | "exam" | "project"; title: string; course: string; date: string; priority: "low" | "medium" | "high" };
+type ExtractedItem = {
+  kind: "assignment" | "exam" | "project";
+  title: string;
+  course: string;
+  date: string;
+  priority: "low" | "medium" | "high";
+};
 
 async function extractPdfText(file: File): Promise<string> {
   const pdfjs = await import("pdfjs-dist");
-  pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).href;
+  pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+    "pdfjs-dist/build/pdf.worker.min.mjs",
+    import.meta.url,
+  ).href;
   const buf = await file.arrayBuffer();
   const doc = await pdfjs.getDocument({ data: buf }).promise;
   const pages: string[] = [];
@@ -56,7 +72,10 @@ function SyllabusPage() {
   const imageRef = useRef("");
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{ courses: ExtractedCourse[]; items: ExtractedItem[] } | null>(null);
+  const [result, setResult] = useState<{
+    courses: ExtractedCourse[];
+    items: ExtractedItem[];
+  } | null>(null);
   const [pickedCourses, setPickedCourses] = useState<Set<number>>(new Set());
   const [pickedItems, setPickedItems] = useState<Set<number>>(new Set());
 
@@ -70,7 +89,9 @@ function SyllabusPage() {
       if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
         const extracted = await extractPdfText(file);
         if (!extracted) {
-          toast.error("Couldn't read text from this PDF — it may be a scanned image. Try pasting the text or a photo instead.");
+          toast.error(
+            "Couldn't read text from this PDF — it may be a scanned image. Try pasting the text or a photo instead.",
+          );
           return;
         }
         setText((t) => (t ? `${t}\n\n${extracted}` : extracted).slice(0, 40000));
@@ -79,7 +100,9 @@ function SyllabusPage() {
         setText((t) => (t ? `${t}\n\n${content}` : content));
       } else if (file.type.startsWith("image/")) {
         if (file.size > 4_000_000) {
-          toast.error("That image is too large (over 4 MB). Try a smaller photo or paste the text.");
+          toast.error(
+            "That image is too large (over 4 MB). Try a smaller photo or paste the text.",
+          );
           return;
         }
         const dataUrl = await new Promise<string>((resolve, reject) => {
@@ -108,7 +131,9 @@ function SyllabusPage() {
     setBusy(true);
     setResult(null);
     try {
-      const res = await parseSyllabusAI({ data: { text: text.slice(0, 40000), image: imageRef.current || undefined } });
+      const res = await parseSyllabusAI({
+        data: { text: text.slice(0, 40000), image: imageRef.current || undefined },
+      });
       if (!res.ok) {
         if ("limitReached" in res && res.limitReached) toast.error(res.error);
         else if (("setupRequired" in res && res.setupRequired) || isAiSetupIssue(res.error))
@@ -124,9 +149,7 @@ function SyllabusPage() {
       setPickedCourses(new Set(res.courses.map((_, i) => i)));
       setPickedItems(
         new Set(
-          res.items
-            .map((item, i) => (item.date || item.course ? i : -1))
-            .filter((i) => i >= 0),
+          res.items.map((item, i) => (item.date || item.course ? i : -1)).filter((i) => i >= 0),
         ),
       );
       toast.success("Syllabus read. Review the items below before adding them.");
@@ -153,7 +176,9 @@ function SyllabusPage() {
     result.items.forEach((item, i) => {
       if (!pickedItems.has(i)) return;
       const duplicate = existingTasks.some(
-        (t) => t.title.toLowerCase() === item.title.toLowerCase() && (item.date ? t.date === item.date : true),
+        (t) =>
+          t.title.toLowerCase() === item.title.toLowerCase() &&
+          (item.date ? t.date === item.date : true),
       );
       if (duplicate) {
         skipped += 1;
@@ -176,7 +201,9 @@ function SyllabusPage() {
       toast.info(skipped ? "Everything was already in your planner." : "Nothing was selected.");
       return;
     }
-    toast.success(`${coursesAdded} course${coursesAdded === 1 ? "" : "s"} and ${tasksAdded} item${tasksAdded === 1 ? "" : "s"} added to your planner.`);
+    toast.success(
+      `${coursesAdded} course${coursesAdded === 1 ? "" : "s"} and ${tasksAdded} item${tasksAdded === 1 ? "" : "s"} added to your planner.`,
+    );
     setResult(null);
     setText("");
   };
@@ -189,7 +216,10 @@ function SyllabusPage() {
   };
 
   return (
-    <AppShell title="Syllabus Scanner" description="Upload your syllabus — Student Hub organizes your semester.">
+    <AppShell
+      title="Syllabus Scanner"
+      description="Upload your syllabus — Student Hub organizes your semester."
+    >
       <InfoNote
         title="How it works"
         description="Upload a PDF, a photo of your syllabus or paste its text. The AI lists the courses, assignments, exams and dates it finds — you review and choose what goes into your planner. Uses 1 of your 15 daily AI questions."
@@ -211,7 +241,9 @@ function SyllabusPage() {
           >
             <FileUp className="size-8 text-muted-foreground" />
             <p className="mt-3 text-sm font-medium">Drag a syllabus here, or choose a file</p>
-            <p className="mt-1 text-xs text-muted-foreground">PDF, photo or text file — up to 4 MB for images</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              PDF, photo or text file — up to 4 MB for images
+            </p>
             <input
               ref={fileRef}
               type="file"
@@ -223,7 +255,13 @@ function SyllabusPage() {
                 e.target.value = "";
               }}
             />
-            <Button variant="outline" size="sm" className="mt-4" disabled={busy} onClick={() => fileRef.current?.click()}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-4"
+              disabled={busy}
+              onClick={() => fileRef.current?.click()}
+            >
               Choose file
             </Button>
           </div>
@@ -256,14 +294,19 @@ function SyllabusPage() {
                   <p className="text-xs font-semibold uppercase text-muted-foreground">Courses</p>
                   <ul className="mt-2 space-y-2">
                     {result.courses.map((c, i) => (
-                      <li key={i} className="flex items-center gap-3 rounded-xl border border-border px-3.5 py-2.5 text-sm">
+                      <li
+                        key={i}
+                        className="flex items-center gap-3 rounded-xl border border-border px-3.5 py-2.5 text-sm"
+                      >
                         <Checkbox
                           checked={pickedCourses.has(i)}
                           onCheckedChange={() => toggle(pickedCourses, i, setPickedCourses)}
                           aria-label={`Add course ${c.name}`}
                         />
                         <span className="font-medium">{c.name}</span>
-                        {c.instructor ? <span className="text-muted-foreground">· {c.instructor}</span> : null}
+                        {c.instructor ? (
+                          <span className="text-muted-foreground">· {c.instructor}</span>
+                        ) : null}
                       </li>
                     ))}
                   </ul>
@@ -271,10 +314,15 @@ function SyllabusPage() {
               ) : null}
               {result.items.length ? (
                 <div>
-                  <p className="text-xs font-semibold uppercase text-muted-foreground">Assignments, exams & projects</p>
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">
+                    Assignments, exams & projects
+                  </p>
                   <ul className="mt-2 space-y-2">
                     {result.items.map((item, i) => (
-                      <li key={i} className="flex items-center gap-3 rounded-xl border border-border px-3.5 py-2.5 text-sm">
+                      <li
+                        key={i}
+                        className="flex items-center gap-3 rounded-xl border border-border px-3.5 py-2.5 text-sm"
+                      >
                         <Checkbox
                           checked={pickedItems.has(i)}
                           onCheckedChange={() => toggle(pickedItems, i, setPickedItems)}
@@ -282,12 +330,18 @@ function SyllabusPage() {
                         />
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-medium">
-                            {item.kind === "exam" ? "Exam · " : item.kind === "project" ? "Project · " : ""}
+                            {item.kind === "exam"
+                              ? "Exam · "
+                              : item.kind === "project"
+                                ? "Project · "
+                                : ""}
                             {item.title}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {item.course || "General"}
-                            {item.date ? ` · due ${new Date(`${item.date}T00:00:00`).toLocaleDateString()}` : " · date not stated"}
+                            {item.date
+                              ? ` · due ${new Date(`${item.date}T00:00:00`).toLocaleDateString()}`
+                              : " · date not stated"}
                           </p>
                         </div>
                         <span className="shrink-0 rounded-full bg-secondary px-2.5 py-1 text-[11px] capitalize text-muted-foreground">
@@ -298,7 +352,10 @@ function SyllabusPage() {
                   </ul>
                 </div>
               ) : null}
-              <Button onClick={addToPlanner} className="bg-brand text-brand-foreground hover:bg-brand/90">
+              <Button
+                onClick={addToPlanner}
+                className="bg-brand text-brand-foreground hover:bg-brand/90"
+              >
                 <CalendarDays className="size-4" /> Add selected to my planner
               </Button>
             </div>
@@ -310,7 +367,9 @@ function SyllabusPage() {
           <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
             <li>Syllabus tables with clear dates give the best extraction.</li>
             <li>If a photo is blurry or a PDF is a scan without text, paste the text instead.</li>
-            <li>Items without a stated date go to today — fix the date in the planner afterwards.</li>
+            <li>
+              Items without a stated date go to today — fix the date in the planner afterwards.
+            </li>
             <li>Duplicates already in your planner are skipped automatically.</li>
           </ul>
         </div>

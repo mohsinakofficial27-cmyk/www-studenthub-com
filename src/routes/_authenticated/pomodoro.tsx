@@ -15,7 +15,10 @@ export const Route = createFileRoute("/_authenticated/pomodoro")({
   head: () => ({
     meta: [
       { title: "Pomodoro — Student Hub" },
-      { name: "description", content: "Focus and break timer with every session saved to your study history." },
+      {
+        name: "description",
+        content: "Focus and break timer with every session saved to your study history.",
+      },
       { property: "og:title", content: "Pomodoro — Student Hub" },
       { property: "og:description", content: "Focus timer with session tracking." },
       { property: "og:type", content: "website" },
@@ -78,7 +81,10 @@ function PomodoroPage() {
   const totalMinutes = focusSessions.reduce((s, x) => s + x.minutes, 0);
 
   return (
-    <AppShell title="Pomodoro" description="Focus in blocks. Every completed session is logged to your progress.">
+    <AppShell
+      title="Pomodoro"
+      description="Focus in blocks. Every completed session is logged to your progress."
+    >
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="panel flex flex-col items-center p-8 lg:col-span-2">
           <span className="rounded-full bg-brand-soft px-3 py-1 text-xs font-medium text-accent-foreground">
@@ -150,7 +156,10 @@ function PomodoroPage() {
           ) : (
             <ul className="mt-4 max-h-96 space-y-2 overflow-y-auto">
               {sessions.slice(0, 40).map((s) => (
-                <li key={s.id} className="flex items-center justify-between rounded-xl border border-border px-3.5 py-2.5 text-sm">
+                <li
+                  key={s.id}
+                  className="flex items-center justify-between rounded-xl border border-border px-3.5 py-2.5 text-sm"
+                >
                   <span className="capitalize">{s.kind}</span>
                   <span className="text-muted-foreground">
                     {s.minutes} min · {new Date(s.ended_at).toLocaleDateString()}

@@ -5,7 +5,8 @@ import { buildLocalCoachPlan, formatOcrText, scoreVivaAnswer } from "./study-too
 
 describe("local study-tool helpers", () => {
   it("cleans OCR line spacing and structures all-caps headings", () => {
-    assert.equal(formatOcrText("  CELL   BIOLOGY \r\n\nCells   are alive.  "),
+    assert.equal(
+      formatOcrText("  CELL   BIOLOGY \r\n\nCells   are alive.  "),
       "## CELL BIOLOGY\nCells are alive.",
     );
   });

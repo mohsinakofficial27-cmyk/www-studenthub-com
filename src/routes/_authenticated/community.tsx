@@ -177,13 +177,15 @@ function CommunityPage() {
     {
       id: "sample-1",
       author: "Student Hub sample",
-      content: "What topic are you focusing on today? Share a goal and break it into one small step.",
+      content:
+        "What topic are you focusing on today? Share a goal and break it into one small step.",
       createdAt: new Date().toISOString(),
     },
     {
       id: "sample-2",
       author: "Student Hub sample",
-      content: "Study tip: try a 25-minute focus block, then write down one thing you learned from memory.",
+      content:
+        "Study tip: try a 25-minute focus block, then write down one thing you learned from memory.",
       createdAt: new Date().toISOString(),
     },
   ]);
@@ -268,7 +270,9 @@ function CommunityPage() {
 
   const run = async (input: CommunityAction) => {
     if (localFallback) {
-      toast.info("Community database setup is needed to save this change. Your local feed still works.");
+      toast.info(
+        "Community database setup is needed to save this change. Your local feed still works.",
+      );
       return null;
     }
     setWorking(true);

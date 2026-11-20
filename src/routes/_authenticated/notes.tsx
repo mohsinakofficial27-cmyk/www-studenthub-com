@@ -122,7 +122,10 @@ function NotesPage() {
       });
       if (!result.ok) {
         if ("limitReached" in result && result.limitReached) setLimitMsg(result.error);
-        else if (("setupRequired" in result && result.setupRequired) || isAiSetupIssue(result.error))
+        else if (
+          ("setupRequired" in result && result.setupRequired) ||
+          isAiSetupIssue(result.error)
+        )
           toast.info(result.error);
         else toast.error(result.error);
         return;

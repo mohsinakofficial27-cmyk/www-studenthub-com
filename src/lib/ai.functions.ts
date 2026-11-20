@@ -11,13 +11,20 @@ const MODE_PROMPTS: Record<string, string> = {
   summarize: "Summarize concisely: core idea, three key points and one example.",
   quiz: "Quiz the student: ask 3-5 short questions on the topic, then give the answers at the end.",
   math: "Act as a patient math tutor. Solve the student's arithmetic, algebra, geometry or calculus problem step by step. Explain why each operation is valid, check the result, and do not skip working.",
-  essay: "Act as a writing coach. Help brainstorm, outline, improve grammar and clarity, and give specific feedback. Preserve the student's voice and teach revision rather than writing a complete assignment for them.",
-  research: "Help structure an academic research question, outline or synthesis. Separate claims grounded in material the student supplied from suggestions that need verification. Never invent citations or claim a source is verified unless the student provided it.",
-  homework: "Act as a patient homework tutor. Break the question into smaller steps, explain the underlying concept, and offer a similar example. Guide learning instead of simply doing the assignment.",
-  language: "Act as a supportive language tutor. Practice conversation, explain grammar and vocabulary, gently correct mistakes, and adapt to the learner's level. Ask one useful follow-up question.",
+  essay:
+    "Act as a writing coach. Help brainstorm, outline, improve grammar and clarity, and give specific feedback. Preserve the student's voice and teach revision rather than writing a complete assignment for them.",
+  research:
+    "Help structure an academic research question, outline or synthesis. Separate claims grounded in material the student supplied from suggestions that need verification. Never invent citations or claim a source is verified unless the student provided it.",
+  homework:
+    "Act as a patient homework tutor. Break the question into smaller steps, explain the underlying concept, and offer a similar example. Guide learning instead of simply doing the assignment.",
+  language:
+    "Act as a supportive language tutor. Practice conversation, explain grammar and vocabulary, gently correct mistakes, and adapt to the learner's level. Ask one useful follow-up question.",
 };
 
-const chatMessage = z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(8000) });
+const chatMessage = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: z.string().min(1).max(8000),
+});
 const messageList = z.array(chatMessage).min(1).max(40);
 
 export const DAILY_AI_LIMIT = 15;
@@ -60,11 +67,7 @@ async function consumeQuota(context: {
       code: quotaError.code,
       reason: quotaError.message,
     });
-    if (
-      ["PGRST202", "PGRST205", "42P01", "42883"].includes(
-        quotaError.code ?? "",
-      )
-    ) {
+    if (["PGRST202", "PGRST205", "42P01", "42883"].includes(quotaError.code ?? "")) {
       return { ok: false, setupRequired: true, error: AI_USAGE_SETUP_MESSAGE };
     }
     return { ok: false, error: "Couldn't check your daily limit. Please try again." };
@@ -85,9 +88,20 @@ type StreamOutcome = { ok: false; error: string } | { ok: true; text: string };
 async function readStream(res: Response): Promise<StreamOutcome> {
   if (!res.ok || !res.body) {
     console.error("AI gateway error", res.status, await res.text().catch(() => ""));
-    if (res.status === 429) return { ok: false, error: "Too many requests right now. Please wait a moment and try again." };
-    if (res.status === 402) return { ok: false, error: "The AI service has no credits available right now. Please try again later." };
-    return { ok: false, error: "The study assistant is unavailable right now. Please try again shortly." };
+    if (res.status === 429)
+      return {
+        ok: false,
+        error: "Too many requests right now. Please wait a moment and try again.",
+      };
+    if (res.status === 402)
+      return {
+        ok: false,
+        error: "The AI service has no credits available right now. Please try again later.",
+      };
+    return {
+      ok: false,
+      error: "The study assistant is unavailable right now. Please try again shortly.",
+    };
   }
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
@@ -148,7 +162,18 @@ function parseJson<T>(raw: string): T | null {
 /* ---------------- AI Study Assistant chat ---------------- */
 
 const inputSchema = z.object({
-  mode: z.enum(["explain", "steps", "exam", "summarize", "quiz", "math", "essay", "research", "homework", "language"]),
+  mode: z.enum([
+    "explain",
+    "steps",
+    "exam",
+    "summarize",
+    "quiz",
+    "math",
+    "essay",
+    "research",
+    "homework",
+    "language",
+  ]),
   messages: messageList,
 });
 
@@ -157,7 +182,8 @@ export const askAssistantAI = createServerFn({ method: "POST" })
   .inputValidator((data) => inputSchema.parse(data))
   .handler(async ({ data, context }) => {
     const apiKey = process.env["LOVABLE_API_KEY"];
-    if (!apiKey) return { ok: false as const, setupRequired: true as const, error: AI_SETUP_MESSAGE };
+    if (!apiKey)
+      return { ok: false as const, setupRequired: true as const, error: AI_SETUP_MESSAGE };
 
     const quota = await consumeQuota(context);
     if (!quota.ok) return quota;
@@ -178,10 +204,19 @@ export const askAssistantAI = createServerFn({ method: "POST" })
 
     let res: Response;
     try {
-      res = await openStream(apiKey, { model: MODEL, input, stream: true, store: false, reasoning: { effort: "low" } });
+      res = await openStream(apiKey, {
+        model: MODEL,
+        input,
+        stream: true,
+        store: false,
+        reasoning: { effort: "low" },
+      });
     } catch (error) {
       console.error("AI assistant provider request failed", error);
-      return { ok: false as const, error: "Couldn't reach the AI service. Check your connection and try again." };
+      return {
+        ok: false as const,
+        error: "Couldn't reach the AI service. Check your connection and try again.",
+      };
     }
 
     let outcome: StreamOutcome;
@@ -198,7 +233,12 @@ export const askAssistantAI = createServerFn({ method: "POST" })
 /* ---------------- AI Student Coach ---------------- */
 
 const coachSchema = z.object({
-  context: z.string().trim().min(1).max(4000).describe("A short factual summary of the student's schedule."),
+  context: z
+    .string()
+    .trim()
+    .min(1)
+    .max(4000)
+    .describe("A short factual summary of the student's schedule."),
   messages: messageList,
 });
 
@@ -207,7 +247,8 @@ export const askCoachAI = createServerFn({ method: "POST" })
   .inputValidator((data) => coachSchema.parse(data))
   .handler(async ({ data, context }) => {
     const apiKey = process.env["LOVABLE_API_KEY"];
-    if (!apiKey) return { ok: false as const, setupRequired: true as const, error: AI_SETUP_MESSAGE };
+    if (!apiKey)
+      return { ok: false as const, setupRequired: true as const, error: AI_SETUP_MESSAGE };
 
     const quota = await consumeQuota(context);
     if (!quota.ok) return quota;
@@ -218,7 +259,7 @@ export const askCoachAI = createServerFn({ method: "POST" })
         content:
           "You are Student Hub's AI Student Coach. You help students plan their day and week, prepare for exams, prioritize assignments, reschedule missed work, break large assignments into smaller tasks, and build realistic study schedules.\n" +
           "You are given a factual summary of the student's real schedule (tasks, deadlines, exams, study hours). Use ONLY that data when talking about their schedule — never invent exams, deadlines or grades they didn't mention.\n" +
-          "Answer with concrete, dated plans like:\n\"Here's your plan:\nToday — 45 min Biology + 30 min Assignment 1\nTomorrow — 60 min Biology + 45 min Assignment 2\".\n" +
+          'Answer with concrete, dated plans like:\n"Here\'s your plan:\nToday — 45 min Biology + 30 min Assignment 1\nTomorrow — 60 min Biology + 45 min Assignment 2".\n' +
           "Keep answers short, plain text (numbered lists allowed), encouraging, and end with one clear next action. Never write full assignments for students.\n\n" +
           `The student's real schedule:\n${data.context}`,
       },
@@ -227,10 +268,19 @@ export const askCoachAI = createServerFn({ method: "POST" })
 
     let res: Response;
     try {
-      res = await openStream(apiKey, { model: MODEL, input, stream: true, store: false, reasoning: { effort: "low" } });
+      res = await openStream(apiKey, {
+        model: MODEL,
+        input,
+        stream: true,
+        store: false,
+        reasoning: { effort: "low" },
+      });
     } catch (error) {
       console.error("AI Coach provider request failed", error);
-      return { ok: false as const, error: "Couldn't reach the AI service. Check your connection and try again." };
+      return {
+        ok: false as const,
+        error: "Couldn't reach the AI service. Check your connection and try again.",
+      };
     }
 
     let outcome: StreamOutcome;
@@ -261,7 +311,11 @@ const vivaGradeFormat = {
     required: ["score", "feedback"],
     properties: {
       score: { type: "integer", minimum: 1, maximum: 10 },
-      feedback: { type: "string", description: "One constructive, concise paragraph; do not claim certainty where the answer is ambiguous." },
+      feedback: {
+        type: "string",
+        description:
+          "One constructive, concise paragraph; do not claim certainty where the answer is ambiguous.",
+      },
     },
   },
 };
@@ -271,7 +325,8 @@ export const gradeVivaAnswer = createServerFn({ method: "POST" })
   .validator((data) => vivaGradeSchema.parse(data))
   .handler(async ({ data, context }) => {
     const apiKey = process.env["LOVABLE_API_KEY"];
-    if (!apiKey) return { ok: false as const, setupRequired: true as const, error: AI_SETUP_MESSAGE };
+    if (!apiKey)
+      return { ok: false as const, setupRequired: true as const, error: AI_SETUP_MESSAGE };
 
     const quota = await consumeQuota(context);
     if (!quota.ok) return quota;
@@ -319,7 +374,10 @@ export const gradeVivaAnswer = createServerFn({ method: "POST" })
       !result.feedback.trim()
     ) {
       console.error("AI Viva grading returned an invalid response", outcome.text.slice(0, 1000));
-      return { ok: false as const, error: "AI feedback could not be formatted. Use the local practice feedback instead." };
+      return {
+        ok: false as const,
+        error: "AI feedback could not be formatted. Use the local practice feedback instead.",
+      };
     }
     return {
       ok: true as const,
@@ -383,7 +441,12 @@ const studyMaterialsFormat = {
           properties: {
             prompt: { type: "string" },
             options: { type: "array", minItems: 3, maxItems: 4, items: { type: "string" } },
-            answer: { type: "integer", minimum: 0, maximum: 3, description: "Index of the correct option." },
+            answer: {
+              type: "integer",
+              minimum: 0,
+              maximum: 3,
+              description: "Index of the correct option.",
+            },
             explanation: { type: "string" },
           },
         },
@@ -397,7 +460,8 @@ export const generateNoteStudy = createServerFn({ method: "POST" })
   .inputValidator((data) => noteSchema.parse(data))
   .handler(async ({ data, context }) => {
     const apiKey = process.env["LOVABLE_API_KEY"];
-    if (!apiKey) return { ok: false as const, setupRequired: true as const, error: AI_SETUP_MESSAGE };
+    if (!apiKey)
+      return { ok: false as const, setupRequired: true as const, error: AI_SETUP_MESSAGE };
 
     const quota = await consumeQuota(context);
     if (!quota.ok) return quota;
@@ -425,14 +489,20 @@ export const generateNoteStudy = createServerFn({ method: "POST" })
         text: { format: studyMaterialsFormat },
       });
     } catch {
-      return { ok: false as const, error: "Couldn't reach the AI service. Check your connection and try again." };
+      return {
+        ok: false as const,
+        error: "Couldn't reach the AI service. Check your connection and try again.",
+      };
     }
 
     const outcome = await readStream(res);
     if (!outcome.ok) return { ok: false as const, error: outcome.error };
     const parsed = parseJson<StudyMaterials>(outcome.text);
     if (!parsed || !Array.isArray(parsed.flashcards) || !Array.isArray(parsed.questions)) {
-      return { ok: false as const, error: "The AI couldn't process these notes. Try again with clearer notes." };
+      return {
+        ok: false as const,
+        error: "The AI couldn't process these notes. Try again with clearer notes.",
+      };
     }
     return {
       ok: true as const,
@@ -442,7 +512,10 @@ export const generateNoteStudy = createServerFn({ method: "POST" })
         .filter((c) => c && typeof c.front === "string" && typeof c.back === "string")
         .slice(0, 15),
       questions: parsed.questions
-        .filter((q) => q && typeof q.prompt === "string" && Array.isArray(q.options) && q.options.length >= 3)
+        .filter(
+          (q) =>
+            q && typeof q.prompt === "string" && Array.isArray(q.options) && q.options.length >= 3,
+        )
         .map((q) => ({
           prompt: q.prompt,
           options: q.options.slice(0, 4),
@@ -458,7 +531,13 @@ export const generateNoteStudy = createServerFn({ method: "POST" })
 
 interface SyllabusExtraction {
   courses: { name: string; instructor: string }[];
-  items: { kind: "assignment" | "exam" | "project"; title: string; course: string; date: string; priority: string }[];
+  items: {
+    kind: "assignment" | "exam" | "project";
+    title: string;
+    course: string;
+    date: string;
+    priority: string;
+  }[];
 }
 
 const syllabusSchema = z.object({
@@ -488,7 +567,10 @@ const syllabusFormat = {
           required: ["name", "instructor"],
           properties: {
             name: { type: "string", description: "Course name or code, e.g. 'Biology 101'." },
-            instructor: { type: "string", description: "Instructor name if the syllabus states one, else empty string." },
+            instructor: {
+              type: "string",
+              description: "Instructor name if the syllabus states one, else empty string.",
+            },
           },
         },
       },
@@ -502,8 +584,15 @@ const syllabusFormat = {
           properties: {
             kind: { type: "string", enum: ["assignment", "exam", "project"] },
             title: { type: "string" },
-            course: { type: "string", description: "Course name this item belongs to, else empty string." },
-            date: { type: "string", description: "Due/exam date as YYYY-MM-DD when confidently stated, else empty string." },
+            course: {
+              type: "string",
+              description: "Course name this item belongs to, else empty string.",
+            },
+            date: {
+              type: "string",
+              description:
+                "Due/exam date as YYYY-MM-DD when confidently stated, else empty string.",
+            },
             priority: { type: "string", enum: ["low", "medium", "high"] },
           },
         },
@@ -525,7 +614,8 @@ export const parseSyllabusAI = createServerFn({ method: "POST" })
   .inputValidator((data) => syllabusSchema.parse(data))
   .handler(async ({ data, context }) => {
     const apiKey = process.env["LOVABLE_API_KEY"];
-    if (!apiKey) return { ok: false as const, setupRequired: true as const, error: AI_SETUP_MESSAGE };
+    if (!apiKey)
+      return { ok: false as const, setupRequired: true as const, error: AI_SETUP_MESSAGE };
     if (!data.text.trim() && !data.image) {
       return { ok: false as const, error: "Upload a syllabus file or paste its text first." };
     }
@@ -534,7 +624,10 @@ export const parseSyllabusAI = createServerFn({ method: "POST" })
     if (!quota.ok) return quota;
 
     const userContent: Record<string, unknown>[] = [
-      { type: "input_text", text: `Extract the courses, assignments, exams and projects from this syllabus document.\n\n${data.text.slice(0, 38000)}`.trim() },
+      {
+        type: "input_text",
+        text: `Extract the courses, assignments, exams and projects from this syllabus document.\n\n${data.text.slice(0, 38000)}`.trim(),
+      },
     ];
     if (data.image) userContent.push({ type: "input_image", image_url: data.image });
 
@@ -549,14 +642,20 @@ export const parseSyllabusAI = createServerFn({ method: "POST" })
         text: { format: syllabusFormat },
       });
     } catch {
-      return { ok: false as const, error: "Couldn't reach the AI service. Check your connection and try again." };
+      return {
+        ok: false as const,
+        error: "Couldn't reach the AI service. Check your connection and try again.",
+      };
     }
 
     const outcome = await readStream(res);
     if (!outcome.ok) return { ok: false as const, error: outcome.error };
     const parsed = parseJson<SyllabusExtraction>(outcome.text);
     if (!parsed || !Array.isArray(parsed.items)) {
-      return { ok: false as const, error: "The AI couldn't read this syllabus. Try a clearer photo or paste the text." };
+      return {
+        ok: false as const,
+        error: "The AI couldn't read this syllabus. Try a clearer photo or paste the text.",
+      };
     }
     const kindOf = (k: unknown): "assignment" | "exam" | "project" =>
       k === "exam" ? "exam" : k === "project" ? "project" : "assignment";
@@ -564,16 +663,24 @@ export const parseSyllabusAI = createServerFn({ method: "POST" })
       ok: true as const,
       courses: parsed.courses
         .filter((c) => c && typeof c.name === "string" && c.name.trim())
-        .map((c) => ({ name: c.name.trim().slice(0, 80), instructor: String(c.instructor ?? "").trim().slice(0, 80) }))
+        .map((c) => ({
+          name: c.name.trim().slice(0, 80),
+          instructor: String(c.instructor ?? "")
+            .trim()
+            .slice(0, 80),
+        }))
         .slice(0, 12),
       items: parsed.items
         .filter((i) => i && typeof i.title === "string" && i.title.trim())
         .map((i) => ({
           kind: kindOf(i.kind),
           title: i.title.trim().slice(0, 120),
-          course: String(i.course ?? "").trim().slice(0, 80),
+          course: String(i.course ?? "")
+            .trim()
+            .slice(0, 80),
           date: /^\d{4}-\d{2}-\d{2}$/.test(String(i.date ?? "")) ? String(i.date) : "",
-          priority: (i.priority === "high" ? "high" : i.priority === "low" ? "low" : "medium") as "low" | "medium" | "high",
+          priority: (i.priority === "high" ? "high" : i.priority === "low" ? "low" : "medium") as
+            "low" | "medium" | "high",
         }))
         .slice(0, 30),
       remaining: quota.remaining,
@@ -622,7 +729,8 @@ export const generateQuizAI = createServerFn({ method: "POST" })
   .inputValidator((data) => quizRequestSchema.parse(data))
   .handler(async ({ data, context }) => {
     const apiKey = process.env["LOVABLE_API_KEY"];
-    if (!apiKey) return { ok: false as const, setupRequired: true as const, error: AI_SETUP_MESSAGE };
+    if (!apiKey)
+      return { ok: false as const, setupRequired: true as const, error: AI_SETUP_MESSAGE };
 
     const quota = await consumeQuota(context);
     if (!quota.ok) return quota;
@@ -650,19 +758,28 @@ export const generateQuizAI = createServerFn({ method: "POST" })
         text: { format: quizFormat },
       });
     } catch {
-      return { ok: false as const, error: "Couldn't reach the AI service. Check your connection and try again." };
+      return {
+        ok: false as const,
+        error: "Couldn't reach the AI service. Check your connection and try again.",
+      };
     }
 
     const outcome = await readStream(res);
     if (!outcome.ok) return { ok: false as const, error: outcome.error };
     const parsed = parseJson<{ questions: StudyMaterials["questions"] }>(outcome.text);
     if (!parsed || !Array.isArray(parsed.questions) || parsed.questions.length === 0) {
-      return { ok: false as const, error: "The AI couldn't build that quiz. Try a different topic." };
+      return {
+        ok: false as const,
+        error: "The AI couldn't build that quiz. Try a different topic.",
+      };
     }
     return {
       ok: true as const,
       questions: parsed.questions
-        .filter((q) => q && typeof q.prompt === "string" && Array.isArray(q.options) && q.options.length >= 3)
+        .filter(
+          (q) =>
+            q && typeof q.prompt === "string" && Array.isArray(q.options) && q.options.length >= 3,
+        )
         .map((q) => ({
           prompt: q.prompt,
           options: q.options.slice(0, 4),
@@ -718,7 +835,8 @@ export const studyPdfAI = createServerFn({ method: "POST" })
   .inputValidator((data) => pdfStudySchema.parse(data))
   .handler(async ({ data, context }) => {
     const apiKey = process.env["LOVABLE_API_KEY"];
-    if (!apiKey) return { ok: false as const, setupRequired: true as const, error: AI_SETUP_MESSAGE };
+    if (!apiKey)
+      return { ok: false as const, setupRequired: true as const, error: AI_SETUP_MESSAGE };
 
     if (data.action === "ask" && !data.question?.trim()) {
       return { ok: false as const, error: "Enter a question about the document first." };
@@ -729,8 +847,10 @@ export const studyPdfAI = createServerFn({ method: "POST" })
 
     const instructions = {
       ask: "Answer the student's question using only the document. If it is not answered there, say so plainly. Cite page numbers only when the supplied text explicitly includes them.",
-      summary: "Write a clear chapter-style summary of the document. Use headings for major sections and keep details faithful to the source.",
-      highlights: "Identify the most important facts, definitions, arguments and formulas. Return a concise, clearly labeled list grounded only in the document.",
+      summary:
+        "Write a clear chapter-style summary of the document. Use headings for major sections and keep details faithful to the source.",
+      highlights:
+        "Identify the most important facts, definitions, arguments and formulas. Return a concise, clearly labeled list grounded only in the document.",
       quiz: `Create exactly ${data.count} multiple-choice study questions from the document. Each has one correct answer and a short explanation.`,
     }[data.action];
     const input = [
@@ -755,7 +875,10 @@ export const studyPdfAI = createServerFn({ method: "POST" })
         ...(data.action === "quiz" ? { text: { format: pdfQuizFormat } } : {}),
       });
     } catch {
-      return { ok: false as const, error: "Couldn't reach the AI service. Check your connection and try again." };
+      return {
+        ok: false as const,
+        error: "Couldn't reach the AI service. Check your connection and try again.",
+      };
     }
 
     const outcome = await readStream(res);
@@ -766,10 +889,16 @@ export const studyPdfAI = createServerFn({ method: "POST" })
 
     const parsed = parseJson<{ questions: StudyMaterials["questions"] }>(outcome.text);
     if (!parsed || !Array.isArray(parsed.questions)) {
-      return { ok: false as const, error: "The AI couldn't create a quiz from this document. Try again." };
+      return {
+        ok: false as const,
+        error: "The AI couldn't create a quiz from this document. Try again.",
+      };
     }
     const questions = parsed.questions
-      .filter((q) => q && typeof q.prompt === "string" && Array.isArray(q.options) && q.options.length >= 3)
+      .filter(
+        (q) =>
+          q && typeof q.prompt === "string" && Array.isArray(q.options) && q.options.length >= 3,
+      )
       .map((q) => ({
         prompt: q.prompt.slice(0, 1000),
         options: q.options.filter((option) => typeof option === "string").slice(0, 4),
@@ -816,7 +945,10 @@ const presentationFormat = {
           required: ["title", "content"],
           properties: {
             title: { type: "string" },
-            content: { type: "string", description: "Three to five concise bullet points, separated by newlines." },
+            content: {
+              type: "string",
+              description: "Three to five concise bullet points, separated by newlines.",
+            },
           },
         },
       },
@@ -829,7 +961,8 @@ export const generatePresentationAI = createServerFn({ method: "POST" })
   .inputValidator((data) => presentationSchema.parse(data))
   .handler(async ({ data, context }) => {
     const apiKey = process.env["LOVABLE_API_KEY"];
-    if (!apiKey) return { ok: false as const, setupRequired: true as const, error: AI_SETUP_MESSAGE };
+    if (!apiKey)
+      return { ok: false as const, setupRequired: true as const, error: AI_SETUP_MESSAGE };
 
     const quota = await consumeQuota(context);
     if (!quota.ok) return quota;
@@ -841,7 +974,8 @@ export const generatePresentationAI = createServerFn({ method: "POST" })
         input: [
           {
             role: "system",
-            content: "Create an accurate, student-friendly presentation outline with a logical opening, teaching sequence and conclusion. Use concise slide text and do not invent facts or citations.",
+            content:
+              "Create an accurate, student-friendly presentation outline with a logical opening, teaching sequence and conclusion. Use concise slide text and do not invent facts or citations.",
           },
           {
             role: "user",
@@ -854,7 +988,10 @@ export const generatePresentationAI = createServerFn({ method: "POST" })
         text: { format: presentationFormat },
       });
     } catch {
-      return { ok: false as const, error: "Couldn't reach the AI service. Check your connection and try again." };
+      return {
+        ok: false as const,
+        error: "Couldn't reach the AI service. Check your connection and try again.",
+      };
     }
 
     const outcome = await readStream(res);
@@ -865,7 +1002,9 @@ export const generatePresentationAI = createServerFn({ method: "POST" })
       typeof parsed.title !== "string" ||
       !Array.isArray(parsed.slides) ||
       parsed.slides.length < 3 ||
-      parsed.slides.some((slide) => typeof slide.title !== "string" || typeof slide.content !== "string")
+      parsed.slides.some(
+        (slide) => typeof slide.title !== "string" || typeof slide.content !== "string",
+      )
     ) {
       return {
         ok: false as const,

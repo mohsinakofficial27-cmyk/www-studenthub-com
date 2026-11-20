@@ -64,16 +64,56 @@ const QUICK: { label: MessageKey; to: string; icon: LucideIcon }[] = [
 ];
 
 const EXAM_TOOLKIT: { title: string; description: string; to: string; icon: LucideIcon }[] = [
-  { title: "Concept Challenger", description: "Test your reasoning", to: "/concept-challenger", icon: BrainCircuit },
-  { title: "Midnight Exam Crammer", description: "Review saved notes fast", to: "/exam-crammer", icon: Zap },
-  { title: "Sleep & Study Optimizer", description: "Plan around your rest", to: "/sleep-optimizer", icon: MoonStar },
-  { title: "Mistake Analyzer", description: "Find quiz topics to revisit", to: "/mistake-analyzer", icon: ScanSearch },
-  { title: "Parent Progress Report", description: "Share a private snapshot", to: "/parent-report", icon: Share2 },
-  { title: "Handwriting Scanner", description: "Turn a photo into notes", to: "/handwriting-scanner", icon: ScanText },
+  {
+    title: "Concept Challenger",
+    description: "Test your reasoning",
+    to: "/concept-challenger",
+    icon: BrainCircuit,
+  },
+  {
+    title: "Midnight Exam Crammer",
+    description: "Review saved notes fast",
+    to: "/exam-crammer",
+    icon: Zap,
+  },
+  {
+    title: "Sleep & Study Optimizer",
+    description: "Plan around your rest",
+    to: "/sleep-optimizer",
+    icon: MoonStar,
+  },
+  {
+    title: "Mistake Analyzer",
+    description: "Find quiz topics to revisit",
+    to: "/mistake-analyzer",
+    icon: ScanSearch,
+  },
+  {
+    title: "Parent Progress Report",
+    description: "Share a private snapshot",
+    to: "/parent-report",
+    icon: Share2,
+  },
+  {
+    title: "Handwriting Scanner",
+    description: "Turn a photo into notes",
+    to: "/handwriting-scanner",
+    icon: ScanText,
+  },
   { title: "Exam Calm", description: "Breathe and reset", to: "/exam-calm", icon: HeartPulse },
-  { title: "Note Exchange", description: "Share notes and bounties", to: "/note-exchange", icon: Repeat2 },
+  {
+    title: "Note Exchange",
+    description: "Share notes and bounties",
+    to: "/note-exchange",
+    icon: Repeat2,
+  },
   { title: "Mock Viva", description: "Practise answers aloud", to: "/mock-viva", icon: MicVocal },
-  { title: "Distraction Blocker", description: "Pause when you switch tabs", to: "/study-lock", icon: LockKeyhole },
+  {
+    title: "Distraction Blocker",
+    description: "Pause when you switch tabs",
+    to: "/study-lock",
+    icon: LockKeyhole,
+  },
 ];
 
 function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
@@ -225,7 +265,9 @@ function DashboardPage() {
       <section className="mt-6">
         <div className="mb-3">
           <h2 className="text-lg font-semibold">Your study toolkit</h2>
-          <p className="text-sm text-muted-foreground">Quick tools for revision, reflection, and sharing progress.</p>
+          <p className="text-sm text-muted-foreground">
+            Quick tools for revision, reflection, and sharing progress.
+          </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           {EXAM_TOOLKIT.map(({ title, description, to, icon: Icon }) => (

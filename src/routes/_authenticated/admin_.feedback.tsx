@@ -24,7 +24,11 @@ export const Route = createFileRoute("/_authenticated/admin_/feedback")({
   component: AdminFeedbackPage,
 });
 
-type State = { status: "loading" } | { status: "forbidden" } | { status: "error" } | { status: "ok"; rows: Row[] };
+type State =
+  | { status: "loading" }
+  | { status: "forbidden" }
+  | { status: "error" }
+  | { status: "ok"; rows: Row[] };
 
 function AdminFeedbackPage() {
   const [state, setState] = useState<State>({ status: "loading" });
@@ -33,9 +37,16 @@ function AdminFeedbackPage() {
     void (async () => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) return setState({ status: "forbidden" });
-      const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: u.user.id, _role: "admin" });
+      const { data: isAdmin } = await supabase.rpc("has_role", {
+        _user_id: u.user.id,
+        _role: "admin",
+      });
       if (!isAdmin) return setState({ status: "forbidden" });
-      const { data, error } = await supabase.from("feedback").select("*").order("created_at", { ascending: false }).limit(500);
+      const { data, error } = await supabase
+        .from("feedback")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(500);
       if (error) return setState({ status: "error" });
       setState({ status: "ok", rows: data ?? [] });
     })();
@@ -43,24 +54,42 @@ function AdminFeedbackPage() {
 
   return (
     <AppShell title="Feedback" description="All feedback, newest first.">
-      {state.status === "loading" && <p className="text-sm text-muted-foreground">Loading feedback…</p>}
+      {state.status === "loading" && (
+        <p className="text-sm text-muted-foreground">Loading feedback…</p>
+      )}
       {state.status === "forbidden" && (
-        <EmptyState icon={ShieldAlert} title="Admins only" description="Your account doesn't have admin access." />
+        <EmptyState
+          icon={ShieldAlert}
+          title="Admins only"
+          description="Your account doesn't have admin access."
+        />
       )}
       {state.status === "error" && (
-        <EmptyState icon={ShieldAlert} title="Couldn't load feedback" description="Please refresh and try again." />
+        <EmptyState
+          icon={ShieldAlert}
+          title="Couldn't load feedback"
+          description="Please refresh and try again."
+        />
       )}
       {state.status === "ok" &&
         (state.rows.length === 0 ? (
-          <EmptyState icon={MessageSquare} title="No feedback yet" description="Submissions from /feedback will appear here." />
+          <EmptyState
+            icon={MessageSquare}
+            title="No feedback yet"
+            description="Submissions from /feedback will appear here."
+          />
         ) : (
           <ul className="space-y-3">
             {state.rows.map((r) => (
               <li key={r.id} className="panel p-5 text-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-semibold text-sun">{"★".repeat(r.rating)}<span className="text-muted-foreground/40">{"★".repeat(5 - r.rating)}</span></span>
+                  <span className="font-semibold text-sun">
+                    {"★".repeat(r.rating)}
+                    <span className="text-muted-foreground/40">{"★".repeat(5 - r.rating)}</span>
+                  </span>
                   <span className="text-xs text-muted-foreground">
-                    {new Date(r.created_at).toLocaleString()} · {r.user_id ? "Signed-in user" : "Guest"}
+                    {new Date(r.created_at).toLocaleString()} ·{" "}
+                    {r.user_id ? "Signed-in user" : "Guest"}
                   </span>
                 </div>
                 <dl className="mt-3 grid gap-3 sm:grid-cols-3">

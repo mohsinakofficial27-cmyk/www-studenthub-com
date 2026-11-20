@@ -118,8 +118,13 @@ function AssistantPage() {
         setRemaining(result.remaining);
       if (!result.ok) {
         if ("limitReached" in result && result.limitReached) setLimitMsg(result.error);
-        else if (("setupRequired" in result && result.setupRequired) || isAiSetupIssue(result.error)) {
-          setOfflineReason(isAiSetupIssue(result.error) ? AI_SETUP_MESSAGE : AI_USAGE_SETUP_MESSAGE);
+        else if (
+          ("setupRequired" in result && result.setupRequired) ||
+          isAiSetupIssue(result.error)
+        ) {
+          setOfflineReason(
+            isAiSetupIssue(result.error) ? AI_SETUP_MESSAGE : AI_USAGE_SETUP_MESSAGE,
+          );
           const fallback = await askAssistant(text, mode);
           mutate((d) => {
             d.ai_messages.push({

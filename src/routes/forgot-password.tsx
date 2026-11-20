@@ -72,9 +72,18 @@ function ForgotPasswordPage() {
           {error ? <ErrorNote title="Reset failed" description={error} /> : null}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
-          <Button type="submit" disabled={busy} className="w-full bg-brand text-brand-foreground hover:bg-brand/90">
+          <Button
+            type="submit"
+            disabled={busy}
+            className="w-full bg-brand text-brand-foreground hover:bg-brand/90"
+          >
             {busy ? "Working…" : "Send reset link"}
           </Button>
         </form>

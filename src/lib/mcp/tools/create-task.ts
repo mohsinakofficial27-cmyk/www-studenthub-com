@@ -8,8 +8,15 @@ export default defineTool({
   description: "Add a study task or exam to the signed-in student's planner.",
   inputSchema: {
     title: z.string().trim().min(1).max(200).describe("What the student will study."),
-    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).describe("Date of the task (YYYY-MM-DD)."),
-    time: z.string().regex(/^\d{2}:\d{2}$/).optional().describe("Start time (HH:mm, 24h). Defaults to 18:00."),
+    date: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .describe("Date of the task (YYYY-MM-DD)."),
+    time: z
+      .string()
+      .regex(/^\d{2}:\d{2}$/)
+      .optional()
+      .describe("Start time (HH:mm, 24h). Defaults to 18:00."),
     subject: z.string().trim().max(80).optional().describe("Subject for the task."),
     topic: z.string().trim().max(120).optional().describe("Specific topic."),
     minutes: z.number().int().min(5).max(600).optional().describe("Planned minutes (default 45)."),
@@ -37,7 +44,9 @@ export default defineTool({
     if (error) throw new ToolError(error.message);
     return {
       content: [{ type: "text" as const, text: `Planned "${title}" for ${date} at ${row.time}.` }],
-      structuredContent: { task: row.is_exam ? { ...row, user_id: undefined } : { ...row, user_id: undefined } },
+      structuredContent: {
+        task: row.is_exam ? { ...row, user_id: undefined } : { ...row, user_id: undefined },
+      },
     };
   },
 });
